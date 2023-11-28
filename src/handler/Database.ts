@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
+import logger from "../logging/logger";
 
 module.exports = () => {
   const MONGO_URI = process.env.DBURI;
-  if (!MONGO_URI) return console.log(`Mongo URI not found, skipping.`);
+  if (!MONGO_URI) return logger.info(`Mongo URI not found, skipping.`);
   mongoose
     .connect(`${MONGO_URI}/${process.env.DBNAME}`)
-    .then(() => console.log(`MongoDB connection has been established.`))
-
-    .catch(() => console.log(`MongoDB connection has been failed.`));
+    .then(() => logger.info(`MongoDB connection has been established.`))
+    .catch(() => logger.error(`MongoDB connection has been failed.`));
 };

@@ -7,6 +7,7 @@ import { SlashCommand } from "./types";
 import { config } from "dotenv";
 import { readdirSync } from "fs";
 import { join } from "path";
+
 config();
 client.slashCommands = new Collection<string, SlashCommand>();
 

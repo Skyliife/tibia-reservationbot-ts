@@ -1,10 +1,28 @@
 {
+  "name": "tibia-reservationbot-ts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "jest",
+    "start": "npm run build && npm test && npm run start-app",
+    "deploy-commands": "node deploy-commands.js",
+    "build": "tsc",
+    "start-app": "node ./build/main.js"
+  },
+  "author": "",
+  "license": "MIT",
   "devDependencies": {
+    "@types/jest": "^29.5.10",
+    "@types/winston": "^2.4.4",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
     "typescript": "^5.3.2"
   },
   "dependencies": {
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.1",
-    "mongoose": "^8.0.1"
+    "mongoose": "^8.0.1",
+    "winston": "^3.11.0"
   }
 }

@@ -3,6 +3,7 @@ import { REST } from "@discordjs/rest";
 import { readdirSync } from "fs";
 import { join } from "path";
 import { SlashCommand } from "../types";
+import logger from "../logging/logger";
 
 module.exports = (client: Client) => {
   const slashCommands: SlashCommandBuilder[] = [];
@@ -39,9 +40,9 @@ module.exports = (client: Client) => {
       body: slashCommands.map((command) => command.toJSON()),
     })
     .then((data: any) => {
-      console.log(`Successfully loaded ${data.length} slash command(s)`);
+      logger.info(`Successfully loaded ${data.length} slash command(s)`);
     })
     .catch((e) => {
-      console.log(e);
+      logger.error(e);
     });
 };
