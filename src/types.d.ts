@@ -18,7 +18,7 @@ export interface SlashCommand {
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
-      TOKEN: string;
+      DISCORD_TOKEN: string;
       CLIENTID: string;
       DBURI: string;
       DBNAME: string;

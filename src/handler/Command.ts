@@ -17,7 +17,7 @@ module.exports = (client: Client) => {
     client.slashCommands.set(command.command.name, command);
   });
 
-  const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
+  const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
 
   // rest
   //   .put(Routes.applicationGuildCommands(process.env.CLIENTID, process.env.GUILDTESTSERVER), {
