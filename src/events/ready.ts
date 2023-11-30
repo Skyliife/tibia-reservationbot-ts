@@ -7,9 +7,14 @@ const event: Event = {
   once: true,
   execute: (client: Client) => {
     logger.info(`Logged in as ${client.user?.tag}`);
-    client.destroy()
-    logger.info(`${client.user?.tag} logged out: comment out in ready.ts for development`);
-    process.exit(0)
+    const isInPipeline = process.env.GITHUB_ACTIONS === 'true';
+
+    if (isInPipeline) {
+      // Code specific to the pipeline
+      client.destroy();
+      logger.info(`${client.user?.tag} logged out in the pipeline`);
+      process.exit(0);
+    }
   },
 };
 
