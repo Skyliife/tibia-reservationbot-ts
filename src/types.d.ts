@@ -8,12 +8,22 @@ import {
   ChatInputCommandInteraction,
 } from "discord.js";
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+//                                          INTERFACES                                        //
+////////////////////////////////////////////////////////////////////////////////////////////////
 export interface SlashCommand {
   command: SlashCommandBuilder;
   execute: (interaction: ChatInputCommandInteraction) => void;
   autocomplete?: (interaction: AutocompleteInteraction) => void;
   modal?: (interaction: ModalSubmitInteraction<CacheType>) => void;
   cooldown?: number; // in seconds
+}
+
+export interface Event {
+  name: string;
+  once?: boolean | false;
+  execute: (...args) => void;
 }
 declare global {
   namespace NodeJS {
@@ -33,12 +43,6 @@ declare module "discord.js" {
     commands: Collection<string, Command>;
     cooldowns: Collection<string, number>;
   }
-}
-
-export interface Event {
-  name: string;
-  once?: boolean | false;
-  execute: (...args) => void;
 }
 
 export enum GuildRoles {
