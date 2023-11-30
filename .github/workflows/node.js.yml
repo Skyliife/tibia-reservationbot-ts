@@ -30,6 +30,7 @@ jobs:
       - name: Set up Environment
         run: |
           echo "DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}" >> $GITHUB_ENV
+          echo "CLIENTID=${{ secrets.CLIENTID }}" >> $GITHUB_ENV
           echo "GUILDTESTSERVER=${{ secrets.GUILDTESTSERVER }}" >> $GITHUB_ENV
 
       - name: Start Application
