@@ -1,3 +1,4 @@
+import { Dayjs } from "dayjs";
 import {
   SlashCommandBuilder,
   CommandInteraction,
@@ -7,7 +8,6 @@ import {
   AutocompleteInteraction,
   ChatInputCommandInteraction,
 } from "discord.js";
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //                                          INTERFACES                                        //
@@ -24,6 +24,14 @@ export interface Event {
   name: string;
   once?: boolean | false;
   execute: (...args) => void;
+}
+export interface UserInput {
+  spot: string;
+  date: Dayjs;
+  start: Dayjs;
+  end: Dayjs;
+  name: string;
+  uniqueId: string;
 }
 declare global {
   namespace NodeJS {

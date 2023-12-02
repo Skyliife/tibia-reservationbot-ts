@@ -2,7 +2,15 @@ import winston, { format } from "winston";
 const align = format.align;
 
 // Define custom log levels and colors
-winston.addColors({
+const customLevels = {
+  debug: 0,
+  info: 1,
+  warn: 2,
+  error: 3,
+  custom: 4,
+};
+
+const customColors = {
   silly: "magenta",
   input: "grey",
   verbose: "cyan",
@@ -13,10 +21,11 @@ winston.addColors({
   warn: "yellow",
   debug: "blue",
   error: "red",
-});
+};
 
-// Create a custom log format
-const costumFormat = format.combine(
+winston.addColors(customColors);
+
+const customFormat = format.combine(
   format.timestamp({
     format: "YYYY-MM-DD HH:mm:ss",
   }),
@@ -24,16 +33,15 @@ const costumFormat = format.combine(
   format.printf((info) => {
     const { timestamp, level, message, ...meta } = info;
     const metaString = Object.keys(meta).length ? `${JSON.stringify(meta, null, 0)}` : "";
-    return `[ \x1b[ ${winston.format
+    return `[${winston.format
       .colorize()
-      .colorize(level, level.toUpperCase())} \x1b[0m] ${timestamp} ${message} ${metaString}`;
+      .colorize(level, level.toUpperCase())}] ${timestamp} ${message} ${metaString}`;
   })
 );
 
-// Define the Winston logger with transports and the custom format
 const logger = winston.createLogger({
-  level: "info",
-  format: costumFormat,
+  levels: customLevels,
+  format: customFormat,
   transports: [new winston.transports.Console()],
 });
 

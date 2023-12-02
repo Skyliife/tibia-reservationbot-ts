@@ -7,7 +7,7 @@ const event: Event = {
   once: true,
   execute: (client: Client) => {
     logger.info(`Logged in as ${client.user?.tag}`);
-    const isInPipeline = process.env.GITHUB_ACTIONS === 'true';
+    const isInPipeline = process.env.GITHUB_ACTIONS === "true";
 
     if (isInPipeline) {
       // Code specific to the pipeline

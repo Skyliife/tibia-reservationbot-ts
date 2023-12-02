@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "start": "npm run build && npm test && npm run start-app",
-    "deploy-commands": "node deploy-commands.js",
+    "dev": "npm run build && npm run start-app",
     "build": "tsc",
     "start-app": "node ./build/main.js"
   },
