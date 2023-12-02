@@ -441,6 +441,40 @@ export const getHuntingPlaceByName = (locationName: string) => {
     TheDreamCourts,
     Weremonster,
   ];
-  const matchingLocation = locations.find((obj) => obj.location === locationName);
+  const matchingLocation = locations.find(
+    (obj) => obj.location.toLowerCase() === locationName.toLowerCase()
+  );
   return matchingLocation || null;
+};
+
+export const getHuntingPlaces = (choiceName: string) => {
+  const locations = [
+    Asuras,
+    BuriedCathedral,
+    Cobras,
+    Feru,
+    FlimsyVenore,
+    Gnomprona,
+    Ingol,
+    Inquisition,
+    Issavi,
+    SecretLibrary,
+    Nagas,
+    Roshamuul,
+    RottenBlood,
+    IceLibrary,
+    Soulwar,
+    Spectre,
+    TheDreamCourts,
+    Weremonster,
+  ];
+  for (const location of locations) {
+    const matchingChoice = location.choices.find(
+      (choice) => choice.name.toLowerCase() === choiceName.toLowerCase()
+    );
+
+    if (matchingChoice) {
+      return matchingChoice.name;
+    }
+  }
 };

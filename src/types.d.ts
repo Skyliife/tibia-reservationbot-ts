@@ -16,7 +16,6 @@ export interface SlashCommand {
   command: SlashCommandBuilder;
   execute: (interaction: ChatInputCommandInteraction) => void;
   autocomplete?: (interaction: AutocompleteInteraction) => void;
-  modal?: (interaction: ModalSubmitInteraction<CacheType>) => void;
   cooldown?: number; // in seconds
 }
 
@@ -26,6 +25,7 @@ export interface Event {
   execute: (...args) => void;
 }
 export interface UserInput {
+  place: string;
   spot: string;
   date: Dayjs;
   start: Dayjs;
@@ -48,15 +48,5 @@ declare global {
 declare module "discord.js" {
   export interface Client {
     slashCommands: Collection<string, SlashCommand>;
-    commands: Collection<string, Command>;
-    cooldowns: Collection<string, number>;
   }
-}
-
-export enum GuildRoles {
-  Verified = "Verified",
-  VIP = "VIP",
-  GodsMember = "Gods Member",
-  Gods = "GODS",
-  Bazant = "BAZANT",
 }

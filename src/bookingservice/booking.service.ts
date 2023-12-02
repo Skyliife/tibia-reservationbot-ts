@@ -1,12 +1,13 @@
 import {
-  APIInteractionGuildMember, CacheType, CacheTypeReducer,
+  APIInteractionGuildMember,
+  CacheType,
+  CacheTypeReducer,
   ChatInputCommandInteraction,
-  GuildMember, TextBasedChannel,
+  GuildMember,
+  TextBasedChannel,
   TextChannel,
   underscore,
-} from 'discord.js';
-import { getHuntingPlaceByName } from "../huntingplaces/huntingplaces";
-import logger from "../logging/logger";
+} from "discord.js";
 import dayjs, { Dayjs } from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
@@ -14,6 +15,8 @@ import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import Booking from "./booking";
 import ValidationService from "./validation.service";
 import { UserInput } from "../types";
+import logger from "../logging/logger";
+import { GuildRoles } from "../enums";
 
 dayjs.extend(isBetween);
 dayjs.extend(isSameOrAfter);
@@ -24,9 +27,10 @@ class BookingService {
   private options: { [key: string]: string | number | boolean } = {};
   private member: CacheTypeReducer<CacheType, GuildMember, any>;
   private interactionUserName: string;
+  private interactionDisplayName: string;
   private validationService: ValidationService;
   private userId: string;
-  private channelName = '';
+  private channelName = "";
 
   /**
    *
@@ -40,15 +44,13 @@ class BookingService {
 
     this.member = interaction.member;
     this.interactionUserName = interaction.user.username;
+    this.interactionDisplayName = interaction.user.displayName;
     this.userId = interaction.user.id;
 
-    const channel = interaction.channel as TextBasedChannel;
-
-    if (channel && 'name' in channel) {
+    const channel = interaction.channel;
+    if (channel && "name" in channel) {
       this.channelName = channel.name;
-    };
-
-    console.log('_________________________________', this.channelName, '____________________________')
+    }
   }
 
   getUserInput = (): UserInput => {
@@ -70,17 +72,45 @@ class BookingService {
     };
     return userInput;
   };
+
   validateServerRules = () => {
     //get reservation
     const reservation = this.getUserInput();
     //check server rules for reservation
-    const finalReservation = this.validationService.getFinalReservation(reservation);
+    if (this.member.role.cache.find((role: any) => role.name === GuildRoles.Verified)) {
+      const finalReservation = this.validationService.getValidReservation(
+        reservation,
+        GuildRoles.Verified
+      );
+    }
+    if (this.member.role.cache.find((role: any) => role.name === GuildRoles.VIP)) {
+      const finalReservation = this.validationService.getValidReservation(
+        reservation,
+        GuildRoles.VIP
+      );
+    }
+    if (this.member.role.cache.find((role: any) => role.name === GuildRoles.Bazant)) {
+      const finalReservation = this.validationService.getValidReservation(
+        reservation,
+        GuildRoles.Bazant
+      );
+    }
+    if (this.member.role.cache.find((role: any) => role.name === GuildRoles.Gods)) {
+      const finalReservation = this.validationService.getValidReservation(
+        reservation,
+        GuildRoles.Gods
+      );
+    }
+    if (this.member.role.cache.find((role: any) => role.name === GuildRoles.GodsMember)) {
+      const finalReservation = this.validationService.getValidReservation(
+        reservation,
+        GuildRoles.GodsMember
+      );
+    }
   };
 
   private getPlace = (): string => {
-    const userInputSpot = this.options.spot.toString();
-    const result = this.validationService.getValidHuntingSpot(userInputSpot);
-    return result;
+    return this.channelName;
   };
 
   private getSpot = (): string => {
@@ -108,19 +138,18 @@ class BookingService {
   };
 
   private getUserName = (): string => {
-    const userInputName = this.options.name.toString();
-    const guildName = this.member?.nickname;
+    let username = "";
+    if (this.options.name !== undefined) {
+      username = this.options.name.toString();
+    }
+    const guildName = this.member?.displayName;
     const interactionName = this.interactionUserName;
-    const result = this.validationService.getValidUserName(
-      userInputName,
-      guildName,
-      interactionName
-    );
+    const result = this.validationService.getValidUserName(username, guildName, interactionName);
     return result;
   };
 
-  private getUniqueId = (): string =>
-  {
+  private getUniqueId = (): string => {
+    logger.debug(`Selected UserID: ${this.userId}`);
     return this.userId;
   };
 }
