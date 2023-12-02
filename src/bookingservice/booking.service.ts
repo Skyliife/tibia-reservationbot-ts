@@ -1,10 +1,10 @@
 import {
-  APIInteractionGuildMember,
+  APIInteractionGuildMember, CacheType, CacheTypeReducer,
   ChatInputCommandInteraction,
-  GuildMember,
+  GuildMember, TextBasedChannel,
   TextChannel,
   underscore,
-} from "discord.js";
+} from 'discord.js';
 import { getHuntingPlaceByName } from "../huntingplaces/huntingplaces";
 import logger from "../logging/logger";
 import dayjs, { Dayjs } from "dayjs";
@@ -22,27 +22,33 @@ dayjs.extend(isSameOrBefore);
 class BookingService {
   private bookings: Booking[] = [];
   private options: { [key: string]: string | number | boolean } = {};
-  private member: GuildMember | null;
+  private member: CacheTypeReducer<CacheType, GuildMember, any>;
   private interactionUserName: string;
   private validationService: ValidationService;
   private userId: string;
-  private channelName: string;
+  private channelName = '';
 
   /**
    *
    */
-  constructor(interaction: ChatInputCommandInteraction) {
+  constructor(interaction: ChatInputCommandInteraction<CacheType>) {
     this.validationService = new ValidationService();
-    for (let i = 0; i < interaction.options.data.length; i++) {
-      const element = interaction.options.data[i];
-      console.log("element", element);
-      if (element.name && element.value) this.options[element.name] = element.value;
+
+    for (const optionData of interaction.options.data) {
+      if (optionData.name && optionData.value) this.options[optionData.name] = optionData.value;
     }
+
     this.member = interaction.member;
     this.interactionUserName = interaction.user.username;
     this.userId = interaction.user.id;
 
-    this.channelName = interaction.channel?.name;
+    const channel = interaction.channel as TextBasedChannel;
+
+    if (channel && 'name' in channel) {
+      this.channelName = channel.name;
+    };
+
+    console.log('_________________________________', this.channelName, '____________________________')
   }
 
   getUserInput = (): UserInput => {
@@ -76,26 +82,31 @@ class BookingService {
     const result = this.validationService.getValidHuntingSpot(userInputSpot);
     return result;
   };
+
   private getSpot = (): string => {
     const userInputSpot = this.options.spot.toString();
     const result = this.validationService.getValidHuntingSpot(userInputSpot);
     return result;
   };
+
   private getDate = (): Dayjs => {
     const userInputDate = this.options.date.toString();
     const date = this.validationService.getValidDate(userInputDate);
     return date;
   };
+
   private getStart = (date: Dayjs): Dayjs => {
     const userInputStart = this.options.start.toString();
     const start = this.validationService.getValidStart(date, userInputStart);
     return start;
   };
+
   private getEnd = (date: Dayjs): Dayjs => {
     const userInputEnd = this.options.end.toString();
     const end = this.validationService.getValidEnd(date, userInputEnd);
     return end;
   };
+
   private getUserName = (): string => {
     const userInputName = this.options.name.toString();
     const guildName = this.member?.nickname;
@@ -107,6 +118,7 @@ class BookingService {
     );
     return result;
   };
+
   private getUniqueId = (): string => {
     return this.userId;
   };

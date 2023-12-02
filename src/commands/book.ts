@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { SlashCommand } from "../types";
 import BookingService from "../bookingservice/booking.service";
 import logger from "../logging/logger";
@@ -57,23 +57,31 @@ const command: SlashCommand = {
       logger.error(`Error: ${error}`);
     }
   },
-  execute: async (interaction) => {
+  execute: async (interaction: ChatInputCommandInteraction) => {
     logger.debug("Start executing /book command!");
     try {
       await interaction.deferReply({ ephemeral: true });
+
       if (!interaction.options) {
+        console.log('ASD');
         logger.error("Interaction Options are null/undefined");
         return interaction.editReply({ content: "Something went wrong..." });
       }
+
       await interaction.editReply({
         content: "try to book your reservation",
       });
 
-      const book = new BookingService(interaction);
+      if (interaction) {
+        const book = new BookingService(interaction as ChatInputCommandInteraction);
+      } else {
+        console.log('asdasdasdsa');
+      }
 
       await interaction.editReply({
         content: "your reservation has been booked",
       });
+
     } catch (error) {
       logger.error(error);
       interaction.editReply({ content: "Something went wrong..." });
