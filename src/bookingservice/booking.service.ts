@@ -119,7 +119,8 @@ class BookingService {
     return result;
   };
 
-  private getUniqueId = (): string => {
+  private getUniqueId = (): string =>
+  {
     return this.userId;
   };
 }

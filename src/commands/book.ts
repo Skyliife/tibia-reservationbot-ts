@@ -74,10 +74,7 @@ const command: SlashCommand = {
 
       if (interaction) {
         const book = new BookingService(interaction as ChatInputCommandInteraction);
-      } else {
-        console.log('asdasdasdsa');
       }
-
       await interaction.editReply({
         content: "your reservation has been booked",
       });
