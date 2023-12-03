@@ -42,15 +42,15 @@ class ValidationService {
   public getValidStart(validDate: Dayjs, userInputStart: string): Dayjs {
     this.isTimeFormatValid(userInputStart);
 
-    const result = this.parseTimeToDayjs(validDate, userInputStart);
+    const result = this.parseStartTime(validDate, userInputStart);
     logger.debug(`Selected Start Date: ${result.format()}`);
     return result;
   }
 
-  public getValidEnd(validDate: Dayjs, userInputEnd: string) {
+  public getValidEnd(validDate: Dayjs, startDate: Dayjs, userInputEnd: string) {
     this.isTimeFormatValid(userInputEnd);
 
-    const result = this.parseTimeToDayjs(validDate, userInputEnd);
+    const result = this.parseEndTime(validDate, startDate, userInputEnd);
     logger.debug(`Selected End Date: ${result.format()}`);
     return result;
   }
@@ -195,7 +195,7 @@ class ValidationService {
     return pattern.test(inputString);
   };
 
-  private parseTimeToDayjs = (validDate: Dayjs, userInputStart: string): Dayjs => {
+  private parseStartTime = (validDate: Dayjs, userInputStart: string): Dayjs => {
     var inputTime = userInputStart.split(":");
     var inputHours = parseInt(inputTime[0], 10);
     var inputMinutes = parseInt(inputTime[1], 10);
@@ -206,5 +206,23 @@ class ValidationService {
       .set("millisecond", 0);
     return result;
   };
+
+  private parseEndTime = (validDate: Dayjs, startDate: Dayjs, userInputStart: string): Dayjs => {
+    var inputTime = userInputStart.split(":");
+    var inputHours = parseInt(inputTime[0], 10);
+    var inputMinutes = parseInt(inputTime[1], 10);
+    const result = dayjs(validDate)
+      .set("hour", inputHours)
+      .set("minute", inputMinutes)
+      .set("second", 0)
+      .set("millisecond", 0);
+    if (result.hour() < startDate.hour()) {
+      const nextDayEnd = result.add(1, "day");
+      return nextDayEnd;
+    }
+
+    return result;
+  };
 }
+
 export default ValidationService;

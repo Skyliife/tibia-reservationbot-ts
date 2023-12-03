@@ -17,7 +17,7 @@ import ValidationService from "./validation.service";
 import { UserInput } from "../types";
 import logger from "../logging/logger";
 import { GuildRoles } from "../enums";
-import { InsertBooking } from "../handler/Database";
+import { InsertBooking } from "./database.service";
 
 dayjs.extend(isBetween);
 dayjs.extend(isSameOrAfter);
@@ -58,9 +58,9 @@ class BookingService {
   public tryCreateBooking = async () => {
     const reservation = this.validateServerRules();
     if (reservation !== undefined) {
-      InsertBooking(reservation);
+      return await InsertBooking(reservation);
     }
-    throw new Error("upps");
+    throw new Error("Something went wrong... Please try again");
   };
 
   private getUserInput = (): UserInput => {
@@ -68,7 +68,7 @@ class BookingService {
     const spot = this.getSpot();
     const date = this.getDate();
     const start = this.getStart(date);
-    const end = this.getEnd(date);
+    const end = this.getEnd(date, start);
     const name = this.getUserName();
     const uniqueId = this.getUniqueId();
     const userInput = {
@@ -123,8 +123,8 @@ class BookingService {
 
   private getSpot = (): string => {
     const userInputSpot = this.options.spot.toString();
-    const result = this.validationService.getValidHuntingSpot(userInputSpot);
-    return result;
+    const spot = this.validationService.getValidHuntingSpot(userInputSpot);
+    return spot;
   };
 
   private getDate = (): Dayjs => {
@@ -139,9 +139,9 @@ class BookingService {
     return start;
   };
 
-  private getEnd = (date: Dayjs): Dayjs => {
+  private getEnd = (date: Dayjs, startDate: Dayjs): Dayjs => {
     const userInputEnd = this.options.end.toString();
-    const end = this.validationService.getValidEnd(date, userInputEnd);
+    const end = this.validationService.getValidEnd(date, startDate, userInputEnd);
     return end;
   };
 
@@ -152,8 +152,8 @@ class BookingService {
     }
     const guildName = this.member?.displayName;
     const interactionName = this.interactionUserName;
-    const result = this.validationService.getValidUserName(username, guildName, interactionName);
-    return result;
+    const name = this.validationService.getValidUserName(username, guildName, interactionName);
+    return name;
   };
 
   private getUniqueId = (): string => {
