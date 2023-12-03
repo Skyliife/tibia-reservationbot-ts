@@ -17,6 +17,7 @@ import ValidationService from "./validation.service";
 import { UserInput } from "../types";
 import logger from "../logging/logger";
 import { GuildRoles } from "../enums";
+import { InsertBooking } from "../handler/Database";
 
 dayjs.extend(isBetween);
 dayjs.extend(isSameOrAfter);
@@ -26,6 +27,7 @@ class BookingService {
   private bookings: Booking[] = [];
   private options: { [key: string]: string | number | boolean } = {};
   private member: CacheTypeReducer<CacheType, GuildMember, any>;
+  private interaction: ChatInputCommandInteraction<CacheType>;
   private interactionUserName: string;
   private interactionDisplayName: string;
   private validationService: ValidationService;
@@ -41,7 +43,7 @@ class BookingService {
     for (const optionData of interaction.options.data) {
       if (optionData.name && optionData.value) this.options[optionData.name] = optionData.value;
     }
-
+    this.interaction = interaction;
     this.member = interaction.member;
     this.interactionUserName = interaction.user.username;
     this.interactionDisplayName = interaction.user.displayName;
@@ -53,7 +55,15 @@ class BookingService {
     }
   }
 
-  getUserInput = (): UserInput => {
+  public tryCreateBooking = async () => {
+    const reservation = this.validateServerRules();
+    if (reservation !== undefined) {
+      InsertBooking(reservation);
+    }
+    throw new Error("upps");
+  };
+
+  private getUserInput = (): UserInput => {
     const place = this.getPlace();
     const spot = this.getSpot();
     const date = this.getDate();
@@ -73,40 +83,38 @@ class BookingService {
     return userInput;
   };
 
-  validateServerRules = () => {
+  private validateServerRules = () => {
     //get reservation
     const reservation = this.getUserInput();
+    let finalReservation;
     //check server rules for reservation
-    if (this.member.role.cache.find((role: any) => role.name === GuildRoles.Verified)) {
-      const finalReservation = this.validationService.getValidReservation(
+    console.log(this.member.roles);
+
+    if (this.member.roles.cache.find((role: any) => role.name === GuildRoles.Verified)) {
+      finalReservation = this.validationService.getValidReservation(
         reservation,
         GuildRoles.Verified
       );
     }
-    if (this.member.role.cache.find((role: any) => role.name === GuildRoles.VIP)) {
-      const finalReservation = this.validationService.getValidReservation(
-        reservation,
-        GuildRoles.VIP
-      );
+    if (this.member.roles.cache.find((role: any) => role.name === GuildRoles.VIP)) {
+      finalReservation = this.validationService.getValidReservation(reservation, GuildRoles.VIP);
     }
-    if (this.member.role.cache.find((role: any) => role.name === GuildRoles.Bazant)) {
-      const finalReservation = this.validationService.getValidReservation(
-        reservation,
-        GuildRoles.Bazant
-      );
+    if (this.member.roles.cache.find((role: any) => role.name === GuildRoles.Bazant)) {
+      finalReservation = this.validationService.getValidReservation(reservation, GuildRoles.Bazant);
     }
-    if (this.member.role.cache.find((role: any) => role.name === GuildRoles.Gods)) {
-      const finalReservation = this.validationService.getValidReservation(
-        reservation,
-        GuildRoles.Gods
-      );
+    if (this.member.roles.cache.find((role: any) => role.name === GuildRoles.Gods)) {
+      finalReservation = this.validationService.getValidReservation(reservation, GuildRoles.Gods);
     }
-    if (this.member.role.cache.find((role: any) => role.name === GuildRoles.GodsMember)) {
-      const finalReservation = this.validationService.getValidReservation(
+    if (this.member.roles.cache.find((role: any) => role.name === GuildRoles.GodsMember)) {
+      finalReservation = this.validationService.getValidReservation(
         reservation,
         GuildRoles.GodsMember
       );
     }
+    if (finalReservation !== undefined) {
+      return finalReservation;
+    }
+    return undefined;
   };
 
   private getPlace = (): string => {

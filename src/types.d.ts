@@ -33,6 +33,18 @@ export interface UserInput {
   name: string;
   uniqueId: string;
 }
+
+export interface IBooking extends mongoose.Document {
+  huntingPlace: string;
+  huntingSpot: string;
+  name: string;
+  uniqueId: string;
+  serverSaveStart: Dayjs;
+  serverSaveEnd: Dayjs;
+  start: Dayjs;
+  end: Dayjs;
+}
+
 declare global {
   namespace NodeJS {
     interface ProcessEnv {

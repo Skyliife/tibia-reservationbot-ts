@@ -64,17 +64,15 @@ const command: SlashCommand = {
 
       if (!interaction.options) {
         logger.error("Interaction Options are null/undefined");
-        return interaction.editReply({ content: "Something went wrong..." });
+        return await interaction.editReply({ content: "Something went wrong..." });
       }
 
       await interaction.editReply({
         content: "try to book your reservation",
       });
 
-      if (interaction) {
-        const book = new BookingService(interaction);
-        book.getUserInput();
-      }
+      const book = new BookingService(interaction);
+      await book.tryCreateBooking();
       await interaction.editReply({
         content: "your reservation has been booked",
       });

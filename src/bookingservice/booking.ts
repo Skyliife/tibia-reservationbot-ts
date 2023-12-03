@@ -1,14 +1,14 @@
 import dayjs, { Dayjs } from "dayjs";
 
 class Booking {
-  private huntingPlace: string;
-  private huntingSpot: string;
-  private name: string;
-  private uniqueId: string;
-  private serverSaveStart: Dayjs;
-  private serverSaveEnd: Dayjs;
-  private start: Dayjs;
-  private end: Dayjs;
+  public huntingPlace: string;
+  public huntingSpot: string;
+  public name: string;
+  public uniqueId: string;
+  public serverSaveStart: Dayjs;
+  public serverSaveEnd: Dayjs;
+  public start: Dayjs;
+  public end: Dayjs;
 
   constructor(
     huntingPlace: string,

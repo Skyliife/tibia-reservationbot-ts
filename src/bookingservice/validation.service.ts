@@ -78,7 +78,7 @@ class ValidationService {
     return interactionUserName.trim();
   }
 
-  public getValidReservation(reservation: UserInput, role: GuildRoles) {
+  public getValidReservation(reservation: UserInput, role: GuildRoles): Booking | undefined {
     const { place, spot, date, start, end, name, uniqueId } = reservation;
     const [serverSaveStart, serverSaveEnd, duration] = this.getServerSaveTimesFromGodRules(role);
     logger.debug(
@@ -102,7 +102,9 @@ class ValidationService {
         start,
         end
       );
+      return booking;
     }
+    return undefined;
   }
 
   private getServerSaveValidation = (
@@ -113,7 +115,13 @@ class ValidationService {
     duration: number
   ) => {
     const isValidStart = this.isDateBetweenSS(start, serverSaveStart, serverSaveEnd);
+    if (!isValidStart) {
+      throw new Error(`Your selected start time ${start.format()} is not within the god rules`);
+    }
     const isValidEnd = this.isDateBetweenSS(end, serverSaveStart, serverSaveEnd);
+    if (!isValidStart) {
+      throw new Error(`Your selected end time ${end.format()} is not within the god rules`);
+    }
     const isValidDuration = this.isValidReservationDuration(start, end, duration);
 
     const result = isValidStart && isValidEnd && isValidDuration;
