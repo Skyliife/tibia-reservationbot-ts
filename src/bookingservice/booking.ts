@@ -1,6 +1,7 @@
 import dayjs, { Dayjs } from "dayjs";
+import { IBooking } from "../types";
 
-class Booking {
+class Booking implements IBooking {
   public huntingPlace: string;
   public huntingSpot: string;
   public name: string;
@@ -9,6 +10,7 @@ class Booking {
   public serverSaveEnd: Dayjs;
   public start: Dayjs;
   public end: Dayjs;
+  public deletedAt: any;
 
   constructor(
     huntingPlace: string,

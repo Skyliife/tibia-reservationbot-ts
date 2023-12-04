@@ -43,6 +43,7 @@ export interface IBooking extends mongoose.Document {
   serverSaveEnd: Dayjs;
   start: Dayjs;
   end: Dayjs;
+  deletedAt: any;
 }
 
 declare global {

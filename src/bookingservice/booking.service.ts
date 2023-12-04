@@ -28,10 +28,9 @@ class BookingService {
   private options: { [key: string]: string | number | boolean } = {};
   private member: CacheTypeReducer<CacheType, GuildMember, any>;
   private interaction: ChatInputCommandInteraction<CacheType>;
-  private interactionUserName: string;
-  private interactionDisplayName: string;
+
   private validationService: ValidationService;
-  private userId: string;
+
   private channelName = "";
 
   /**
@@ -45,9 +44,6 @@ class BookingService {
     }
     this.interaction = interaction;
     this.member = interaction.member;
-    this.interactionUserName = interaction.user.username;
-    this.interactionDisplayName = interaction.user.displayName;
-    this.userId = interaction.user.id;
 
     const channel = interaction.channel;
     if (channel && "name" in channel) {
@@ -83,6 +79,7 @@ class BookingService {
     return userInput;
   };
 
+  //Refactor this!!!
   private validateServerRules = () => {
     //get reservation
     const reservation = this.getUserInput();
@@ -151,14 +148,14 @@ class BookingService {
       username = this.options.name.toString();
     }
     const guildName = this.member?.displayName;
-    const interactionName = this.interactionUserName;
+    const interactionName = this.interaction.user.username;
     const name = this.validationService.getValidUserName(username, guildName, interactionName);
     return name;
   };
 
   private getUniqueId = (): string => {
-    logger.debug(`Selected UserID: ${this.userId}`);
-    return this.userId;
+    logger.debug(`Selected UserID: ${this.interaction.user.id}`);
+    return this.interaction.user.id;
   };
 }
 

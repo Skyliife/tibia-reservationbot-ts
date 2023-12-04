@@ -10,8 +10,7 @@ const BookingSchema = new Schema<IBooking>({
   serverSaveEnd: { type: Date, required: true },
   start: { type: Date, required: true },
   end: { type: Date, required: true },
+  deletedAt: { type: String, default: null },
 });
 
-const BookingModel = model("booking", BookingSchema);
-
-export default BookingModel;
+export default BookingSchema;
