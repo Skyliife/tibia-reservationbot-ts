@@ -8,8 +8,14 @@ import { IBooking } from "../types";
 
 export const InsertBooking = async (reservation: Booking) => {
   try {
-    const BookingModel = model<IBooking>("booking", BookingSchema, reservation.huntingPlace);
-    const existing = await BookingModel.findOne({ uniqueId: reservation.uniqueId });
+    const BookingModel = model<IBooking>(
+      "booking",
+      BookingSchema,
+      reservation.huntingPlace
+    );
+    const existing = await BookingModel.findOne({
+      uniqueId: reservation.uniqueId,
+    });
 
     if (existing?.huntingSpot === reservation.huntingSpot) {
       logger.warn(
@@ -103,12 +109,54 @@ export const getAllCollectionsAndValues = async () => {
       result[collectionName] = documents; // Store documents in the result object
       //console.log(`Collection: ${collectionName}`);
     }
-    console.log(result);
+    //console.log(result);
     return result; // Return the result object with collections and documents
   } catch (error: any) {
     logger.error(`Error retrieving collections and values: ${error.message}`);
   } finally {
     logger.debug("DONE! getting all collections and documents");
+    return result;
+  }
+};
+
+type DatabaseResult2 = {
+  [huntingPlace: string]: {
+    [huntingSpot: string]: IBooking[];
+  };
+};
+export const getGroupedCollectionsAndValues = async () => {
+  const db = mongoose.connection.db;
+  const result: DatabaseResult2 = {};
+  try {
+    const collections = await db.listCollections().toArray();
+    const names = collections.map((e) => `${e.name}`);
+
+    logger.debug(`Found ${collections.length} collections: [${names}]`);
+    for (const collection of collections) {
+      const collectionName = collection.name;
+      console.log(collectionName);
+      result[collectionName] = {};
+
+      const uniqueHuntingSpots = await db
+        .collection<IBooking>(collectionName)
+        .distinct("huntingSpot", { deletedAt: null });
+      for (const huntingSpot of uniqueHuntingSpots) {
+        result[collectionName][huntingSpot] = [];
+        const bookingsForHuntingSpawn = await db
+          .collection<IBooking>(collectionName)
+          .find({ huntingSpot, deletedAt: null })
+          .toArray();
+        result[collectionName][huntingSpot] = bookingsForHuntingSpawn;
+      }
+    }
+    console.log(JSON.stringify(result, null, 2));
+    return result;
+  } catch (error: any) {
+    logger.error(
+      `Error retrieving grouped collections and values: ${error.message}`
+    );
+  } finally {
+    logger.debug("DONE! Getting grouped collections and values");
     return result;
   }
 };
