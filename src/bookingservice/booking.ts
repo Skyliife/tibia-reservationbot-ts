@@ -1,5 +1,10 @@
 import dayjs, { Dayjs } from "dayjs";
 import { IBooking } from "../types";
+import {
+  isCurrentTimeAfter10AM,
+  isCurrentTimeBefore10AM,
+  isCurrentTimeBeforeMidnight,
+} from "../utils";
 
 class Booking implements IBooking {
   public huntingPlace: string;
@@ -12,10 +17,11 @@ class Booking implements IBooking {
   public end: Dayjs;
   public createdAt: Dayjs;
   public deletedAt: any;
+  public displaySlot: Dayjs;
 
   constructor(
-    huntingPlace: string,
-    huntingSpot: string,
+    huntingplace: string,
+    huntingspot: string,
     name: string,
     uniqueId: string,
     serverSaveStart: Dayjs,
@@ -24,8 +30,8 @@ class Booking implements IBooking {
     end: Dayjs,
     createdAt: Dayjs
   ) {
-    this.huntingPlace = huntingPlace;
-    this.huntingSpot = huntingSpot;
+    this.huntingPlace = huntingplace;
+    this.huntingSpot = huntingspot;
     this.name = name;
     this.uniqueId = uniqueId;
     this.serverSaveStart = serverSaveStart;
@@ -33,6 +39,25 @@ class Booking implements IBooking {
     this.start = start;
     this.end = end;
     this.createdAt = createdAt;
+    this.displaySlot = this.getDisplaySlot(this.start);
+  }
+  private getDisplaySlot(date: Dayjs): Dayjs {
+    var now = dayjs(date);
+
+    console.log("Currenttime:", now.format());
+
+    var serverSaveStart: Dayjs = dayjs();
+    const x = dayjs(now)
+      .set("hour", 10)
+      .set("minute", 0)
+      .set("second", 0)
+      .set("millisecond", 0);
+    if (isCurrentTimeBeforeMidnight(now) && isCurrentTimeAfter10AM(now)) {
+      serverSaveStart = x;
+    } else if (isCurrentTimeBefore10AM(now)) {
+      serverSaveStart = x.subtract(1, "day");
+    }
+    return serverSaveStart;
   }
 
   public displayBookingInfo(): string {

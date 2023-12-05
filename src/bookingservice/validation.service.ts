@@ -90,7 +90,7 @@ class ValidationService {
     const [serverSaveStart, serverSaveEnd, duration] =
       this.getServerSaveTimesFromGodRules(role);
     logger.debug(
-      `Server Save Start: ${serverSaveStart.format()}; Server Save End: ${serverSaveEnd.format()}`
+      `Role: ${role} Server Save Start: ${serverSaveStart.format()}; Server Save End: ${serverSaveEnd.format()}`
     );
     const finalReservation = this.getServerSaveValidation(
       start,

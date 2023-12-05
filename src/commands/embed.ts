@@ -1,12 +1,19 @@
-import { SlashCommandBuilder, ChannelType, TextChannel, EmbedBuilder } from "discord.js";
+import {
+  SlashCommandBuilder,
+  ChannelType,
+  TextChannel,
+  EmbedBuilder,
+} from "discord.js";
 
 import { SlashCommand } from "../types";
-import { createEmbeds } from "../bookingservice/embed.service";
+import { createEmbedsForSummary } from "../bookingservice/embed.service";
 
 const command: SlashCommand = {
-  command: new SlashCommandBuilder().setName("embed").setDescription("test embed"),
+  command: new SlashCommandBuilder()
+    .setName("embed")
+    .setDescription("test embed"),
   execute: async (interaction) => {
-    const embeds = await createEmbeds();
+    const embeds = await createEmbedsForSummary();
     interaction.reply({
       embeds: embeds,
     });

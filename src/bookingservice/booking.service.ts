@@ -40,7 +40,8 @@ class BookingService {
     this.validationService = new ValidationService();
 
     for (const optionData of interaction.options.data) {
-      if (optionData.name && optionData.value) this.options[optionData.name] = optionData.value;
+      if (optionData.name && optionData.value)
+        this.options[optionData.name] = optionData.value;
     }
     this.interaction = interaction;
     this.member = interaction.member;
@@ -84,34 +85,30 @@ class BookingService {
     //get reservation
     const reservation = this.getUserInput();
     let finalReservation;
-    //check server rules for reservation
-    console.log(this.member.roles);
 
-    if (this.member.roles.cache.find((role: any) => role.name === GuildRoles.Verified)) {
-      finalReservation = this.validationService.getValidReservation(
-        reservation,
-        GuildRoles.Verified
-      );
+    // TO-DO: refactor this! im using this roleprority, otherwise code will fail if a member has 2 roles like
+    // gods and verified because it goes into getValidReservation method with the date for verified rules and than throws error not in time range
+    const rolePriority = [
+      GuildRoles.GodsMember,
+      GuildRoles.Gods,
+      GuildRoles.Bazant,
+      GuildRoles.VIP,
+      GuildRoles.Verified,
+    ];
+    for (const roleToCheck of rolePriority) {
+      if (
+        this.member.roles.cache.some((role: any) => role.name === roleToCheck)
+      ) {
+        console.log(roleToCheck);
+        finalReservation = this.validationService.getValidReservation(
+          reservation,
+          roleToCheck
+        );
+        break;
+      }
     }
-    if (this.member.roles.cache.find((role: any) => role.name === GuildRoles.VIP)) {
-      finalReservation = this.validationService.getValidReservation(reservation, GuildRoles.VIP);
-    }
-    if (this.member.roles.cache.find((role: any) => role.name === GuildRoles.Bazant)) {
-      finalReservation = this.validationService.getValidReservation(reservation, GuildRoles.Bazant);
-    }
-    if (this.member.roles.cache.find((role: any) => role.name === GuildRoles.Gods)) {
-      finalReservation = this.validationService.getValidReservation(reservation, GuildRoles.Gods);
-    }
-    if (this.member.roles.cache.find((role: any) => role.name === GuildRoles.GodsMember)) {
-      finalReservation = this.validationService.getValidReservation(
-        reservation,
-        GuildRoles.GodsMember
-      );
-    }
-    if (finalReservation !== undefined) {
-      return finalReservation;
-    }
-    return undefined;
+
+    return finalReservation;
   };
 
   private getPlace = (): string => {
@@ -138,7 +135,11 @@ class BookingService {
 
   private getEnd = (date: Dayjs, startDate: Dayjs): Dayjs => {
     const userInputEnd = this.options.end.toString();
-    const end = this.validationService.getValidEnd(date, startDate, userInputEnd);
+    const end = this.validationService.getValidEnd(
+      date,
+      startDate,
+      userInputEnd
+    );
     return end;
   };
 
@@ -149,7 +150,11 @@ class BookingService {
     }
     const guildName = this.member?.displayName;
     const interactionName = this.interaction.user.username;
-    const name = this.validationService.getValidUserName(username, guildName, interactionName);
+    const name = this.validationService.getValidUserName(
+      username,
+      guildName,
+      interactionName
+    );
     return name;
   };
 

@@ -2,7 +2,12 @@ import mongoose, { model } from "mongoose";
 import logger from "../logging/logger";
 import BookingSchema from "../schemas/Booking";
 import Booking from "./booking";
-import { DatabaseResultForGroup, IBooking } from "../types";
+import {
+  DatabaseResultForGroup,
+  DatabaseResultForSummary,
+  IBooking,
+} from "../types";
+import dayjs from "dayjs";
 
 export const InsertBooking = async (reservation: Booking) => {
   try {
@@ -13,6 +18,7 @@ export const InsertBooking = async (reservation: Booking) => {
     );
     const existing = await BookingModel.findOne({
       uniqueId: reservation.uniqueId,
+      deletedAt: null,
     });
 
     if (existing?.huntingSpot === reservation.huntingSpot) {
@@ -33,6 +39,7 @@ export const InsertBooking = async (reservation: Booking) => {
         start: reservation.start,
         end: reservation.end,
         createdAt: reservation.createdAt,
+        displaySlot: reservation.displaySlot,
       });
 
       await newBooking.save();
@@ -118,11 +125,11 @@ export const getAllCollectionsAndValues = async () => {
   }
 };
 
-export const getGroupedCollectionsAndValues = async () => {
+export const getResultForSummary = async () => {
   // mongoose.pluralize(null);
   // await mongoose.connect(`mongodb://127.0.0.1:27017/TibiaBotReservationDB`);
   const db = mongoose.connection.db;
-  const result: DatabaseResultForGroup = {};
+  const result: DatabaseResultForSummary = {};
   try {
     const collections = await db.listCollections().toArray();
     const names = collections.map((e) => `${e.name}`);
@@ -142,7 +149,71 @@ export const getGroupedCollectionsAndValues = async () => {
           .collection<IBooking>(collectionName)
           .find({ huntingSpot, deletedAt: null })
           .toArray();
-        result[collectionName][huntingSpot] = bookingsForHuntingSpot;
+
+        const sortedBookings = bookingsForHuntingSpot.sort((a, b) =>
+          dayjs(a.start).diff(dayjs(b.start))
+        );
+
+        result[collectionName][huntingSpot] = sortedBookings;
+      }
+    }
+    //console.log(JSON.stringify(result, null, 2));
+    return result;
+  } catch (error: any) {
+    logger.error(
+      `Error retrieving grouped collections and values: ${error.message}`
+    );
+  } finally {
+    logger.debug("DONE! Getting grouped collections and values");
+    return result;
+  }
+};
+
+export const getResultForGroups = async () => {
+  // mongoose.pluralize(null);
+  // await mongoose.connect(`mongodb://127.0.0.1:27017/TibiaBotReservationDB`);
+  const db = mongoose.connection.db;
+  const result: DatabaseResultForGroup = {};
+  try {
+    const collections = await db.listCollections().toArray();
+    const names = collections.map((e) => `${e.name}`);
+
+    logger.debug(`Found ${collections.length} collections: [${names}]`);
+    for (const collection of collections) {
+      const collectionName = collection.name;
+      console.log(collectionName);
+      result[collectionName] = {};
+
+      const uniqueHuntingSpots = await db
+        .collection<IBooking>(collectionName)
+        .distinct("huntingSpot", { deletedAt: null });
+      for (const huntingSpot of uniqueHuntingSpots) {
+        result[collectionName][huntingSpot] = {};
+
+        const bookingsForHuntingSpot = await db
+          .collection<IBooking>(collectionName)
+          .find({ huntingSpot, deletedAt: null })
+          .toArray();
+
+        for (const booking of bookingsForHuntingSpot) {
+          const displaySlot = dayjs(booking.displaySlot).format(); // Format the displaySlot if needed
+
+          if (!result[collectionName][huntingSpot][displaySlot]) {
+            result[collectionName][huntingSpot][displaySlot] = [];
+          }
+
+          // Push the booking to the array
+          result[collectionName][huntingSpot][displaySlot].push(booking);
+        }
+
+        // Sort the bookings for each displaySlot by startTime
+        for (const displaySlot in result[collectionName][huntingSpot]) {
+          if (result[collectionName][huntingSpot].hasOwnProperty(displaySlot)) {
+            result[collectionName][huntingSpot][displaySlot].sort((a, b) =>
+              dayjs(a.start).diff(dayjs(b.start))
+            );
+          }
+        }
       }
     }
     //console.log(JSON.stringify(result, null, 2));

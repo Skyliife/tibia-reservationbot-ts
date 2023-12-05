@@ -45,10 +45,18 @@ export interface IBooking extends mongoose.Document {
   end: Dayjs;
   createdAt: Dayjs;
   deletedAt: any;
+  displaySlot: Dayjs;
 }
-export type DatabaseResultForGroup = {
+export type DatabaseResultForSummary = {
   [huntingPlace: string]: {
     [huntingSpot: string]: IBooking[];
+  };
+};
+export type DatabaseResultForGroup = {
+  [huntingPlace: string]: {
+    [huntingSpot: string]: {
+      [displaySlot: string]: IBooking[];
+    };
   };
 };
 declare global {
