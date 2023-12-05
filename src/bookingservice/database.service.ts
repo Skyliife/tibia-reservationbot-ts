@@ -1,10 +1,8 @@
 import mongoose, { model } from "mongoose";
 import logger from "../logging/logger";
 import BookingSchema from "../schemas/Booking";
-import createBookingModel from "../schemas/Booking";
-import BookingModel from "../schemas/Booking";
 import Booking from "./booking";
-import { IBooking } from "../types";
+import { DatabaseResultForGroup, IBooking } from "../types";
 
 export const InsertBooking = async (reservation: Booking) => {
   try {
@@ -34,6 +32,7 @@ export const InsertBooking = async (reservation: Booking) => {
         serverSaveEnd: reservation.serverSaveEnd,
         start: reservation.start,
         end: reservation.end,
+        createdAt: reservation.createdAt,
       });
 
       await newBooking.save();
@@ -119,14 +118,11 @@ export const getAllCollectionsAndValues = async () => {
   }
 };
 
-type DatabaseResult2 = {
-  [huntingPlace: string]: {
-    [huntingSpot: string]: IBooking[];
-  };
-};
 export const getGroupedCollectionsAndValues = async () => {
+  // mongoose.pluralize(null);
+  // await mongoose.connect(`mongodb://127.0.0.1:27017/TibiaBotReservationDB`);
   const db = mongoose.connection.db;
-  const result: DatabaseResult2 = {};
+  const result: DatabaseResultForGroup = {};
   try {
     const collections = await db.listCollections().toArray();
     const names = collections.map((e) => `${e.name}`);
@@ -142,14 +138,14 @@ export const getGroupedCollectionsAndValues = async () => {
         .distinct("huntingSpot", { deletedAt: null });
       for (const huntingSpot of uniqueHuntingSpots) {
         result[collectionName][huntingSpot] = [];
-        const bookingsForHuntingSpawn = await db
+        const bookingsForHuntingSpot = await db
           .collection<IBooking>(collectionName)
           .find({ huntingSpot, deletedAt: null })
           .toArray();
-        result[collectionName][huntingSpot] = bookingsForHuntingSpawn;
+        result[collectionName][huntingSpot] = bookingsForHuntingSpot;
       }
     }
-    console.log(JSON.stringify(result, null, 2));
+    //console.log(JSON.stringify(result, null, 2));
     return result;
   } catch (error: any) {
     logger.error(
@@ -160,3 +156,4 @@ export const getGroupedCollectionsAndValues = async () => {
     return result;
   }
 };
+//getGroupedCollectionsAndValues();

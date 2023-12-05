@@ -10,6 +10,7 @@ const BookingSchema = new Schema<IBooking>({
   serverSaveEnd: { type: Date, required: true },
   start: { type: Date, required: true },
   end: { type: Date, required: true },
+  createdAt: { type: Date, required: true },
   deletedAt: { type: String, default: null },
 });
 

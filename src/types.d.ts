@@ -43,9 +43,14 @@ export interface IBooking extends mongoose.Document {
   serverSaveEnd: Dayjs;
   start: Dayjs;
   end: Dayjs;
+  createdAt: Dayjs;
   deletedAt: any;
 }
-
+export type DatabaseResultForGroup = {
+  [huntingPlace: string]: {
+    [huntingSpot: string]: IBooking[];
+  };
+};
 declare global {
   namespace NodeJS {
     interface ProcessEnv {

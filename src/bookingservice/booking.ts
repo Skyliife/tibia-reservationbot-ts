@@ -10,6 +10,7 @@ class Booking implements IBooking {
   public serverSaveEnd: Dayjs;
   public start: Dayjs;
   public end: Dayjs;
+  public createdAt: Dayjs;
   public deletedAt: any;
 
   constructor(
@@ -20,7 +21,8 @@ class Booking implements IBooking {
     serverSaveStart: Dayjs,
     serverSaveEnd: Dayjs,
     start: Dayjs,
-    end: Dayjs
+    end: Dayjs,
+    createdAt: Dayjs
   ) {
     this.huntingPlace = huntingPlace;
     this.huntingSpot = huntingSpot;
@@ -30,12 +32,13 @@ class Booking implements IBooking {
     this.serverSaveEnd = serverSaveEnd;
     this.start = start;
     this.end = end;
+    this.createdAt = createdAt;
   }
 
   public displayBookingInfo(): string {
-    return `Booking for ${this.name} with id: ${this.uniqueId} on ${this.start.format()} at ${
-      this.huntingSpot
-    }`;
+    return `Booking for ${this.name} with id: ${
+      this.uniqueId
+    } on ${this.start.format()} at ${this.huntingSpot}`;
   }
 }
 
