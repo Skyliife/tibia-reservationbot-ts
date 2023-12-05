@@ -53,6 +53,7 @@ const command: SlashCommand = {
         const choice = choices[i];
         if (choice.name.includes(focusedValue)) filtered.push(choice);
       }
+      await interaction.respond(filtered);
     } catch (error) {
       logger.error(`Error: ${error}`);
     }
@@ -72,14 +73,17 @@ const command: SlashCommand = {
       });
 
       const book = new BookingService(interaction);
-      await book.tryCreateBooking();
-      await interaction.editReply({
-        content: "your reservation has been booked",
-      });
-    } catch (error: any) {
+      const bookedReservation = await book.tryCreateBooking();
+      if(bookedReservation.isBooked) {
+        await interaction.editReply({
+          content: `${bookedReservation.displayBookingInfo}`,
+        });
+      }
+
+    } catch (error:any) {
       logger.error(error.message);
       console.log(error);
-      interaction.editReply({ content: "Something went wrong..." });
+      await interaction.editReply({ content: `Something went wrong...${error.message}` });
     }
   },
 };

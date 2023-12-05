@@ -42,11 +42,11 @@ class Booking implements IBooking {
     this.displaySlot = this.getDisplaySlot(this.start);
   }
   private getDisplaySlot(date: Dayjs): Dayjs {
-    var now = dayjs(date);
+    const now = dayjs(date);
 
     console.log("Currenttime:", now.format());
 
-    var serverSaveStart: Dayjs = dayjs();
+    let serverSaveStart: Dayjs = dayjs();
     const x = dayjs(now)
       .set("hour", 10)
       .set("minute", 0)
@@ -61,9 +61,7 @@ class Booking implements IBooking {
   }
 
   public displayBookingInfo(): string {
-    return `Booking for ${this.name} with id: ${
-      this.uniqueId
-    } on ${this.start.format()} at ${this.huntingSpot}`;
+    return `Booking on ${this.huntingSpot} from ${this.start.format("D.M")} ${this.start.format("HH:mm")} to ${this.end.format("HH:mm")} has been successfully completed`;
   }
 }
 
