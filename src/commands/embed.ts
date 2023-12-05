@@ -1,21 +1,20 @@
-import {
-  SlashCommandBuilder,
-  ChannelType,
-  TextChannel,
-  EmbedBuilder,
-} from "discord.js";
+import { SlashCommandBuilder, ChannelType, TextChannel, EmbedBuilder } from "discord.js";
 
 import { SlashCommand } from "../types";
-import { createEmbedsForSummary } from "../bookingservice/embed.service";
+import { createEmbedsForGroups, createEmbedsForSummary } from "../bookingservice/embed.service";
 
 const command: SlashCommand = {
-  command: new SlashCommandBuilder()
-    .setName("embed")
-    .setDescription("test embed"),
+  command: new SlashCommandBuilder().setName("embed").setDescription("test embed"),
   execute: async (interaction) => {
-    const embeds = await createEmbedsForSummary();
+    const channel = interaction.channel;
+    let channelName;
+    if (channel && "name" in channel) {
+      channelName = channel.name;
+    }
+    const embedsForSummary = await createEmbedsForSummary();
+    const embedsForChannel = await createEmbedsForGroups(channelName);
     interaction.reply({
-      embeds: embeds,
+      embeds: embedsForChannel,
     });
   },
 };

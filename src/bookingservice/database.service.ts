@@ -2,20 +2,12 @@ import mongoose, { model } from "mongoose";
 import logger from "../logging/logger";
 import BookingSchema from "../schemas/Booking";
 import Booking from "./booking";
-import {
-  DatabaseResultForGroup,
-  DatabaseResultForSummary,
-  IBooking,
-} from "../types";
+import { DatabaseResultForGroup, DatabaseResultForSummary, IBooking } from "../types";
 import dayjs from "dayjs";
 
 export const InsertBooking = async (reservation: Booking) => {
   try {
-    const BookingModel = model<IBooking>(
-      "booking",
-      BookingSchema,
-      reservation.huntingPlace
-    );
+    const BookingModel = model<IBooking>("booking", BookingSchema, reservation.huntingPlace);
     const existing = await BookingModel.findOne({
       uniqueId: reservation.uniqueId,
       deletedAt: null,
@@ -160,22 +152,24 @@ export const getResultForSummary = async () => {
     //console.log(JSON.stringify(result, null, 2));
     return result;
   } catch (error: any) {
-    logger.error(
-      `Error retrieving grouped collections and values: ${error.message}`
-    );
+    logger.error(`Error retrieving grouped collections and values: ${error.message}`);
   } finally {
     logger.debug("DONE! Getting grouped collections and values");
     return result;
   }
 };
 
-export const getResultForGroups = async () => {
-  // mongoose.pluralize(null);
-  // await mongoose.connect(`mongodb://127.0.0.1:27017/TibiaBotReservationDB`);
+export const getResultForGroups = async (collection: string | undefined) => {
+  //mongoose.pluralize(null);
+  //await mongoose.connect(`mongodb://127.0.0.1:27017/TibiaBotReservationDB`);
   const db = mongoose.connection.db;
   const result: DatabaseResultForGroup = {};
   try {
-    const collections = await db.listCollections().toArray();
+    const collections = await db.listCollections({ name: collection }).toArray();
+    if (!collections) {
+      logger.error(`Collection '${collection}' not found.`);
+      return result;
+    }
     const names = collections.map((e) => `${e.name}`);
 
     logger.debug(`Found ${collections.length} collections: [${names}]`);
@@ -219,12 +213,9 @@ export const getResultForGroups = async () => {
     //console.log(JSON.stringify(result, null, 2));
     return result;
   } catch (error: any) {
-    logger.error(
-      `Error retrieving grouped collections and values: ${error.message}`
-    );
+    logger.error(`Error retrieving grouped collections and values: ${error.message}`);
   } finally {
     logger.debug("DONE! Getting grouped collections and values");
     return result;
   }
 };
-//getGroupedCollectionsAndValues();
