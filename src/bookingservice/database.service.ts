@@ -200,7 +200,6 @@ export const getResultForGroups = async (collection: string | undefined) => {
             result[collectionName][huntingSpot][displaySlot] = [];
           }
 
-          // Push the booking to the array
           result[collectionName][huntingSpot][displaySlot].push(booking);
         }
 
@@ -212,9 +211,21 @@ export const getResultForGroups = async (collection: string | undefined) => {
             );
           }
         }
+        // Sort the outer object keys (displaySlot)
+        const sortedDisplaySlots = Object.keys(result[collectionName][huntingSpot]).sort((a, b) =>
+          dayjs(a).diff(dayjs(b))
+        );
+
+        const sortedResult: any = {};
+        for (const displaySlot of sortedDisplaySlots) {
+          sortedResult[displaySlot] = result[collectionName][huntingSpot][displaySlot];
+        }
+
+        // Update the result
+        result[collectionName][huntingSpot] = sortedResult;
       }
     }
-    //console.log(JSON.stringify(result, null, 2));
+    console.log(JSON.stringify(result, null, 2));
     return result;
   } catch (error: any) {
     logger.error(`Error retrieving grouped collections and values: ${error.message}`);
