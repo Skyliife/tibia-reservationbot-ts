@@ -103,8 +103,8 @@ class BookingService {
     const reservation = this.getUserInput();
     let finalReservation;
 
-    // TO-DO: refactor this! we currently using this roleprority, otherwise code will fail if a member has 2 roles like
-    // gods and verified because it goes into getValidReservation method with the date for verified rules and than throws error not in time range
+    // TO-DO: refactor this! we're currently using this roleprority, otherwise code will fail if a member has 2 roles like
+    // gods and verified because it goes into getValidReservation method with the date for verified rules and then throws error not in time range
     const rolePriority = [
       GuildRoles.GodsMember,
       GuildRoles.Gods,
@@ -114,7 +114,7 @@ class BookingService {
     ];
     for (const roleToCheck of rolePriority) {
       if (this.member.roles.cache.some((role: any) => role.name === roleToCheck)) {
-        console.log(roleToCheck);
+        //console.log(roleToCheck);
         finalReservation = this.validationService.getValidReservation(reservation, roleToCheck);
         break;
       }

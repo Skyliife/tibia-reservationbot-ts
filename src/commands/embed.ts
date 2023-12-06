@@ -21,7 +21,7 @@ const command: SlashCommand = {
     const embedsForChannel = await createEmbedsForGroups(channelName);
     const embedsArray = embedsForChannel.map((item) => item.embed);
     const embedsAttachment = embedsForChannel.map((item) => item.attachment);
-    interaction.reply({
+    await interaction.reply({
       embeds: embedsArray,
       files: embedsAttachment,
     });

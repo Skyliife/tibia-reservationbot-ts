@@ -447,7 +447,7 @@ export const getHuntingPlaceByName = (locationName: string) => {
   return matchingLocation || null;
 };
 
-export const getHuntingPlaces = (choiceName: string) => {
+export const getHuntingPlaces = (choiceName: string | undefined) => {
   const locations = [
     Asuras,
     BuriedCathedral,
@@ -470,11 +470,44 @@ export const getHuntingPlaces = (choiceName: string) => {
   ];
   for (const location of locations) {
     const matchingChoice = location.choices.find(
-      (choice) => choice.name.toLowerCase() === choiceName.toLowerCase()
+      (choice) => choice.name.toLowerCase() === choiceName?.toLowerCase()
     );
 
     if (matchingChoice) {
       return matchingChoice.name;
     }
   }
+};
+
+export const getChoicesForSpot = (locationName: string | undefined): { name: string, value: string }[] => {
+  const locations = [
+    Asuras,
+    BuriedCathedral,
+    Cobras,
+    Feru,
+    FlimsyVenore,
+    Gnomprona,
+    Ingol,
+    Inquisition,
+    Issavi,
+    SecretLibrary,
+    Nagas,
+    Roshamuul,
+    RottenBlood,
+    IceLibrary,
+    Soulwar,
+    Spectre,
+    TheDreamCourts,
+    Weremonster,
+  ];
+
+  const matchedLocation = locations.find((location) => location.location.toLowerCase() === locationName);
+
+  if (!matchedLocation) {
+    return [];
+  }
+  console.log(matchedLocation)
+  console.log(matchedLocation.choices.map((choice) => ({ name: choice.name, value: choice.name })))
+
+  return matchedLocation.choices.map((choice) => ({ name: choice.name, value: choice.name }));
 };

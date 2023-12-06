@@ -1,49 +1,60 @@
-import mongoose, { model } from "mongoose";
+import mongoose, {model} from "mongoose";
 import logger from "../logging/logger";
 import BookingSchema from "../schemas/Booking";
 import Booking from "./booking";
-import { DatabaseResultForGroup, DatabaseResultForSummary, IBooking } from "../types";
+import {DatabaseResultForGroup, DatabaseResultForSummary, IBooking} from "../types";
 import dayjs from "dayjs";
+import {isCurrentReservationOverlappingWithExistingReservations} from "../utils";
 
 export const InsertBooking = async (reservation: Booking) => {
-  try {
+
     const BookingModel = model<IBooking>("booking", BookingSchema, reservation.huntingPlace);
     const existing = await BookingModel.findOne({
-      huntingSpot: reservation.huntingSpot,
-      uniqueId: reservation.uniqueId,
-      deletedAt: null,
+        huntingSpot: reservation.huntingSpot,
+        uniqueId: reservation.uniqueId,
+        deletedAt: null,
     });
+    const existingReservationsForHuntingSpot = await BookingModel.find({
+        huntingSpot: reservation.huntingSpot,
+        deletedAt: null,
+    })
+    const isOverlapping = isCurrentReservationOverlappingWithExistingReservations(reservation, existingReservationsForHuntingSpot)
     console.log("---------------------------------------------", existing);
+    logger.info(`isOverlapping: ${isOverlapping}`);
     //const dev = existing;
     const dev = false;
     if (dev) {
-      logger.warn(
-        `Booking with uniqueId ${reservation.uniqueId}, name: ${reservation.name} already exists for hunting spot ${reservation.huntingSpot}. Not inserting.`
-      );
-      throw new Error(
-        `You already have a reservation for the ${reservation.huntingSpot} - use "/unbook" first if you want to change your reservation!`
-      );
+        logger.warn(
+            `Booking with uniqueId ${reservation.uniqueId}, name: ${reservation.name} already exists for hunting spot ${reservation.huntingSpot}. Not inserting.`
+        );
+        throw new Error(
+            `You already have a reservation for the ${reservation.huntingSpot} - use "/unbook" first if you want to change your reservation!`
+        );
+    } else if (isOverlapping) {
+        logger.warn(
+            `Overlapping reservation found!`
+        );
+        throw new Error(
+            `Your reservation for the ${reservation.huntingSpot}, overlaps with an existing reservation}!`
+        );
     } else {
-      let newBooking = new BookingModel({
-        huntingPlace: reservation.huntingPlace,
-        huntingSpot: reservation.huntingSpot,
-        name: reservation.name,
-        uniqueId: reservation.uniqueId,
-        serverSaveStart: reservation.serverSaveStart,
-        serverSaveEnd: reservation.serverSaveEnd,
-        start: reservation.start,
-        end: reservation.end,
-        createdAt: reservation.createdAt,
-        displaySlot: reservation.displaySlot,
-      });
+        let newBooking = new BookingModel({
+            huntingPlace: reservation.huntingPlace,
+            huntingSpot: reservation.huntingSpot,
+            name: reservation.name,
+            uniqueId: reservation.uniqueId,
+            serverSaveStart: reservation.serverSaveStart,
+            serverSaveEnd: reservation.serverSaveEnd,
+            start: reservation.start,
+            end: reservation.end,
+            createdAt: reservation.createdAt,
+            displaySlot: reservation.displaySlot,
+        });
 
-      await newBooking.save();
-      logger.info(`Booking inserted successfully.`);
+        await newBooking.save();
+        logger.info(`Booking inserted successfully.`);
     }
-  } catch (error: any) {
-    logger.error(`Error inserting booking: ${error.message}`);
-    throw error;
-  }
+
 };
 
 // export const testingInClass = async () => {
@@ -86,151 +97,151 @@ export const InsertBooking = async (reservation: Booking) => {
 //   }
 // };
 type DatabaseResult = {
-  [collectionName: string]: IBooking[];
+    [collectionName: string]: IBooking[];
 };
 
 export const getAllCollectionsAndValues = async () => {
-  const result: DatabaseResult = {}; // Object to store collections and documents
-  try {
-    const db = mongoose.connection.db;
+    const result: DatabaseResult = {}; // Object to store collections and documents
+    try {
+        const db = mongoose.connection.db;
 
-    // List all collections in the database
-    const collections = await db.listCollections().toArray();
-    const names = collections.map((e) => `${e.name}`);
+        // List all collections in the database
+        const collections = await db.listCollections().toArray();
+        const names = collections.map((e) => `${e.name}`);
 
-    logger.debug(`Found ${collections.length} collections: [${names}]`);
+        logger.debug(`Found ${collections.length} collections: [${names}]`);
 
-    // Iterate over collections
-    for (const collection of collections) {
-      const collectionName = collection.name;
+        // Iterate over collections
+        for (const collection of collections) {
+            const collectionName = collection.name;
 
-      const documents = await db
-        .collection<IBooking>(collectionName)
-        .find({ deletedAt: null })
-        .toArray();
-      result[collectionName] = documents;
-      //console.log(`Collection: ${collectionName}`);
+            const documents = await db
+                .collection<IBooking>(collectionName)
+                .find({deletedAt: null})
+                .toArray();
+            result[collectionName] = documents;
+            //console.log(`Collection: ${collectionName}`);
+        }
+        //console.log(result);
+        return result; // Return the result object with collections and documents
+    } catch (error: any) {
+        logger.error(`Error retrieving collections and values: ${error.message}`);
+    } finally {
+        logger.debug("DONE! getting all collections and documents");
+        return result;
     }
-    //console.log(result);
-    return result; // Return the result object with collections and documents
-  } catch (error: any) {
-    logger.error(`Error retrieving collections and values: ${error.message}`);
-  } finally {
-    logger.debug("DONE! getting all collections and documents");
-    return result;
-  }
 };
 
 export const getResultForSummary = async () => {
-  // mongoose.pluralize(null);
-  // await mongoose.connect(`mongodb://127.0.0.1:27017/TibiaBotReservationDB`);
-  const db = mongoose.connection.db;
-  const result: DatabaseResultForSummary = {};
-  try {
-    const collections = await db.listCollections().toArray();
-    const names = collections.map((e) => `${e.name}`);
+    // mongoose.pluralize(null);
+    // await mongoose.connect(`mongodb://127.0.0.1:27017/TibiaBotReservationDB`);
+    const db = mongoose.connection.db;
+    const result: DatabaseResultForSummary = {};
+    try {
+        const collections = await db.listCollections().toArray();
+        const names = collections.map((e) => `${e.name}`);
 
-    logger.debug(`Found ${collections.length} collections: [${names}]`);
-    for (const collection of collections) {
-      const collectionName = collection.name;
-      console.log(collectionName);
-      result[collectionName] = {};
+        logger.debug(`Found ${collections.length} collections: [${names}]`);
+        for (const collection of collections) {
+            const collectionName = collection.name;
+            //console.log(collectionName);
+            result[collectionName] = {};
 
-      const uniqueHuntingSpots = await db
-        .collection<IBooking>(collectionName)
-        .distinct("huntingSpot", { deletedAt: null });
-      for (const huntingSpot of uniqueHuntingSpots) {
-        result[collectionName][huntingSpot] = [];
-        const bookingsForHuntingSpot = await db
-          .collection<IBooking>(collectionName)
-          .find({ huntingSpot, deletedAt: null })
-          .toArray();
+            const uniqueHuntingSpots = await db
+                .collection<IBooking>(collectionName)
+                .distinct("huntingSpot", {deletedAt: null});
+            for (const huntingSpot of uniqueHuntingSpots) {
+                result[collectionName][huntingSpot] = [];
+                const bookingsForHuntingSpot = await db
+                    .collection<IBooking>(collectionName)
+                    .find({huntingSpot, deletedAt: null})
+                    .toArray();
 
-        const sortedBookings = bookingsForHuntingSpot.sort((a, b) =>
-          dayjs(a.start).diff(dayjs(b.start))
-        );
+                const sortedBookings = bookingsForHuntingSpot.sort((a, b) =>
+                    dayjs(a.start).diff(dayjs(b.start))
+                );
 
-        result[collectionName][huntingSpot] = sortedBookings;
-      }
+                result[collectionName][huntingSpot] = sortedBookings;
+            }
+        }
+        //console.log(JSON.stringify(result, null, 2));
+        return result;
+    } catch (error: any) {
+        logger.error(`Error retrieving grouped collections and values: ${error.message}`);
+    } finally {
+        logger.debug("DONE! Getting grouped collections and values");
+        return result;
     }
-    //console.log(JSON.stringify(result, null, 2));
-    return result;
-  } catch (error: any) {
-    logger.error(`Error retrieving grouped collections and values: ${error.message}`);
-  } finally {
-    logger.debug("DONE! Getting grouped collections and values");
-    return result;
-  }
 };
 
 export const getResultForGroups = async (collection: string | undefined) => {
-  //mongoose.pluralize(null);
-  //await mongoose.connect(`mongodb://127.0.0.1:27017/TibiaBotReservationDB`);
-  const db = mongoose.connection.db;
-  const result: DatabaseResultForGroup = {};
-  try {
-    const collections = await db.listCollections({ name: collection }).toArray();
-    if (!collections) {
-      logger.error(`Collection '${collection}' not found.`);
-      return result;
+    //mongoose.pluralize(null);
+    //await mongoose.connect(`mongodb://127.0.0.1:27017/TibiaBotReservationDB`);
+    const db = mongoose.connection.db;
+    const result: DatabaseResultForGroup = {};
+    try {
+        const collections = await db.listCollections({name: collection}).toArray();
+        if (!collections) {
+            logger.error(`Collection '${collection}' not found.`);
+            return result;
+        }
+        const names = collections.map((e) => `${e.name}`);
+
+        logger.debug(`Found ${collections.length} collections: [${names}]`);
+        for (const collection of collections) {
+            const collectionName = collection.name;
+            //console.log(collectionName);
+            result[collectionName] = {};
+
+            const uniqueHuntingSpots = await db
+                .collection<IBooking>(collectionName)
+                .distinct("huntingSpot", {deletedAt: null});
+            for (const huntingSpot of uniqueHuntingSpots) {
+                result[collectionName][huntingSpot] = {};
+
+                const bookingsForHuntingSpot = await db
+                    .collection<IBooking>(collectionName)
+                    .find({huntingSpot, deletedAt: null})
+                    .toArray();
+
+                for (const booking of bookingsForHuntingSpot) {
+                    const displaySlot = dayjs(booking.displaySlot).format();
+
+                    if (!result[collectionName][huntingSpot][displaySlot]) {
+                        result[collectionName][huntingSpot][displaySlot] = [];
+                    }
+
+                    result[collectionName][huntingSpot][displaySlot].push(booking);
+                }
+
+                // Sort the bookings for each displaySlot by startTime
+                for (const displaySlot in result[collectionName][huntingSpot]) {
+                    if (result[collectionName][huntingSpot].hasOwnProperty(displaySlot)) {
+                        result[collectionName][huntingSpot][displaySlot].sort((a, b) =>
+                            dayjs(a.start).diff(dayjs(b.start))
+                        );
+                    }
+                }
+                // Sort the outer object keys (displaySlot)
+                const sortedDisplaySlots = Object.keys(result[collectionName][huntingSpot]).sort((a, b) =>
+                    dayjs(a).diff(dayjs(b))
+                );
+
+                const sortedResult: any = {};
+                for (const displaySlot of sortedDisplaySlots) {
+                    sortedResult[displaySlot] = result[collectionName][huntingSpot][displaySlot];
+                }
+
+                // Update the result
+                result[collectionName][huntingSpot] = sortedResult;
+            }
+        }
+        //console.log(JSON.stringify(result, null, 2));
+        return result;
+    } catch (error: any) {
+        logger.error(`Error retrieving grouped collections and values: ${error.message}`);
+    } finally {
+        logger.debug("DONE! Getting grouped collections and values");
+        return result;
     }
-    const names = collections.map((e) => `${e.name}`);
-
-    logger.debug(`Found ${collections.length} collections: [${names}]`);
-    for (const collection of collections) {
-      const collectionName = collection.name;
-      console.log(collectionName);
-      result[collectionName] = {};
-
-      const uniqueHuntingSpots = await db
-        .collection<IBooking>(collectionName)
-        .distinct("huntingSpot", { deletedAt: null });
-      for (const huntingSpot of uniqueHuntingSpots) {
-        result[collectionName][huntingSpot] = {};
-
-        const bookingsForHuntingSpot = await db
-          .collection<IBooking>(collectionName)
-          .find({ huntingSpot, deletedAt: null })
-          .toArray();
-
-        for (const booking of bookingsForHuntingSpot) {
-          const displaySlot = dayjs(booking.displaySlot).format();
-
-          if (!result[collectionName][huntingSpot][displaySlot]) {
-            result[collectionName][huntingSpot][displaySlot] = [];
-          }
-
-          result[collectionName][huntingSpot][displaySlot].push(booking);
-        }
-
-        // Sort the bookings for each displaySlot by startTime
-        for (const displaySlot in result[collectionName][huntingSpot]) {
-          if (result[collectionName][huntingSpot].hasOwnProperty(displaySlot)) {
-            result[collectionName][huntingSpot][displaySlot].sort((a, b) =>
-              dayjs(a.start).diff(dayjs(b.start))
-            );
-          }
-        }
-        // Sort the outer object keys (displaySlot)
-        const sortedDisplaySlots = Object.keys(result[collectionName][huntingSpot]).sort((a, b) =>
-          dayjs(a).diff(dayjs(b))
-        );
-
-        const sortedResult: any = {};
-        for (const displaySlot of sortedDisplaySlots) {
-          sortedResult[displaySlot] = result[collectionName][huntingSpot][displaySlot];
-        }
-
-        // Update the result
-        result[collectionName][huntingSpot] = sortedResult;
-      }
-    }
-    console.log(JSON.stringify(result, null, 2));
-    return result;
-  } catch (error: any) {
-    logger.error(`Error retrieving grouped collections and values: ${error.message}`);
-  } finally {
-    logger.debug("DONE! Getting grouped collections and values");
-    return result;
-  }
 };

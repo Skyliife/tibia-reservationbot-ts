@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 
 export const createEmbedsForSummary = async () => {
   const data: DatabaseResultForSummary = await getResultForSummary();
-  console.log("DATA", data);
+  //console.log("DATA", data);
 
   const embeds: EmbedBuilder[] = [];
   for (const collectionName in data) {
@@ -51,7 +51,7 @@ export const createEmbedsForSummary = async () => {
 
 export const createEmbedsForGroups = async (channel: string | undefined) => {
   const data: DatabaseResultForGroup = await getResultForGroups(channel);
-  console.log("DATAHere", data);
+  //console.log("DATAHere", data);
 
   const embeds: { embed: EmbedBuilder; attachment: AttachmentBuilder }[] = [];
   for (const collectionName in data) {
@@ -70,13 +70,13 @@ export const createEmbedsForGroups = async (channel: string | undefined) => {
           //append bookings.startAt and booking.name with \n
           for (const booking of bookingsList) {
             // prettier-ignore
-            // const datePart = `${dayjs(booking.start).format("D.M")}`;
+            const datePart = `${dayjs(booking.start).format("D.M")}`;
             // prettier-ignore
             const timePart = `${dayjs(booking.start).format("HH:mm")}-${dayjs(booking.end).format("HH:mm")}`;
             // prettier-ignore
             let namePart
 
-            console.log(booking.name);
+            //console.log(booking.name);
             namePart = `${booking.name}/${userMention(booking.uniqueId)} ${time(
               dayjs(booking.createdAt).toDate(),
               "R"
@@ -92,24 +92,23 @@ export const createEmbedsForGroups = async (channel: string | undefined) => {
           }
 
           const ss = dayjs(booking);
-          const nss = dayjs(ss).add(1, "day");
+          //const nss = dayjs(ss).add(1, "day");
 
           //Fields
-          const fieldName = `${ss.format("D.M")} to ${nss.format("D.M")}`;
+          const fieldName = `Date ${ss.format("D.M.YY")}`;
           embed.addFields(
             {
               name: fieldName,
               value: value,
               inline: false,
-            },
-            { name: "\u200B", value: "\u200B" }
+            }
           );
         }
 
         //Thumbnail
         const embedWithThumbnail = await addThumbnail(embed, huntingSpawn);
 
-        console.log("EMBEEEEEED", embedWithThumbnail);
+        //console.log("EMBEEEEEED", embedWithThumbnail);
         embeds.push(embedWithThumbnail);
       }
     }
@@ -118,7 +117,7 @@ export const createEmbedsForGroups = async (channel: string | undefined) => {
   if (embeds.length > 0) {
     const lastEmbed = embeds[0].embed;
     lastEmbed.setAuthor({
-      name: `Current and upcoming hunts. Times are in Europe / Berlin}`,
+      name: `Current and upcoming hunts. Times are in Europe / Berlin`,
     });
   }
   //add Footer to last embed
