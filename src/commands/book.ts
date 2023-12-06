@@ -1,7 +1,8 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChannelType, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { SlashCommand } from "../types";
 import BookingService from "../bookingservice/booking.service";
 import logger from "../logging/logger";
+import { createEmbedsForGroups } from "../bookingservice/embed.service";
 
 const command: SlashCommand = {
   command: new SlashCommandBuilder()
@@ -38,10 +39,11 @@ const command: SlashCommand = {
       return option.setName("name").setDescription("select a name or leave empty");
     })
     .setDescription("book a hunting ground"),
+
   autocomplete: async (interaction) => {
     try {
       const focusedValue = interaction.options.getFocused();
-      // we need database values here to display the hunting grounds, dates and aviable times, in choices array!!!!
+
       const choices = [
         { name: "spot", value: "testSpot" },
         { name: "date", value: "testDate" },
@@ -60,6 +62,11 @@ const command: SlashCommand = {
   },
   execute: async (interaction: ChatInputCommandInteraction) => {
     logger.debug("Start executing /book command!");
+    const channel = interaction.channel;
+    let channelName;
+    if (channel && "name" in channel) {
+      channelName = channel.name;
+    }
     try {
       await interaction.deferReply({ ephemeral: true });
 
@@ -74,13 +81,23 @@ const command: SlashCommand = {
 
       const book = new BookingService(interaction);
       const bookedReservation = await book.tryCreateBooking();
-      if(bookedReservation.isBooked) {
+      if (bookedReservation.isBooked) {
+        interaction.channel?.messages.fetch({ limit: 100 }).then(async (msgs) => {
+          if (interaction.channel?.type === ChannelType.DM) return;
+          await interaction.channel?.bulkDelete(msgs, true);
+        });
         await interaction.editReply({
           content: `${bookedReservation.displayBookingInfo}`,
         });
+        const embedsForChannel = await createEmbedsForGroups(channelName);
+        const embedsArray = embedsForChannel.map((item) => item.embed);
+        const embedsAttachment = embedsForChannel.map((item) => item.attachment);
+        interaction.followUp({
+          embeds: embedsArray,
+          files: embedsAttachment,
+        });
       }
-
-    } catch (error:any) {
+    } catch (error: any) {
       logger.error(error.message);
       console.log(error);
       await interaction.editReply({ content: `Something went wrong...${error.message}` });

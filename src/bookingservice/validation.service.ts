@@ -1,6 +1,6 @@
 import dayjs, { Dayjs } from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { getHuntingPlaces } from "../huntingplaces/huntingplaces";
+import { getHuntingPlaceByName, getHuntingPlaces } from "../huntingplaces/huntingplaces";
 import { UserInput } from "../types";
 import logger from "../logging/logger";
 import {
@@ -14,15 +14,17 @@ import { GuildRoles } from "../enums";
 dayjs.extend(customParseFormat);
 
 class ValidationService {
-  public getValidHuntingSpot(userInputSpot: string) {
+  public getValidHuntingSpot(userInputSpot: string, place: string) {
+    const huntingPlace = getHuntingPlaceByName(place);
+    if (!huntingPlace || huntingPlace === null) {
+      logger.error(`booking huntingspawn ${userInputSpot} not allowed in ${place}`);
+      throw new Error(`you can't book hunting ground: ${userInputSpot} in Channel: ${place}`);
+    }
+
     const huntingspot = getHuntingPlaces(userInputSpot);
     if (!huntingspot || huntingspot === null) {
-      logger.error(
-        `your selected hunting ground: ${huntingspot} cannot be found`
-      );
-      throw Error(
-        `your selected hunting ground: ${huntingspot} cannot be found`
-      );
+      logger.error(`your selected hunting ground: ${huntingspot} cannot be found`);
+      throw new Error(`your selected hunting ground: ${huntingspot} cannot be found`);
     }
 
     logger.debug(`Selected Huntingspot: ${huntingspot}`);
@@ -30,12 +32,12 @@ class ValidationService {
   }
 
   public getValidDate(userInputDate: string): Dayjs {
-    const date = dayjs(userInputDate, ["DD.MM.YYYY"], true);
+    const date = dayjs(userInputDate, ["DD.MM.YYYY", "DD.M.YYYY", "D.MM.YYYY", "D.M.YYYY"], true);
     const isValidDate = date.isValid();
     if (!isValidDate) {
       logger.error(`your selected date: ${date.format()} is not valid`);
-      throw Error(
-        `your selected date: ${date.format()} is not valid! Please keep to the format like: 01.09.2023`
+      throw new Error(
+        `your selected date: ${userInputDate} is not valid! Please keep to the format like: 01.09.2023`
       );
     }
 
@@ -69,26 +71,24 @@ class ValidationService {
       return userInputName.trim();
     }
 
-    if (guildName && guildName.trim() !== "") {
-      logger.debug(`Selected Username: ${guildName.trim()}`);
-      return guildName.trim();
-    }
+    // if (guildName && guildName.trim() !== "") {
+    //   logger.debug(`Selected Username: ${guildName.trim()}`);
+    //   return guildName.trim();
+    // }
 
-    if (interactionUserName && interactionUserName.trim() !== "") {
-      logger.debug(`Selected Username: ${interactionUserName.trim()}`);
-      return interactionUserName.trim();
-    }
-    logger.debug(`returning default name: ${interactionUserName.trim()}`);
-    return interactionUserName.trim();
+    // if (interactionUserName && interactionUserName.trim() !== "") {
+    //   logger.debug(`Selected Username: ${interactionUserName.trim()}`);
+    //   return "";
+    // }
+    // logger.debug(`returning default name: ${interactionUserName.trim()}`);
+    const defaultName = "default";
+    logger.debug(`Selected Username: ${defaultName.trim()}`);
+    return "default";
   }
 
-  public getValidReservation(
-    reservation: UserInput,
-    role: GuildRoles
-  ): Booking | undefined {
+  public getValidReservation(reservation: UserInput, role: GuildRoles): Booking | undefined {
     const { place, spot, date, start, end, name, uniqueId } = reservation;
-    const [serverSaveStart, serverSaveEnd, duration] =
-      this.getServerSaveTimesFromGodRules(role);
+    const [serverSaveStart, serverSaveEnd, duration] = this.getServerSaveTimesFromGodRules(role);
     logger.debug(
       `Role: ${role} Server Save Start: ${serverSaveStart.format()}; Server Save End: ${serverSaveEnd.format()}`
     );
@@ -123,40 +123,22 @@ class ValidationService {
     serverSaveEnd: Dayjs,
     duration: number
   ) => {
-    const isValidStart = this.isDateBetweenSS(
-      start,
-      serverSaveStart,
-      serverSaveEnd
-    );
+    const isValidStart = this.isDateBetweenSS(start, serverSaveStart, serverSaveEnd);
     if (!isValidStart) {
-      throw new Error(
-        `Your selected start time ${start.format()} is not within the god rules`
-      );
+      throw new Error(`Your selected start time ${start.format()} is not within the god rules`);
     }
-    const isValidEnd = this.isDateBetweenSS(
-      end,
-      serverSaveStart,
-      serverSaveEnd
-    );
+    const isValidEnd = this.isDateBetweenSS(end, serverSaveStart, serverSaveEnd);
     if (!isValidStart) {
-      throw new Error(
-        `Your selected end time ${end.format()} is not within the god rules`
-      );
+      throw new Error(`Your selected end time ${end.format()} is not within the god rules`);
     }
-    const isValidDuration = this.isValidReservationDuration(
-      start,
-      end,
-      duration
-    );
+    const isValidDuration = this.isValidReservationDuration(start, end, duration);
 
     const result = isValidStart && isValidEnd && isValidDuration;
 
     return result;
   };
 
-  private getServerSaveTimesFromGodRules = (
-    role: GuildRoles
-  ): [any, any, any] => {
+  private getServerSaveTimesFromGodRules = (role: GuildRoles): [any, any, any] => {
     var now = dayjs();
 
     var serverSaveStart;
@@ -192,11 +174,7 @@ class ValidationService {
     }
     return [serverSaveStart, serverSaveEnd, duration];
   };
-  private isValidReservationDuration = (
-    start: Dayjs,
-    end: Dayjs,
-    duration: number
-  ) => {
+  private isValidReservationDuration = (start: Dayjs, end: Dayjs, duration: number) => {
     // Check if the difference in hours between start and end is less than or equal to 2
     const durationInMinutes = end.diff(start, "minute");
 
@@ -226,10 +204,7 @@ class ValidationService {
     return pattern.test(inputString);
   };
 
-  private parseStartTime = (
-    validDate: Dayjs,
-    userInputStart: string
-  ): Dayjs => {
+  private parseStartTime = (validDate: Dayjs, userInputStart: string): Dayjs => {
     var inputTime = userInputStart.split(":");
     var inputHours = parseInt(inputTime[0], 10);
     var inputMinutes = parseInt(inputTime[1], 10);
@@ -241,11 +216,7 @@ class ValidationService {
     return result;
   };
 
-  private parseEndTime = (
-    validDate: Dayjs,
-    startDate: Dayjs,
-    userInputStart: string
-  ): Dayjs => {
+  private parseEndTime = (validDate: Dayjs, startDate: Dayjs, userInputStart: string): Dayjs => {
     var inputTime = userInputStart.split(":");
     var inputHours = parseInt(inputTime[0], 10);
     var inputMinutes = parseInt(inputTime[1], 10);

@@ -13,9 +13,10 @@ export const InsertBooking = async (reservation: Booking) => {
       uniqueId: reservation.uniqueId,
       deletedAt: null,
     });
-    console.log("---------------------------------------------",existing);
-
-    if (existing) {
+    console.log("---------------------------------------------", existing);
+    //const dev = existing;
+    const dev = false;
+    if (dev) {
       logger.warn(
         `Booking with uniqueId ${reservation.uniqueId}, name: ${reservation.name} already exists for hunting spot ${reservation.huntingSpot}. Not inserting.`
       );
@@ -107,7 +108,7 @@ export const getAllCollectionsAndValues = async () => {
         .collection<IBooking>(collectionName)
         .find({ deletedAt: null })
         .toArray();
-      result[collectionName] = documents; // Store documents in the result object
+      result[collectionName] = documents;
       //console.log(`Collection: ${collectionName}`);
     }
     //console.log(result);
@@ -193,7 +194,7 @@ export const getResultForGroups = async (collection: string | undefined) => {
           .toArray();
 
         for (const booking of bookingsForHuntingSpot) {
-          const displaySlot = dayjs(booking.displaySlot).format(); // Format the displaySlot if needed
+          const displaySlot = dayjs(booking.displaySlot).format();
 
           if (!result[collectionName][huntingSpot][displaySlot]) {
             result[collectionName][huntingSpot][displaySlot] = [];
