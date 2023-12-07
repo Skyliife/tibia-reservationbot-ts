@@ -5,7 +5,7 @@ import { join } from "path";
 import { SlashCommand } from "../types";
 import logger from "../logging/logger";
 
-module.exports = (client: Client) => {
+module.exports = async (client: Client) => {
   const slashCommands: SlashCommandBuilder[] = [];
 
   let slashCommandsDir = join(__dirname, "../commands");
@@ -34,15 +34,12 @@ module.exports = (client: Client) => {
   //     console.log("Successfully deleted all application commands.");
   //   })
   //   .catch(console.error);
-
-  rest
-    .put(Routes.applicationGuildCommands(process.env.CLIENTID, process.env.GUILDTESTSERVER), {
+  console.log(process.env.GUILDTESTSERVER);
+  const result = await rest.put(
+    Routes.applicationGuildCommands(process.env.CLIENTID, "1170750240752672768"),
+    {
       body: slashCommands.map((command) => command.toJSON()),
-    })
-    .then((data: any) => {
-      logger.info(`Successfully loaded ${data.length} slash command(s)`);
-    })
-    .catch((e) => {
-      logger.error(e);
-    });
+    }
+  );
+  logger.info(`Successfully loaded ${slashCommands.length} slash command(s)`);
 };
