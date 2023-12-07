@@ -34,7 +34,7 @@ module.exports = async (client: Client) => {
   //     console.log("Successfully deleted all application commands.");
   //   })
   //   .catch(console.error);
-  console.log(process.env.GUILDTESTSERVER);
+
   const result = await rest.put(
     Routes.applicationGuildCommands(process.env.CLIENTID, "1170750240752672768"),
     {

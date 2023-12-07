@@ -94,7 +94,7 @@ function getFormatedTimeRange(role: string) {
     const values = getTimeRangeForUser(role);
     const results: any = [];
     values.forEach((element) => {
-        console.log(element);
+        // console.log(element);
         // Manipulate each element as needed
 
 
@@ -115,9 +115,9 @@ function getTimeRangeForUser(role: string) {
     nextDayEndTime.setHours(23, 59, 59, 999);
 
     const dates = [];
-    console.log("currentDate", currentDate);
-    console.log("currentdateStart", currentdateStart);
-    console.log("nextDayEndTime", nextDayEndTime);
+    // console.log("currentDate", currentDate);
+    // console.log("currentdateStart", currentdateStart);
+    // console.log("nextDayEndTime", nextDayEndTime);
 
     dates.push(currentDate);
 

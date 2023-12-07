@@ -11,7 +11,7 @@ const BookingSchema = new Schema<IBooking>({
   start: { type: Date, required: true },
   end: { type: Date, required: true },
   createdAt: { type: Date, required: true },
-  deletedAt: { type: String, default: null },
+  deletedAt: { type: Date, default: null },
   displaySlot: { type: Date, required: true },
 });
 
