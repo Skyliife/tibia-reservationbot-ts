@@ -23,7 +23,7 @@ export const createChart = async () => {
         return {label: key, value: percentage};
     });
 
-    const canvas: any = createCanvas(1000, 800);
+    const canvas: any = createCanvas(1000, 600);
 
 
     const ctx = canvas.getContext('2d');
@@ -86,13 +86,13 @@ export const createChart = async () => {
             ],
         },
         options: {
-
+            maintainAspectRatio: false,
             layout: {
                 padding: {
-                    left: 130,
-                    right: 130,
-                    top: 130,
-                    bottom: 130,
+                    left: 230,
+                    right: 230,
+                    top: 50,
+                    bottom: 50,
                 },
             },
             plugins: {
@@ -108,7 +108,7 @@ export const createChart = async () => {
                 },
             },
         },
-        plugins: [plugin],
+        //plugins: [plugin],
     }
 
     );
@@ -126,3 +126,5 @@ export const createChart = async () => {
     const buffer = canvas.toBuffer('image/png');
     fs.writeFileSync(filePath, buffer);
 }
+
+
