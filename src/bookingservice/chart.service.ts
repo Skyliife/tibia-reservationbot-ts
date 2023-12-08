@@ -35,7 +35,7 @@ export const createChart = async () => {
             const {ctx} = chart;
             ctx.save();
             ctx.globalCompositeOperation = 'destination-over';
-            ctx.fillStyle = options.color || '#99ffff';
+            ctx.fillStyle = options.color || '#424549';
             ctx.fillRect(0, 0, chart.width, chart.height);
             ctx.restore();
         }
@@ -51,7 +51,7 @@ export const createChart = async () => {
                     datalabels: {
                         labels: {
                             index: {
-                                backgroundColor: '#424549',
+
                                 color: '#fff',
                                 font: {
                                     size: 22,
@@ -69,7 +69,7 @@ export const createChart = async () => {
                                 font: {
                                     size: 20,
                                 },
-                                backgroundColor: '#404040',
+                                backgroundColor: '#424549',
                                 borderRadius: 4,
                                 offset: 0,
                                 padding: 2,
