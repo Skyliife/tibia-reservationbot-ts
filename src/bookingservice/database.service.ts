@@ -152,6 +152,8 @@ type DatabaseResult = {
 };
 
 export const getAllCollectionsAndValues = async () => {
+    mongoose.pluralize(null);
+    await mongoose.connect(`mongodb://127.0.0.1:27017/TibiaBotReservationDB`);
     const result: DatabaseResult = {}; // Object to store collections and documents
     try {
         const db = mongoose.connection.db;

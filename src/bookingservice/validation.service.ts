@@ -47,7 +47,6 @@ class ValidationService {
 
   public getValidStart(validDate: Dayjs, userInputStart: string): Dayjs {
     this.isTimeFormatValid(userInputStart);
-
     const result = this.parseStartTime(validDate, userInputStart);
     logger.debug(`Selected Start Date: ${result.format()}`);
     return result;
@@ -203,10 +202,10 @@ class ValidationService {
 
   private isTimeFormatValid = (inputString: string) => {
     // Define the regex pattern for 24-hour time format
-    var pattern = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
+    var pattern = /^(?:2[0-3]|1[0-9]|0?[0-9]):[0-5]\d$/;
     if (!pattern.test(inputString)) {
       throw new Error(
-        `Your input time ${inputString} has not the right format: type something like 00:50, 12:30 or 23:59`
+        `Your input time ${inputString} has not the right format \"hh:mm\": type something like 00:50, 12:30 or 23:59`
       );
     }
     return pattern.test(inputString);

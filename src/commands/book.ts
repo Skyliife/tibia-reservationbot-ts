@@ -4,7 +4,8 @@ import {
     ChannelType,
     ChatInputCommandInteraction,
     GuildMember,
-    SlashCommandBuilder
+    SlashCommandBuilder,
+    TextChannel
 } from "discord.js";
 import {SlashCommand} from "../types";
 import BookingService from "../bookingservice/booking.service";
@@ -13,6 +14,7 @@ import {createEmbedsForGroups} from "../bookingservice/embed.service";
 import {getChoicesForDate, getChoicesForTime} from "../utils";
 import {getChoicesForSpot, getHuntingPlaceByName} from "../huntingplaces/huntingplaces";
 import {GuildRoles} from "../enums";
+import {createChart} from "../bookingservice/chart.service";
 
 const optionNames = {
     spot: "spot",
@@ -114,6 +116,13 @@ const command: SlashCommand = {
                     if (interaction.channel?.type === ChannelType.DM) return;
                     await interaction.channel?.bulkDelete(msgs, true);
                 });
+                await createChart();
+                const channelToSend = member.guild.channels.cache.find((channel:any) => channel.name === "claims") as TextChannel;
+                if (channelToSend !== undefined) {
+                    await channelToSend.bulkDelete(100, true);
+                    await channelToSend.send({files: [{attachment: '../tibia-reservationbot-ts/build/img/currentCapacities.png'}]})
+                }
+
 
                 await interaction.editReply({
                     content: `${bookedReservation.displayBookingInfo}`,
