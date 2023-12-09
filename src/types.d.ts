@@ -67,6 +67,8 @@ declare global {
       DBURI: string;
       DBNAME: string;
       GUILDTESTSERVER: string;
+      DBUSER:string;
+      DBPASS:string;
     }
   }
 }

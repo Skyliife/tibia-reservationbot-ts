@@ -34,7 +34,7 @@ const command: SlashCommand = {
         const dataToDelete = choices.find((choice) => choice.formattedString === input);
 
         try {
-            await interaction.deferReply({ ephemeral: true });
+            await interaction.deferReply({ephemeral: true});
 
             if (dataToDelete && channelName !== undefined) {
                 await deleteReservation(interaction, dataToDelete);
@@ -66,21 +66,25 @@ const fetchAndSetChoices = async (channelName: string | undefined, userId: strin
     try {
         choices = await getBookingsForUserId(channelName, userId);
         if (choices.length === 0) {
-            choices = [{ formattedString: "No reservation found", reservation: null }];
+            choices = [{formattedString: "No reservation found", reservation: null}];
         }
     } catch (error: any) {
         logger.error(error.message);
     }
 };
 
-const deleteReservation = async (interaction: ChatInputCommandInteraction, dataToDelete: { reservation?: IBooking | null }) => {
+const deleteReservation = async (interaction: ChatInputCommandInteraction, dataToDelete: {
+    reservation?: IBooking | null
+}) => {
     const channelName = fetchChannelName(interaction.channel);
     const huntingSpot = dataToDelete.reservation?.huntingSpot;
+    const start = dataToDelete.reservation?.start;
+    const end = dataToDelete.reservation?.end;
 
-    if (huntingSpot !== undefined && channelName !== undefined) {
-        await deleteBookingsForUserId(channelName, huntingSpot, interaction.user.id);
+    if (huntingSpot !== undefined && channelName !== undefined && start !== undefined && end !== undefined) {
+        await deleteBookingsForUserId(channelName, huntingSpot, interaction.user.id, start, end);
 
-        await interaction.channel?.messages.fetch({ limit: 100 }).then(async (msgs) => {
+        await interaction.channel?.messages.fetch({limit: 100}).then(async (msgs) => {
             if (interaction.channel?.type === ChannelType.DM) return;
             await interaction.channel?.bulkDelete(msgs, true);
         });

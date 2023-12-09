@@ -96,11 +96,9 @@ function getFormatedTimeRange(role: string) {
     values.forEach((element) => {
         // console.log(element);
         // Manipulate each element as needed
+        const date = dayjs(element);
 
-
-        // Push the manipulated element into the new array
-
-        results.push(element.toLocaleDateString());
+        results.push(date.format("DD.MM.YYYY"));
     });
     return results;
 }

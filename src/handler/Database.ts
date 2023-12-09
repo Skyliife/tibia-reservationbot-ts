@@ -6,7 +6,7 @@ module.exports = () => {
   if (!MONGO_URI) return logger.info(`Mongo URI not found, skipping.`);
   mongoose.pluralize(null);
   mongoose
-    .connect(`${MONGO_URI}/${process.env.DBNAME}`)
+    .connect("mongodb://vmi1535787.contaboserver.net/TibiaReservationDB",{user:"tibiabot", pass:"77!%+y~mD{TZAq0|ia~",authSource:"admin"})
     .then(() => logger.info(`MongoDB connection has been established.`))
-    .catch(() => logger.error(`MongoDB connection has been failed.`));
+    .catch((error) => {logger.error(`MongoDB connection has been failed.`); console.log(error)});
 };

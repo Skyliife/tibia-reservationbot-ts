@@ -3,11 +3,12 @@ import logger from "../logging/logger";
 import BookingSchema from "../schemas/Booking";
 import Booking from "./booking";
 import {DatabaseResultForGroup, DatabaseResultForSummary, IBooking} from "../types";
-import dayjs from "dayjs";
+import dayjs, {Dayjs} from "dayjs";
 import {isCurrentReservationOverlappingWithExistingReservations} from "../utils";
 
 export const InsertBooking = async (reservation: Booking) => {
     const BookingModel = model<IBooking>("booking", BookingSchema, reservation.huntingPlace);
+
     const existing = await BookingModel.findOne({
         huntingSpot: reservation.huntingSpot,
         uniqueId: reservation.uniqueId,
@@ -84,13 +85,15 @@ export const getBookingsForUserId = async (collectionName: string | undefined, u
 export const deleteBookingsForUserId = async (
     collectionName: string,
     huntingSpot: string,
-    userId: string
+    userId: string,
+    start:Dayjs,
+    end:Dayjs
 ) => {
     try {
         // Get bookings for the specified userId
         const BookingModel = model<IBooking>("booking", BookingSchema, collectionName);
 
-        const bookingToDelete = await BookingModel.find({uniqueId: userId, deletedAt: null, huntingSpot: huntingSpot});
+        const bookingToDelete = await BookingModel.find({uniqueId: userId, deletedAt: null, huntingSpot: huntingSpot, start: start, end:end});
 
         if (bookingToDelete === undefined) throw new Error("Error deleting bookings");
         const updateResult = await BookingModel.updateMany(
@@ -152,8 +155,8 @@ type DatabaseResult = {
 };
 
 export const getAllCollectionsAndValues = async () => {
-    mongoose.pluralize(null);
-    await mongoose.connect(`mongodb://127.0.0.1:27017/TibiaBotReservationDB`);
+    //mongoose.pluralize(null);
+    //await mongoose.connect(`mongodb://127.0.0.1:27017/TibiaBotReservationDB`);
     const result: DatabaseResult = {}; // Object to store collections and documents
     try {
         const db = mongoose.connection.db;
