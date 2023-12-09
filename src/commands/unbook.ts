@@ -1,8 +1,16 @@
-import {ChannelType, ChatInputCommandInteraction, SlashCommandBuilder} from "discord.js";
+import {
+    CacheType,
+    CacheTypeReducer,
+    ChannelType,
+    ChatInputCommandInteraction, GuildMember,
+    SlashCommandBuilder,
+    TextChannel
+} from "discord.js";
 import {IBooking, SlashCommand} from "../types";
 import {deleteBookingsForUserId, getBookingsForUserId} from "../bookingservice/database.service";
 import {createEmbedsForGroups} from "../bookingservice/embed.service";
 import logger from "../logging/logger";
+import {createChart} from "../bookingservice/chart.service";
 
 let choices: { formattedString: string; reservation: IBooking | null }[] = [];
 
@@ -80,6 +88,7 @@ const deleteReservation = async (interaction: ChatInputCommandInteraction, dataT
     const huntingSpot = dataToDelete.reservation?.huntingSpot;
     const start = dataToDelete.reservation?.start;
     const end = dataToDelete.reservation?.end;
+    const member: CacheTypeReducer<CacheType, GuildMember, any> = interaction.member;
 
     if (huntingSpot !== undefined && channelName !== undefined && start !== undefined && end !== undefined) {
         await deleteBookingsForUserId(channelName, huntingSpot, interaction.user.id, start, end);
@@ -88,7 +97,12 @@ const deleteReservation = async (interaction: ChatInputCommandInteraction, dataT
             if (interaction.channel?.type === ChannelType.DM) return;
             await interaction.channel?.bulkDelete(msgs, true);
         });
-
+        await createChart();
+        const channelToSend = member.guild.channels.cache.find((channel:any) => channel.name === "summary") as TextChannel;
+        if (channelToSend !== undefined) {
+            await channelToSend.bulkDelete(100, true);
+            await channelToSend.send({files: [{attachment: '../tibia-reservationbot-ts/build/img/currentCapacities.png'}]})
+        }
         await interaction.editReply({
             content: `Your reservation ${dataToDelete.reservation?.huntingSpot} has been deleted`,
         });
