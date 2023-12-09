@@ -51,7 +51,8 @@ export const createChart = async () => {
                     datalabels: {
                         labels: {
                             index: {
-
+                                //@ts-ignore
+                                backgroundColor: (ctx) => ctx.dataset.backgroundColor,
                                 color: '#fff',
                                 font: {
                                     size: 22,
@@ -114,15 +115,12 @@ export const createChart = async () => {
     );
 
     const relativeImgFolderPath = path.join(__dirname, '../img');
-    console.log("__dirname",__dirname);
-    console.log("relativeImgFolderPath",relativeImgFolderPath);
 
     if (!fs.existsSync(relativeImgFolderPath)) {
         fs.mkdirSync(relativeImgFolderPath);
     }
 
     const filePath = path.join(relativeImgFolderPath, 'currentCapacities.png');
-    console.log("filePath",filePath)
     const buffer = canvas.toBuffer('image/png');
     fs.writeFileSync(filePath, buffer);
 }
