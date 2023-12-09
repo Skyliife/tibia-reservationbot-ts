@@ -53,7 +53,8 @@ export const createChart = async () => {
                             index: {
                                 //@ts-ignore
                                 backgroundColor: (ctx) => ctx.dataset.backgroundColor,
-                                color: '#fff',
+                                borderRadius: 4,
+                                color: '#000',
                                 font: {
                                     size: 22,
                                 },
