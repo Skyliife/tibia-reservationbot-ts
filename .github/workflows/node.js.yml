@@ -32,7 +32,7 @@ jobs:
         run: |
           echo "DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}" >> $GITHUB_ENV
           echo "CLIENTID=${{ secrets.CLIENTID }}" >> $GITHUB_ENV
-          echo "GUILDSERVER=${{ secrets.GUILDTESTSERVER }}" >> $GITHUB_ENV
+          echo "GUILDSERVER=${{ secrets.GUILDSERVER }}" >> $GITHUB_ENV
           echo "DBURI=${{ secrets.DBURI }}" >> $GITHUB_ENV
           echo "DBNAME=${{ secrets.DBNAME }}" >> $GITHUB_ENV
           echo "DBUSER=${{ secrets.DBUSER }}" >> $GITHUB_ENV
