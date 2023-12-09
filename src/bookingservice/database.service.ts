@@ -25,8 +25,8 @@ export const InsertBooking = async (reservation: Booking) => {
     );
 
     logger.info(`Reservation is overlapping: ${isOverlapping}`);
-    //const dev = existing;
-    const dev = false;
+    const dev = existing;
+    //const dev = false;
     if (dev) {
         logger.warn(
             `Booking with uniqueId ${reservation.uniqueId}, name: ${reservation.name} already exists for hunting spot ${reservation.huntingSpot}. Not inserting.`
