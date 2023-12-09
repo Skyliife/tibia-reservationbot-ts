@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "start": "npm run build && npm test && npm run start-app",
-    "deploy-commands": "node deploy-commands.js",
+    "dev": "npm run build && npm run start-app",
     "build": "tsc",
     "start-app": "node ./build/main.js"
   },
@@ -20,6 +20,7 @@
     "typescript": "^5.3.2"
   },
   "dependencies": {
+    "dayjs": "^1.11.10",
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.1",
     "mongoose": "^8.0.1",

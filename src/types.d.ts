@@ -1,3 +1,4 @@
+import { Dayjs } from "dayjs";
 import {
   SlashCommandBuilder,
   CommandInteraction,
@@ -8,13 +9,56 @@ import {
   ChatInputCommandInteraction,
 } from "discord.js";
 
+////////////////////////////////////////////////////////////////////////////////////////////////
+//                                          INTERFACES                                        //
+////////////////////////////////////////////////////////////////////////////////////////////////
 export interface SlashCommand {
   command: SlashCommandBuilder;
   execute: (interaction: ChatInputCommandInteraction) => void;
   autocomplete?: (interaction: AutocompleteInteraction) => void;
-  modal?: (interaction: ModalSubmitInteraction<CacheType>) => void;
   cooldown?: number; // in seconds
 }
+
+export interface Event {
+  name: string;
+  once?: boolean | false;
+  execute: (...args) => void;
+}
+export interface UserInput {
+  place: string;
+  spot: string;
+  date: Dayjs;
+  start: Dayjs;
+  end: Dayjs;
+  name: string;
+  uniqueId: string;
+}
+
+export interface IBooking extends mongoose.Document {
+  huntingPlace: string;
+  huntingSpot: string;
+  name: string;
+  uniqueId: string;
+  serverSaveStart: Dayjs;
+  serverSaveEnd: Dayjs;
+  start: Dayjs;
+  end: Dayjs;
+  createdAt: Dayjs;
+  deletedAt: any;
+  displaySlot: Dayjs;
+}
+export type DatabaseResultForSummary = {
+  [huntingPlace: string]: {
+    [huntingSpot: string]: IBooking[];
+  };
+};
+export type DatabaseResultForGroup = {
+  [huntingPlace: string]: {
+    [huntingSpot: string]: {
+      [displaySlot: string]: IBooking[];
+    };
+  };
+};
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
@@ -30,21 +74,5 @@ declare global {
 declare module "discord.js" {
   export interface Client {
     slashCommands: Collection<string, SlashCommand>;
-    commands: Collection<string, Command>;
-    cooldowns: Collection<string, number>;
   }
-}
-
-export interface Event {
-  name: string;
-  once?: boolean | false;
-  execute: (...args) => void;
-}
-
-export enum GuildRoles {
-  Verified = "Verified",
-  VIP = "VIP",
-  GodsMember = "Gods Member",
-  Gods = "GODS",
-  Bazant = "BAZANT",
 }
