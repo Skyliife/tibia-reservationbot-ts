@@ -3,24 +3,28 @@ import logger from "../logging/logger";
 import BookingSchema from "../schemas/Booking";
 import Booking from "./booking";
 import {DatabaseResultForGroup, DatabaseResultForSummary, IBooking} from "../types";
-import dayjs from "dayjs";
+import dayjs, {Dayjs} from "dayjs";
 import {isCurrentReservationOverlappingWithExistingReservations} from "../utils";
 
 export const InsertBooking = async (reservation: Booking) => {
-
     const BookingModel = model<IBooking>("booking", BookingSchema, reservation.huntingPlace);
+
     const existing = await BookingModel.findOne({
         huntingSpot: reservation.huntingSpot,
         uniqueId: reservation.uniqueId,
         deletedAt: null,
     });
+
     const existingReservationsForHuntingSpot = await BookingModel.find({
         huntingSpot: reservation.huntingSpot,
         deletedAt: null,
-    })
-    const isOverlapping = isCurrentReservationOverlappingWithExistingReservations(reservation, existingReservationsForHuntingSpot)
-    console.log("---------------------------------------------", existing);
-    logger.info(`isOverlapping: ${isOverlapping}`);
+    });
+    const isOverlapping = isCurrentReservationOverlappingWithExistingReservations(
+        reservation,
+        existingReservationsForHuntingSpot
+    );
+
+    logger.info(`Reservation is overlapping: ${isOverlapping}`);
     //const dev = existing;
     const dev = false;
     if (dev) {
@@ -28,12 +32,10 @@ export const InsertBooking = async (reservation: Booking) => {
             `Booking with uniqueId ${reservation.uniqueId}, name: ${reservation.name} already exists for hunting spot ${reservation.huntingSpot}. Not inserting.`
         );
         throw new Error(
-            `You already have a reservation for the ${reservation.huntingSpot} - use "/unbook" first if you want to change your reservation!`
+            `You already have a current reservation for huntinspot: ${reservation.huntingSpot} - use "/unbook" first if you want to change your reservation!`
         );
     } else if (isOverlapping) {
-        logger.warn(
-            `Overlapping reservation found!`
-        );
+        logger.warn(`Overlapping reservation found!`);
         throw new Error(
             `Your reservation for the ${reservation.huntingSpot}, overlaps with an existing reservation}!`
         );
@@ -54,7 +56,59 @@ export const InsertBooking = async (reservation: Booking) => {
         await newBooking.save();
         logger.info(`Booking inserted successfully.`);
     }
+};
 
+export const getBookingsForUserId = async (collectionName: string | undefined, userId: string) => {
+    const formattedArray: { formattedString: string; reservation: IBooking }[] = [];
+    try {
+        if (collectionName === undefined) return formattedArray;
+        const BookingModel = model<IBooking>("booking", BookingSchema, collectionName);
+        //console.log(bookings.map((e) => e.uniqueId));
+        const result = await BookingModel.find({uniqueId: userId, deletedAt: null}).sort({
+            start: 1,
+        });
+        result.forEach((item) => {
+            const {huntingPlace, huntingSpot, start, end} = item;
+            const formattedString = `Reservation ${huntingSpot} - from ${dayjs(start).format("D.M HH:mm")} to ${dayjs(end).format("D.M HH:mm")}`;
+            formattedArray.push({formattedString:formattedString, reservation: item});
+        })
+
+
+        return formattedArray;
+    } catch (error: any) {
+        logger.error(`Error retrieving bookings for userId ${userId}: ${error.message}`);
+        throw new Error(error.message);
+    } finally {
+    }
+};
+
+export const deleteBookingsForUserId = async (
+    collectionName: string,
+    huntingSpot: string,
+    userId: string,
+    start:Dayjs,
+    end:Dayjs
+) => {
+    try {
+        // Get bookings for the specified userId
+        const BookingModel = model<IBooking>("booking", BookingSchema, collectionName);
+
+        const bookingToDelete = await BookingModel.find({uniqueId: userId, deletedAt: null, huntingSpot: huntingSpot, start: start, end:end});
+
+        if (bookingToDelete === undefined) throw new Error("Error deleting bookings");
+        const updateResult = await BookingModel.updateMany(
+            {_id: {$in: bookingToDelete.map((booking) => booking._id)}},
+            {$set: {deletedAt: dayjs()}}
+        );
+
+        logger.info(`Bookings for userId ${userId} marked as deleted.`);
+    } catch (error: any) {
+        // Handle errors appropriately (e.g., log or throw)
+        logger.error(`Error deleting bookings for userId ${userId}: ${error.message}`);
+        throw new Error(`Error deleting bookings for userId ${userId}: ${error.message}`);
+    } finally {
+        logger.info("deleted reservation");
+    }
 };
 
 // export const testingInClass = async () => {
@@ -101,6 +155,8 @@ type DatabaseResult = {
 };
 
 export const getAllCollectionsAndValues = async () => {
+    //mongoose.pluralize(null);
+    //await mongoose.connect(`mongodb://127.0.0.1:27017/TibiaBotReservationDB`);
     const result: DatabaseResult = {}; // Object to store collections and documents
     try {
         const db = mongoose.connection.db;

@@ -410,6 +410,24 @@ const Weremonster = {
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
 
+const warzone7 = {
+    location: "Warzone-7-9",
+    choices: [
+        {
+            name: "Warzone 7",
+            link: "https://tibia.fandom.com/wiki/Secret_Library#Fire_Section",
+        },
+        {
+            name: "Warzone 8",
+            link: "https://tibia.fandom.com/wiki/Secret_Library#Fire_Section",
+        },
+        {
+            name: "Warzone 9",
+            link: "https://tibia.fandom.com/wiki/Secret_Library#Fire_Section",
+        }
+    ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
+};
+
 export const getHuntingPlaceByName = (locationName: string) => {
     const locations = [
         Asuras,
@@ -496,8 +514,8 @@ export const getChoicesForSpot = (locationName: string | undefined): { name: str
     if (!matchedLocation) {
         return [];
     }
-    console.log(matchedLocation)
-    console.log(matchedLocation.choices.map((choice) => ({name: choice.name, value: choice.name})))
+    //console.log(matchedLocation)
+    //console.log(matchedLocation.choices.map((choice) => ({name: choice.name, value: choice.name})))
 
     return matchedLocation.choices.map((choice) => ({name: choice.name, value: choice.name}));
 };

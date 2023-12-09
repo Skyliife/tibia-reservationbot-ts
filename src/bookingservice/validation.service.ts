@@ -47,7 +47,6 @@ class ValidationService {
 
   public getValidStart(validDate: Dayjs, userInputStart: string): Dayjs {
     this.isTimeFormatValid(userInputStart);
-
     const result = this.parseStartTime(validDate, userInputStart);
     logger.debug(`Selected Start Date: ${result.format()}`);
     return result;
@@ -57,6 +56,9 @@ class ValidationService {
     this.isTimeFormatValid(userInputEnd);
 
     const result = this.parseEndTime(validDate, startDate, userInputEnd);
+    if (result.isBefore(dayjs())){
+      throw new Error("your selected end date is in the past");
+    }
     logger.debug(`Selected End Date: ${result.format()}`);
     return result;
   }
@@ -99,6 +101,7 @@ class ValidationService {
       serverSaveEnd,
       duration
     );
+    console.log(finalReservation);
     if (finalReservation) {
       const booking = new Booking(
         place,
@@ -124,12 +127,16 @@ class ValidationService {
     duration: number
   ) => {
     const isValidStart = this.isDateBetweenSS(start, serverSaveStart, serverSaveEnd);
+    console.log("isValidStart",isValidStart);
+    console.log("")
+
     if (!isValidStart) {
-      throw new Error(`Your selected start time ${start.format()} is not within the god rules`);
+      throw new Error(`Your selected start time ${start.format("D.M HH:mm")} is not within the god rules`);
     }
     const isValidEnd = this.isDateBetweenSS(end, serverSaveStart, serverSaveEnd);
-    if (!isValidStart) {
-      throw new Error(`Your selected end time ${end.format()} is not within the god rules`);
+    console.log("isValidEnd",isValidEnd)
+    if (!isValidEnd) {
+      throw new Error(`Your selected end time ${end.format("D.M HH:mm")} is not within the god rules`);
     }
     const isValidDuration = this.isValidReservationDuration(start, end, duration);
 
@@ -186,19 +193,19 @@ class ValidationService {
   };
 
   private isDateBetweenSS = (date: Dayjs, start: Dayjs, end: Dayjs) => {
-    console.log("datetobook", date.format());
-    console.log("startServerSave", start.format());
-    console.log("endServerSave", end.format());
-    console.log("isbetween", date.isBetween(start, end, null, "[]"));
+    // console.log("datetobook", date.format());
+    // console.log("startServerSave", start.format());
+    // console.log("endServerSave", end.format());
+    // console.log("isbetween", date.isBetween(start, end, null, "[]"));
     return date.isBetween(start, end, null, "[]");
   };
 
   private isTimeFormatValid = (inputString: string) => {
     // Define the regex pattern for 24-hour time format
-    var pattern = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
+    var pattern = /^(?:2[0-3]|1[0-9]|0?[0-9]):[0-5]\d$/;
     if (!pattern.test(inputString)) {
       throw new Error(
-        `Your input time ${inputString} has not the right format: type something like 00:50, 12:30 or 23:59`
+        `Your input time ${inputString} has not the right format \"hh:mm\": type something like 00:50, 12:30 or 23:59`
       );
     }
     return pattern.test(inputString);

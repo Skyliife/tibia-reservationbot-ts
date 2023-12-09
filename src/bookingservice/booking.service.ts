@@ -55,6 +55,7 @@ class BookingService {
 
   public tryCreateBooking = async () => {
     const reservation = this.validateServerRules();
+    console.log(reservation);
     if (reservation !== undefined) {
       await InsertBooking(reservation);
       const embeds = await this.getEmbeds(reservation.huntingPlace);
@@ -66,7 +67,7 @@ class BookingService {
       };
     } else {
       logger.error("Reservation can not be inserted to database!");
-      throw new Error("Something went wrong... Please try again");
+      throw new Error("Reservation can not be inserted to database!");
     }
   };
 
@@ -114,7 +115,7 @@ class BookingService {
     ];
     for (const roleToCheck of rolePriority) {
       if (this.member.roles.cache.some((role: any) => role.name === roleToCheck)) {
-        //console.log(roleToCheck);
+        console.log(roleToCheck);
         finalReservation = this.validationService.getValidReservation(reservation, roleToCheck);
         break;
       }
