@@ -66,7 +66,7 @@ declare global {
       CLIENTID: string;
       DBURI: string;
       DBNAME: string;
-      GUILDTESTSERVER: string;
+      GUILDSERVER: string;
       DBUSER:string;
       DBPASS:string;
     }

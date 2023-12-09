@@ -117,7 +117,7 @@ const command: SlashCommand = {
                     await interaction.channel?.bulkDelete(msgs, true);
                 });
                 await createChart();
-                const channelToSend = member.guild.channels.cache.find((channel:any) => channel.name === "claims") as TextChannel;
+                const channelToSend = member.guild.channels.cache.find((channel:any) => channel.name === "summary") as TextChannel;
                 if (channelToSend !== undefined) {
                     await channelToSend.bulkDelete(100, true);
                     await channelToSend.send({files: [{attachment: '../tibia-reservationbot-ts/build/img/currentCapacities.png'}]})

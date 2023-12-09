@@ -36,7 +36,7 @@ module.exports = async (client: Client) => {
   //   .catch(console.error);
 
   const result = await rest.put(
-    Routes.applicationGuildCommands(process.env.CLIENTID, "1170750240752672768"),
+    Routes.applicationGuildCommands(process.env.CLIENTID, process.env.GUILDSERVER),
     {
       body: slashCommands.map((command) => command.toJSON()),
     }
