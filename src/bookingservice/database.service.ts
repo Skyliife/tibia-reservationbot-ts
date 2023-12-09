@@ -13,6 +13,7 @@ export const InsertBooking = async (reservation: Booking) => {
         huntingSpot: reservation.huntingSpot,
         uniqueId: reservation.uniqueId,
         deletedAt: null,
+        displaySlot: reservation.displaySlot,
     });
 
     const existingReservationsForHuntingSpot = await BookingModel.find({
