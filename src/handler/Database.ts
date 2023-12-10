@@ -3,12 +3,11 @@ import logger from "../logging/logger";
 
 module.exports = () => {
 
-    const DBNAME = encodeURIComponent(process.env.DBNAME);
-    const DBUSER = encodeURIComponent(process.env.DBUSER);
-    const DBPASS = encodeURIComponent(process.env.DBPASS);
-    const MONGO_URI = `mongodb://${DBUSER}:${DBPASS}@vmi1535787.contaboserver.net/${DBNAME}?authMechanism=DEFAULT&authSource=${DBNAME}`
-    console.log(MONGO_URI);
-
+    // const DBNAME = encodeURIComponent(process.env.DBNAME);
+    // const DBUSER = encodeURIComponent(process.env.DBUSER);
+    // const DBPASS = encodeURIComponent(process.env.DBPASS);
+    // const MONGO_URI = `mongodb://${DBUSER}:${DBPASS}@vmi1535787.contaboserver.net/${DBNAME}?authMechanism=DEFAULT&authSource=${DBNAME}`
+    const MONGO_URI = process.env.DBURI
     if (!MONGO_URI) return logger.info(`Mongo URI not found, skipping.`);
     mongoose.pluralize(null);
 

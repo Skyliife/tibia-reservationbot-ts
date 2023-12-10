@@ -10,11 +10,12 @@ import {
 import {SlashCommand} from "../types";
 import BookingService from "../bookingservice/booking.service";
 import logger from "../logging/logger";
-import {createEmbedsForGroups} from "../bookingservice/embed.service";
+
 import {getChoicesForDate, getChoicesForTime} from "../utils";
 import {getChoicesForSpot, getHuntingPlaceByName} from "../huntingplaces/huntingplaces";
 import {GuildRoles} from "../enums";
 import {createChart} from "../bookingservice/chart.service";
+import {createEmbedsForGroups} from "../bookingservice/embed.service";
 
 const optionNames = {
     spot: "spot",
@@ -112,17 +113,16 @@ const command: SlashCommand = {
             const bookedReservation = await book.tryCreateBooking();
 
             if (bookedReservation.isBooked) {
-                await interaction.channel?.messages.fetch({limit: 100}).then(async (msgs) => {
-                    if (interaction.channel?.type === ChannelType.DM) return;
-                    await interaction.channel?.bulkDelete(msgs, true);
-                });
                 await createChart();
                 const channelToSend = member.guild.channels.cache.find((channel:any) => channel.name === "summary") as TextChannel;
                 if (channelToSend !== undefined) {
                     await channelToSend.bulkDelete(100, true);
                     await channelToSend.send({files: [{attachment: '../tibia-reservationbot-ts/build/img/currentCapacities.png'}]})
                 }
-
+                await interaction.channel?.messages.fetch({limit: 100}).then(async (msgs) => {
+                    if (interaction.channel?.type === ChannelType.DM) return;
+                    await interaction.channel?.bulkDelete(msgs, true);
+                });
 
                 await interaction.editReply({
                     content: `${bookedReservation.displayBookingInfo}`,

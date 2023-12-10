@@ -91,18 +91,20 @@ const deleteReservation = async (interaction: ChatInputCommandInteraction, dataT
     const member: CacheTypeReducer<CacheType, GuildMember, any> = interaction.member;
 
     if (huntingSpot !== undefined && channelName !== undefined && start !== undefined && end !== undefined) {
-        await deleteBookingsForUserId(channelName, huntingSpot, interaction.user.id, start, end);
 
-        await interaction.channel?.messages.fetch({limit: 100}).then(async (msgs) => {
-            if (interaction.channel?.type === ChannelType.DM) return;
-            await interaction.channel?.bulkDelete(msgs, true);
-        });
         await createChart();
         const channelToSend = member.guild.channels.cache.find((channel:any) => channel.name === "summary") as TextChannel;
         if (channelToSend !== undefined) {
             await channelToSend.bulkDelete(100, true);
             await channelToSend.send({files: [{attachment: '../tibia-reservationbot-ts/build/img/currentCapacities.png'}]})
         }
+        await deleteBookingsForUserId(channelName, huntingSpot, interaction.user.id, start, end);
+
+        await interaction.channel?.messages.fetch({limit: 100}).then(async (msgs) => {
+            if (interaction.channel?.type === ChannelType.DM) return;
+            await interaction.channel?.bulkDelete(msgs, true);
+        });
+
         await interaction.editReply({
             content: `Your reservation ${dataToDelete.reservation?.huntingSpot} has been deleted`,
         });

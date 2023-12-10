@@ -415,7 +415,7 @@ const warzone7 = {
     choices: [
         {
             name: "Warzone 7",
-            link: "https://tibia.fandom.com/wiki/Secret_Library#Fire_Section",
+            link: "https://tibia.fandom.com/",
         },
         {
             name: "Warzone 8",
