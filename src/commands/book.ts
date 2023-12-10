@@ -8,7 +8,6 @@ import {
     TextChannel
 } from "discord.js";
 import {SlashCommand} from "../types";
-import BookingService from "../bookingservice/booking.service";
 import logger from "../logging/logger";
 
 import {getChoicesForDate, getChoicesForTime} from "../utils";
@@ -16,6 +15,7 @@ import {getChoicesForSpot, getHuntingPlaceByName} from "../huntingplaces/hunting
 import {GuildRoles} from "../enums";
 import {createChart} from "../bookingservice/chart.service";
 import {createEmbedsForGroups} from "../bookingservice/embed.service";
+import BookingService from "../bookingservice/booking.service";
 
 const optionNames = {
     spot: "spot",

@@ -29,17 +29,11 @@ export const InsertBooking = async (reservation: Booking) => {
     const dev = existing;
     //const dev = false;
     if (dev) {
-        logger.warn(
-            `Booking with uniqueId ${reservation.uniqueId}, name: ${reservation.name} already exists for hunting spot ${reservation.huntingSpot}. Not inserting.`
-        );
-        throw new Error(
-            `You already have a current reservation for huntinspot: ${reservation.huntingSpot} - use "/unbook" first if you want to change your reservation!`
-        );
+        logger.warn(`Booking with uniqueId ${reservation.uniqueId}, name: ${reservation.name} already exists for hunting spot ${reservation.huntingSpot}. Not inserting.`);
+        throw new Error(`You already have a current reservation for huntinspot: ${reservation.huntingSpot} - use "/unbook" first if you want to change your reservation!`);
     } else if (isOverlapping) {
         logger.warn(`Overlapping reservation found!`);
-        throw new Error(
-            `Your reservation for the ${reservation.huntingSpot}, overlaps with an existing reservation}!`
-        );
+        throw new Error(`Your reservation for the ${reservation.huntingSpot}, overlaps with an existing reservation}!`);
     } else {
         let newBooking = new BookingModel({
             huntingPlace: reservation.huntingPlace,
@@ -71,7 +65,7 @@ export const getBookingsForUserId = async (collectionName: string | undefined, u
         result.forEach((item) => {
             const {huntingPlace, huntingSpot, start, end} = item;
             const formattedString = `Reservation ${huntingSpot} - from ${dayjs(start).format("D.M HH:mm")} to ${dayjs(end).format("D.M HH:mm")}`;
-            formattedArray.push({formattedString:formattedString, reservation: item});
+            formattedArray.push({formattedString: formattedString, reservation: item});
         })
 
 
@@ -87,14 +81,20 @@ export const deleteBookingsForUserId = async (
     collectionName: string,
     huntingSpot: string,
     userId: string,
-    start:Dayjs,
-    end:Dayjs
+    start: Dayjs,
+    end: Dayjs
 ) => {
     try {
         // Get bookings for the specified userId
         const BookingModel = model<IBooking>("booking", BookingSchema, collectionName);
 
-        const bookingToDelete = await BookingModel.find({uniqueId: userId, deletedAt: null, huntingSpot: huntingSpot, start: start, end:end});
+        const bookingToDelete = await BookingModel.find({
+            uniqueId: userId,
+            deletedAt: null,
+            huntingSpot: huntingSpot,
+            start: start,
+            end: end
+        });
 
         if (bookingToDelete === undefined) throw new Error("Error deleting bookings");
         const updateResult = await BookingModel.updateMany(

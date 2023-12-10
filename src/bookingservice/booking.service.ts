@@ -26,7 +26,6 @@ dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
 class BookingService {
-  private bookings: Booking[] = [];
   private options: { [key: string]: string | number | boolean } = {};
   private member: CacheTypeReducer<CacheType, GuildMember, any>;
   private interaction: ChatInputCommandInteraction<CacheType>;
@@ -159,7 +158,7 @@ class BookingService {
       username = this.options.name.toString();
     }
     const guildName = this.member?.displayName;
-    const interactionName = this.interaction.user.username;
+    const interactionName = this.interaction.user.displayName;
     const name = this.validationService.getValidUserName(username, guildName, interactionName);
     return name;
   };

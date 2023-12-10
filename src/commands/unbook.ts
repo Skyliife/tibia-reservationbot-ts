@@ -11,6 +11,7 @@ import {deleteBookingsForUserId, getBookingsForUserId} from "../bookingservice/d
 import {createEmbedsForGroups} from "../bookingservice/embed.service";
 import logger from "../logging/logger";
 import {createChart} from "../bookingservice/chart.service";
+import * as fs from 'fs';
 
 let choices: { formattedString: string; reservation: IBooking | null }[] = [];
 
@@ -84,30 +85,37 @@ const fetchAndSetChoices = async (channelName: string | undefined, userId: strin
 const deleteReservation = async (interaction: ChatInputCommandInteraction, dataToDelete: {
     reservation?: IBooking | null
 }) => {
+    const { reservation } = dataToDelete;
     const channelName = fetchChannelName(interaction.channel);
-    const huntingSpot = dataToDelete.reservation?.huntingSpot;
-    const start = dataToDelete.reservation?.start;
-    const end = dataToDelete.reservation?.end;
+    const huntingSpot = reservation?.huntingSpot;
+    const start = reservation?.start;
+    const end = reservation?.end;
     const member: CacheTypeReducer<CacheType, GuildMember, any> = interaction.member;
 
     if (huntingSpot !== undefined && channelName !== undefined && start !== undefined && end !== undefined) {
-
         await createChart();
-        const channelToSend = member.guild.channels.cache.find((channel:any) => channel.name === "summary") as TextChannel;
+        const channelToSend = member.guild.channels.cache.find((channel: any) => channel.name === "summary") as TextChannel;
+
         if (channelToSend !== undefined) {
-            await channelToSend.bulkDelete(100, true);
-            await channelToSend.send({files: [{attachment: '../tibia-reservationbot-ts/build/img/currentCapacities.png'}]})
+            const file = '../tibia-reservationbot-ts/build/img/currentCapacities.png'
+            if (fs.existsSync(file)) {
+                await channelToSend.bulkDelete(100, true);
+                await channelToSend.send({ files: [{ attachment: file }] });
+            } else{
+                throw new Error("Chart file not found");
+            }
+
         }
+
         await deleteBookingsForUserId(channelName, huntingSpot, interaction.user.id, start, end);
 
-        await interaction.channel?.messages.fetch({limit: 100}).then(async (msgs) => {
+        await interaction.channel?.messages.fetch({ limit: 100 }).then(async (msgs) => {
             if (interaction.channel?.type === ChannelType.DM) return;
             await interaction.channel?.bulkDelete(msgs, true);
         });
 
-        await interaction.editReply({
-            content: `Your reservation ${dataToDelete.reservation?.huntingSpot} has been deleted`,
-        });
+        const replyContent = `Your reservation ${reservation?.huntingSpot} has been deleted`;
+        await interaction.editReply({ content: replyContent });
 
         const embedsForChannel = await createEmbedsForGroups(channelName);
         const embedsArray = embedsForChannel.map((item) => item.embed);
@@ -120,9 +128,8 @@ const deleteReservation = async (interaction: ChatInputCommandInteraction, dataT
             });
         }
     } else {
-        await interaction.editReply({
-            content: `No reservation found, nothing has been deleted`,
-        });
+        const replyContent = "No reservation found, nothing has been deleted";
+        await interaction.editReply({ content: replyContent });
     }
 };
 

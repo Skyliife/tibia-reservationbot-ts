@@ -37,7 +37,7 @@ export const createEmbedsForSummary = async () => {
           inline: true,
         });
       }
-      const date = new Date();
+
       embed.setFooter({
         text: `Made with ❤️ by Gods version 0.0.3-beta.0`,
         iconURL: "https://static.tibia.com/images/community/default_logo.gif",
@@ -74,19 +74,10 @@ export const createEmbedsForGroups = async (channel: string | undefined) => {
             // prettier-ignore
             const timePart = `${dayjs(booking.start).format("HH:mm")}-${dayjs(booking.end).format("HH:mm")}`;
             // prettier-ignore
-            let namePart
+            const namePart = `${booking.name} ${userMention(booking.uniqueId)} ${time(dayjs(booking.createdAt).toDate(), "R")}`
 
             //console.log(booking.name);
-            namePart = `${booking.name}/${userMention(booking.uniqueId)} ${time(
-              dayjs(booking.createdAt).toDate(),
-              "R"
-            )}`;
-            if (booking.name === "default") {
-              namePart = `${userMention(booking.uniqueId)} ${time(
-                dayjs(booking.createdAt).toDate(),
-                "R"
-              )}`;
-            }
+
 
             value += `${bold(timePart)} : ${namePart} \n`;
           }
