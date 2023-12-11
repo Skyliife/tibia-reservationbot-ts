@@ -428,7 +428,7 @@ const warzone7 = {
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
 
-export const getHuntingPlaceByName = (locationName: string) => {
+export const getHuntingPlaceByChannelName = (locationName: string) => {
     const locations = [
         Asuras,
         BuriedCathedral,
@@ -455,7 +455,7 @@ export const getHuntingPlaceByName = (locationName: string) => {
     return matchingLocation || null;
 };
 
-export const getHuntingPlaces = (choiceName: string | undefined) => {
+export const getHuntingSpotsByHuntingPlace = (choiceName: string | undefined) => {
     const locations = [
         Asuras,
         BuriedCathedral,

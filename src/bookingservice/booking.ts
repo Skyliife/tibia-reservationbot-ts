@@ -1,11 +1,11 @@
 import dayjs, {Dayjs} from "dayjs";
-import {IBooking} from "../types";
-import {isCurrentTimeAfter10AM, isCurrentTimeBefore10AM, isCurrentTimeBeforeMidnight,} from "../utils";
+import {IBooking, Name} from "../types";
+import {isCurrentTimeAfter10AM, isCurrentTimeBefore10AM, isCurrentTimeBeforeMidnight} from "../utils";
 
 class Booking implements IBooking {
     public huntingPlace: string;
     public huntingSpot: string;
-    public name: string;
+    public name: Name;
     public uniqueId: string;
     public serverSaveStart: Dayjs;
     public serverSaveEnd: Dayjs;
@@ -14,17 +14,19 @@ class Booking implements IBooking {
     public createdAt: Dayjs;
     public deletedAt: any;
     public displaySlot: Dayjs;
+    public roleDuration: number;
 
     constructor(
         huntingplace: string,
         huntingspot: string,
-        name: string,
+        name: Name,
         uniqueId: string,
         serverSaveStart: Dayjs,
         serverSaveEnd: Dayjs,
         start: Dayjs,
         end: Dayjs,
-        createdAt: Dayjs
+        createdAt: Dayjs,
+        roleDuration: number,
     ) {
         this.huntingPlace = huntingplace;
         this.huntingSpot = huntingspot;
@@ -35,30 +37,30 @@ class Booking implements IBooking {
         this.start = start;
         this.end = end;
         this.createdAt = createdAt;
+
+        this.roleDuration = roleDuration;
         this.displaySlot = this.getDisplaySlot(this.start);
+    }
+
+    public displayBookingInfo(): string {
+        return `Booking on ${this.huntingSpot} from ${this.start.format("D.M")} ${this.start.format("HH:mm")} to ${this.end.format("HH:mm")} has been successfully completed`;
     }
 
     private getDisplaySlot(date: Dayjs): Dayjs {
         const now = dayjs(date);
 
-        //console.log("Currenttime:", now.format());
-
         let serverSaveStart: Dayjs = dayjs();
-        const x = dayjs(now)
+        const temp = dayjs(now)
             .set("hour", 10)
             .set("minute", 0)
             .set("second", 0)
             .set("millisecond", 0);
         if (isCurrentTimeBeforeMidnight(now) && isCurrentTimeAfter10AM(now)) {
-            serverSaveStart = x;
+            serverSaveStart = temp;
         } else if (isCurrentTimeBefore10AM(now)) {
-            serverSaveStart = x.subtract(1, "day");
+            serverSaveStart = temp.subtract(1, "day");
         }
         return serverSaveStart;
-    }
-
-    public displayBookingInfo(): string {
-        return `Booking on ${this.huntingSpot} from ${this.start.format("D.M")} ${this.start.format("HH:mm")} to ${this.end.format("HH:mm")} has been successfully completed`;
     }
 }
 

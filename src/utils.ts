@@ -2,47 +2,53 @@ import dayjs, {Dayjs} from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import duration from "dayjs/plugin/duration";
 import {GuildRoles} from "./enums";
 import {IBooking} from "./types";
-import {
-    AutocompleteInteraction,
-    CacheType,
-    CacheTypeReducer,
-    ChatInputCommandInteraction,
-    GuildMember
-} from "discord.js";
+import {AutocompleteInteraction, CacheType, CacheTypeReducer, GuildMember} from "discord.js";
 
 dayjs.extend(isBetween);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
+dayjs.extend(duration);
 
-export function getGuildRoleFromString(roleString: string): GuildRoles | undefined {
-    const roleKeys = Object.keys(GuildRoles) as (keyof typeof GuildRoles)[];
-    const foundRole = roleKeys.find((key) => GuildRoles[key] === roleString);
-
-    return foundRole ? GuildRoles[foundRole] : undefined;
+export function isCurrentTimeBeforeMidnight(currentDate: Dayjs) {
+    const midnight = currentDate.endOf("day");
+    return currentDate.isSameOrBefore(midnight);
 }
 
-export function isCurrentTimeBeforeMidnight(currentdate: Dayjs) {
-    const midnight = currentdate.endOf("day");
-    return currentdate.isSameOrBefore(midnight);
-}
-
-export function isCurrentTimeBefore10AM(currentdate: Dayjs) {
+export function isCurrentTimeBefore10AM(currentDate: Dayjs) {
     const tenAM = dayjs().set("hour", 10).set("minute", 0).set("second", 0).set("millisecond", 0);
-    return currentdate.isBefore(tenAM);
+    return currentDate.isBefore(tenAM);
 }
 
-export function isCurrentTimeAfter10AM(currentdate: Dayjs) {
+export function isCurrentTimeAfter10AM(currentDate: Dayjs) {
     const tenAM = dayjs().set("hour", 10).set("minute", 0).set("second", 0).set("millisecond", 0);
-    return currentdate.isSameOrAfter(tenAM);
+    return currentDate.isSameOrAfter(tenAM);
 }
+
+export const areAllCurrentReservationsFromUserWithinRoleDuration = (roleDuration: number, currentReservation: IBooking, existingReservations: IBooking[]) => {
+    console.log(roleDuration);
+    const durationInMilliseconds = dayjs.duration(roleDuration, "minutes").asMilliseconds();
+    const currentReservationDuration = dayjs(currentReservation.end).diff(dayjs(currentReservation.start), "millisecond");
+    //collect the duration of all reservations from user
+    const durationOfAllReservationsFromUser = existingReservations.reduce(
+        (accumulator, reservation) => accumulator + dayjs(reservation.end).diff(dayjs(reservation.start), "millisecond"),
+        0,
+    );
+    console.log(durationOfAllReservationsFromUser);
+    console.log(durationInMilliseconds);
+    console.log(durationOfAllReservationsFromUser <= durationInMilliseconds);
+    return durationOfAllReservationsFromUser + currentReservationDuration <= durationInMilliseconds;
+
+
+};
 
 export function isCurrentReservationOverlappingWithExistingReservations(newReservation: IBooking, existingReservations: IBooking[]) {
     const newReservationStart = dayjs(newReservation.start);
     const newReservationEnd = dayjs(newReservation.end);
 
-    const isOverlapping = existingReservations.some((existingReservation) => {
+    return existingReservations.some((existingReservation) => {
         const existingReservationStart = dayjs(existingReservation.start);
         const existingReservationEnd = dayjs(existingReservation.end);
 
@@ -53,8 +59,8 @@ export function isCurrentReservationOverlappingWithExistingReservations(newReser
             existingReservationEnd.isBetween(newReservationStart, newReservationEnd, null, "(]")
         );
     });
-    return isOverlapping;
 }
+
 
 export const getChoicesForDate = (interaction: AutocompleteInteraction<CacheType>) => {
     const rolePriority = [
@@ -66,15 +72,15 @@ export const getChoicesForDate = (interaction: AutocompleteInteraction<CacheType
     ];
     const member: CacheTypeReducer<CacheType, GuildMember, any> = interaction.member;
 
-    let dates:[] =[];
+    let dates: [] = [];
     for (const roleToCheck of rolePriority) {
         if (member?.roles.cache.some((role: any) => role.name === roleToCheck)) {
-            dates = getFormatedTimeRange(roleToCheck)
+            dates = getFormattedTimeRange(roleToCheck)
             break;
         }
     }
 
-    return dates.map((choice) => ({ name: choice, value: choice }));
+    return dates.map((choice) => ({name: choice, value: choice}));
 
 }
 export const getChoicesForTime = () => {
@@ -90,7 +96,7 @@ export const getChoicesForTime = () => {
     return choices;
 }
 
-function getFormatedTimeRange(role: string) {
+function getFormattedTimeRange(role: string) {
     const values = getTimeRangeForUser(role);
     const results: any = [];
     values.forEach((element) => {
@@ -106,20 +112,17 @@ function getFormatedTimeRange(role: string) {
 function getTimeRangeForUser(role: string) {
     const currentDate = new Date();
 
-    const currentdateStart = new Date(currentDate);
+    const currentDateStart = new Date(currentDate);
     const nextDayEndTime = new Date(currentDate);
 
-    currentdateStart.setHours(10, 0, 0, 0);
+    currentDateStart.setHours(10, 0, 0, 0);
     nextDayEndTime.setHours(23, 59, 59, 999);
 
     const dates = [];
-    // console.log("currentDate", currentDate);
-    // console.log("currentdateStart", currentdateStart);
-    // console.log("nextDayEndTime", nextDayEndTime);
 
     dates.push(currentDate);
 
-    if (currentDate >= currentdateStart && currentDate <= nextDayEndTime) {
+    if (currentDate >= currentDateStart && currentDate <= nextDayEndTime) {
         if (role === "Verified") {
             const dateForNextDay = new Date(currentDate);
             dateForNextDay.setDate(currentDate.getDate() + 1);
@@ -139,7 +142,7 @@ function getTimeRangeForUser(role: string) {
             dateForNextNextDay.setDate(currentDate.getDate() + 2);
             dates.push(dateForNextNextDay);
         }
-    } else if (currentDate <= currentdateStart) {
+    } else if (currentDate <= currentDateStart) {
         if (role === "VIP") {
             const dateForNextDay = new Date(currentDate);
             dateForNextDay.setDate(currentDate.getDate() + 1);

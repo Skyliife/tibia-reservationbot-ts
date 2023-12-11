@@ -1,10 +1,11 @@
 import {Schema} from "mongoose";
 import {IBooking} from "../types";
+import NamesSchema from "./Names";
 
 const BookingSchema = new Schema<IBooking>({
         huntingPlace: {type: String, required: true},
         huntingSpot: {type: String, required: true},
-        name: {type: String, required: true},
+        name: {type: NamesSchema, required: true},
         uniqueId: {type: String, required: true},
         serverSaveStart: {type: Date, required: true},
         serverSaveEnd: {type: Date, required: true},
@@ -14,8 +15,6 @@ const BookingSchema = new Schema<IBooking>({
         deletedAt: {type: Date, default: null},
         displaySlot: {type: Date, required: true},
     },
-
-);
-BookingSchema.index({ end: 1 }, { expireAfterSeconds: 0 });
+).index({end: 1}, {expireAfterSeconds: 0});
 
 export default BookingSchema;

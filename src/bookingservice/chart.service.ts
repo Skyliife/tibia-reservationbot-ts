@@ -24,8 +24,6 @@ export const createChart = async () => {
     });
 
     const canvas: any = createCanvas(1000, 600);
-
-
     const ctx = canvas.getContext('2d');
 
     const plugin = {
@@ -121,7 +119,7 @@ export const createChart = async () => {
         fs.mkdirSync(relativeImgFolderPath);
     }
 
-    const filePath = path.join(relativeImgFolderPath, 'currentCapacities.png');
+    const filePath = path.join(relativeImgFolderPath, 'summary.png');
     const buffer = canvas.toBuffer('image/png');
     fs.writeFileSync(filePath, buffer);
 }

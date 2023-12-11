@@ -2,7 +2,8 @@ import {
     CacheType,
     CacheTypeReducer,
     ChannelType,
-    ChatInputCommandInteraction, GuildMember,
+    ChatInputCommandInteraction,
+    GuildMember,
     SlashCommandBuilder,
     TextChannel
 } from "discord.js";
@@ -85,7 +86,7 @@ const fetchAndSetChoices = async (channelName: string | undefined, userId: strin
 const deleteReservation = async (interaction: ChatInputCommandInteraction, dataToDelete: {
     reservation?: IBooking | null
 }) => {
-    const { reservation } = dataToDelete;
+    const {reservation} = dataToDelete;
     const channelName = fetchChannelName(interaction.channel);
     const huntingSpot = reservation?.huntingSpot;
     const start = reservation?.start;
@@ -93,29 +94,27 @@ const deleteReservation = async (interaction: ChatInputCommandInteraction, dataT
     const member: CacheTypeReducer<CacheType, GuildMember, any> = interaction.member;
 
     if (huntingSpot !== undefined && channelName !== undefined && start !== undefined && end !== undefined) {
+        await deleteBookingsForUserId(channelName, huntingSpot, interaction.user.id, start, end);
         await createChart();
         const channelToSend = member.guild.channels.cache.find((channel: any) => channel.name === "summary") as TextChannel;
 
         if (channelToSend !== undefined) {
-            const file = '../tibia-reservationbot-ts/build/img/currentCapacities.png'
+            const file = '../tibia-reservationbot-ts/build/img/summary.png'
             if (fs.existsSync(file)) {
                 await channelToSend.bulkDelete(100, true);
-                await channelToSend.send({ files: [{ attachment: file }] });
-            } else{
-                throw new Error("Chart file not found");
+                await channelToSend.send({files: [{attachment: file}]});
             }
 
         }
 
-        await deleteBookingsForUserId(channelName, huntingSpot, interaction.user.id, start, end);
 
-        await interaction.channel?.messages.fetch({ limit: 100 }).then(async (msgs) => {
+        await interaction.channel?.messages.fetch({limit: 100}).then(async (msgs) => {
             if (interaction.channel?.type === ChannelType.DM) return;
             await interaction.channel?.bulkDelete(msgs, true);
         });
 
         const replyContent = `Your reservation ${reservation?.huntingSpot} has been deleted`;
-        await interaction.editReply({ content: replyContent });
+        await interaction.editReply({content: replyContent});
 
         const embedsForChannel = await createEmbedsForGroups(channelName);
         const embedsArray = embedsForChannel.map((item) => item.embed);
@@ -129,7 +128,7 @@ const deleteReservation = async (interaction: ChatInputCommandInteraction, dataT
         }
     } else {
         const replyContent = "No reservation found, nothing has been deleted";
-        await interaction.editReply({ content: replyContent });
+        await interaction.editReply({content: replyContent});
     }
 };
 

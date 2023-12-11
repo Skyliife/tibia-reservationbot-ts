@@ -1,20 +1,15 @@
 import {
-    CacheType,
-    CacheTypeReducer,
+    AutocompleteInteraction,
     ChannelType,
     ChatInputCommandInteraction,
-    GuildMember,
     SlashCommandBuilder,
     TextChannel
 } from "discord.js";
 import {SlashCommand} from "../types";
-import BookingService from "../bookingservice/booking.service";
 import logger from "../logging/logger";
-import {createEmbedsForGroups} from "../bookingservice/embed.service";
 import {getChoicesForDate, getChoicesForTime} from "../utils";
-import {getChoicesForSpot, getHuntingPlaceByName} from "../huntingplaces/huntingplaces";
-import {GuildRoles} from "../enums";
-import {createChart} from "../bookingservice/chart.service";
+import {getChoicesForSpot} from "../huntingplaces/huntingplaces";
+import CommandProcessor from "../bookingservice/CommandProcessor";
 
 const optionNames = {
     spot: "spot",
@@ -23,6 +18,7 @@ const optionNames = {
     end: "end",
     name: "name",
 };
+
 
 const command: SlashCommand = {
     command: new SlashCommandBuilder()
@@ -35,8 +31,8 @@ const command: SlashCommand = {
         .setDescription("Book a hunting ground"),
 
     autocomplete: async (interaction) => {
-        const channel = interaction.channel;
-        const channelName = fetchChannelName(channel);
+
+        const channelName = await fetchChannel(interaction);
 
         try {
             const focusedValue = interaction.options.getFocused();
@@ -70,85 +66,30 @@ const command: SlashCommand = {
 
     execute: async (interaction: ChatInputCommandInteraction) => {
         logger.debug("Start executing /book command!");
-
-        const channel = interaction.channel;
-        const channelName = fetchChannelName(channel);
-        const rolePriority = [
-            GuildRoles.GodsMember,
-            GuildRoles.Gods,
-            GuildRoles.Bazant,
-            GuildRoles.VIP,
-            GuildRoles.Verified,
-        ];
-
-
+        const commandProcessor = new CommandProcessor(interaction);
         try {
             await interaction.deferReply({ephemeral: true});
-            const member: CacheTypeReducer<CacheType, GuildMember, any> = interaction.member;
-            const hasRequiredRole = rolePriority.some((roleToCheck) => member.roles.cache.some((role: any) => role.name === roleToCheck));
+            //Step1: Collect data
+            const data = commandProcessor.collectData();
+            //Step2: Verify data
+            const verifiedData = commandProcessor.verifyData(data);
+            //Step3: Process data to database
+            await commandProcessor.processData(verifiedData);
 
-            if (!hasRequiredRole) {
-                throw new Error("You don't have permission to use the bot commands");
+            await commandProcessor.createEmbed();
+            await commandProcessor.createChart();
 
-            }
-
-            if (channelName !== undefined) {
-                const isCommandUsedInRightChannel = getHuntingPlaceByName(channelName);
-                if (!isCommandUsedInRightChannel) {
-                    throw new Error("The \"/book command\" can only be used in hunting channels");
-                }
-            }
-
-            if (!interaction.options) {
-                logger.error("Interaction Options are null/undefined");
-                return await interaction.editReply({content: "Something went wrong..."});
-            }
-
-            await interaction.editReply({
-                content: "Try to book your reservation",
-            });
-
-            const book = new BookingService(interaction);
-            const bookedReservation = await book.tryCreateBooking();
-
-            if (bookedReservation.isBooked) {
-                await interaction.channel?.messages.fetch({limit: 100}).then(async (msgs) => {
-                    if (interaction.channel?.type === ChannelType.DM) return;
-                    await interaction.channel?.bulkDelete(msgs, true);
-                });
-                await createChart();
-                const channelToSend = member.guild.channels.cache.find((channel:any) => channel.name === "summary") as TextChannel;
-                if (channelToSend !== undefined) {
-                    await channelToSend.bulkDelete(100, true);
-                    await channelToSend.send({files: [{attachment: '../tibia-reservationbot-ts/build/img/currentCapacities.png'}]})
-                }
-
-
-                await interaction.editReply({
-                    content: `${bookedReservation.displayBookingInfo}`,
-                });
-
-                const embedsForChannel = await createEmbedsForGroups(channelName);
-                const embedsArray = embedsForChannel.map((item) => item.embed);
-                const embedsAttachment = embedsForChannel.map((item) => item.attachment);
-
-                if (embedsForChannel.length > 0) {
-                    await interaction.followUp({
-                        embeds: embedsArray,
-                        files: embedsAttachment,
-                    });
-                }
-            }
+            await interaction.editReply({content: `Done!`});
         } catch (error: any) {
             logger.error(error.message);
             console.log(error);
-            await interaction.editReply({content: `Something went wrong...${error.message}`});
+            await interaction.editReply({content: `Something went wrong... ${error.message}`});
         }
     },
 };
 
-const fetchChannelName = (channel: any): string | undefined => {
-    return channel?.name;
+const fetchChannel = async (interaction: ChatInputCommandInteraction | AutocompleteInteraction) => {
+    const channel = interaction.channel as TextChannel;
+    return channel.name;
 };
-
 export default command;

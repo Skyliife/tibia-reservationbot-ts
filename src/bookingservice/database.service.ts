@@ -4,17 +4,23 @@ import BookingSchema from "../schemas/Booking";
 import Booking from "./booking";
 import {DatabaseResultForGroup, DatabaseResultForSummary, IBooking} from "../types";
 import dayjs, {Dayjs} from "dayjs";
-import {isCurrentReservationOverlappingWithExistingReservations} from "../utils";
+import {
+    areAllCurrentReservationsFromUserWithinRoleDuration,
+    isCurrentReservationOverlappingWithExistingReservations
+} from "../utils";
+
 
 export const InsertBooking = async (reservation: Booking) => {
     const BookingModel = model<IBooking>("booking", BookingSchema, reservation.huntingPlace);
 
-    const existing = await BookingModel.findOne({
+    const existingReservationsForID = await BookingModel.find({
         huntingSpot: reservation.huntingSpot,
         uniqueId: reservation.uniqueId,
         deletedAt: null,
         displaySlot: reservation.displaySlot,
     });
+    const isWithinRoleDuration = areAllCurrentReservationsFromUserWithinRoleDuration(reservation.roleDuration, reservation, existingReservationsForID);
+
 
     const existingReservationsForHuntingSpot = await BookingModel.find({
         huntingSpot: reservation.huntingSpot,
@@ -26,11 +32,11 @@ export const InsertBooking = async (reservation: Booking) => {
     );
 
     logger.info(`Reservation is overlapping: ${isOverlapping}`);
-    const dev = existing;
+    const dev = isWithinRoleDuration;
     //const dev = false;
-    if (dev) {
-        logger.warn(`Booking with uniqueId ${reservation.uniqueId}, name: ${reservation.name} already exists for hunting spot ${reservation.huntingSpot}. Not inserting.`);
-        throw new Error(`You already have a current reservation for huntinspot: ${reservation.huntingSpot} - use "/unbook" first if you want to change your reservation!`);
+    if (!dev) {
+        logger.warn(`Booking with uniqueId ${reservation.uniqueId}, name: ${reservation.name.displayName} already exists for hunting spot ${reservation.huntingSpot}. Not inserting.`);
+        throw new Error(`Your maximum reservation time of ${reservation.roleDuration / 60} hours is exceeded: ${reservation.huntingSpot} - use "/unbook" first if you want to change your reservation!`);
     } else if (isOverlapping) {
         logger.warn(`Overlapping reservation found!`);
         throw new Error(`Your reservation for the ${reservation.huntingSpot}, overlaps with an existing reservation}!`);
