@@ -31,7 +31,6 @@ class BookingService {
   private interaction: ChatInputCommandInteraction<CacheType>;
 
   private validationService: ValidationService;
-
   private channelName = "";
 
   /**
