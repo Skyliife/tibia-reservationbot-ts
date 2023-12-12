@@ -28,7 +28,7 @@ class CommandProcessor {
     }
 
     async processData(verifiedData: VerifyingService) {
-        await InsertBooking(verifiedData.booking);
+        await InsertBooking(verifiedData.booking, this.member.guild.id);
         await this.interaction.editReply({content: verifiedData.booking.displayBookingInfo()});
 
         //await new Promise(resolve => setTimeout(resolve, 5000));
@@ -38,7 +38,7 @@ class CommandProcessor {
 
     async createEmbed() {
 
-        const embedsForChannel = await createEmbedsForGroups(this.channelName);
+        const embedsForChannel = await createEmbedsForGroups(this.channelName, this.member.guild.id);
         const embedsArray = embedsForChannel.map((item) => item.embed);
         const embedsAttachment = embedsForChannel.map((item) => item.attachment);
 
@@ -57,7 +57,7 @@ class CommandProcessor {
 
     async createChart() {
 
-        await createChart();
+        await createChart(this.member.guild.id);
         if (this.interaction.inCachedGuild()) {
             const channelToSend = this.member.guild.channels.cache.find((channel: any) => channel.name === "summary") as TextChannel;
             if (channelToSend !== undefined) {

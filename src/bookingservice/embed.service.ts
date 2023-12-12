@@ -1,56 +1,56 @@
-import {AttachmentBuilder, bold, EmbedBuilder, time} from "discord.js";
-import {getResultForGroups, getResultForSummary} from "./database.service";
-import {DatabaseResultForGroup, DatabaseResultForSummary, Name} from "../types";
+import {AttachmentBuilder, bold, EmbedBuilder} from "discord.js";
+import {getResultForGroups} from "./database.service";
+import {DatabaseResultForGroup, Name} from "../types";
 import * as fs from "fs";
 import dayjs from "dayjs";
 
-export const createEmbedsForSummary = async () => {
-    const data: DatabaseResultForSummary = await getResultForSummary();
-    //console.log("DATA", data);
+// export const createEmbedsForSummary = async () => {
+//     const data: DatabaseResultForSummary = await getResultForSummary();
+//     //console.log("DATA", data);
+//
+//     const embeds: EmbedBuilder[] = [];
+//     for (const collectionName in data) {
+//         if (data.hasOwnProperty(collectionName)) {
+//             const embed = new EmbedBuilder();
+//
+//             embed.setTitle(`Hunting Places in ${collectionName}`);
+//
+//             for (const huntingSpawn in data[collectionName]) {
+//                 let value: string = "";
+//                 const bookings = data[collectionName][huntingSpawn];
+//                 for (const booking of bookings) {
+//                     //append bookings.startAt and booking.name with \n
+//                     // prettier-ignore
+//                     const datePart = `${dayjs(booking.start).format("D.M")}`;
+//                     // prettier-ignore
+//                     const timePart = `${dayjs(booking.start).format("HH:mm")}-${dayjs(booking.end).format("HH:mm")}`;
+//                     // prettier-ignore
+//                     const namePart = `${booking.name} ${time(dayjs(booking.createdAt).toDate(), "R")}`;
+//
+//                     value += `${datePart} ${bold(timePart)} by ${namePart} \n`;
+//                 }
+//
+//                 embed.addFields({
+//                     name: huntingSpawn,
+//                     value: value,
+//                     inline: true,
+//                 });
+//             }
+//
+//             embed.setFooter({
+//                 text: `Made with ❤️ by Gods version 0.0.3-beta.0`,
+//                 iconURL: "https://static.tibia.com/images/community/default_logo.gif",
+//             });
+//             embeds.push(embed);
+//         }
+//     }
+//
+//     return embeds;
+// };
 
-    const embeds: EmbedBuilder[] = [];
-    for (const collectionName in data) {
-        if (data.hasOwnProperty(collectionName)) {
-            const embed = new EmbedBuilder();
 
-            embed.setTitle(`Hunting Places in ${collectionName}`);
-
-            for (const huntingSpawn in data[collectionName]) {
-                let value: string = "";
-                const bookings = data[collectionName][huntingSpawn];
-                for (const booking of bookings) {
-                    //append bookings.startAt and booking.name with \n
-                    // prettier-ignore
-                    const datePart = `${dayjs(booking.start).format("D.M")}`;
-                    // prettier-ignore
-                    const timePart = `${dayjs(booking.start).format("HH:mm")}-${dayjs(booking.end).format("HH:mm")}`;
-                    // prettier-ignore
-                    const namePart = `${booking.name} ${time(dayjs(booking.createdAt).toDate(), "R")}`;
-
-                    value += `${datePart} ${bold(timePart)} by ${namePart} \n`;
-                }
-
-                embed.addFields({
-                    name: huntingSpawn,
-                    value: value,
-                    inline: true,
-                });
-            }
-
-            embed.setFooter({
-                text: `Made with ❤️ by Gods version 0.0.3-beta.0`,
-                iconURL: "https://static.tibia.com/images/community/default_logo.gif",
-            });
-            embeds.push(embed);
-        }
-    }
-
-    return embeds;
-};
-
-
-export const createEmbedsForGroups = async (channel: string | undefined) => {
-    const data: DatabaseResultForGroup = await getResultForGroups(channel);
+export const createEmbedsForGroups = async (channel: string | undefined, databaseId: string) => {
+    const data: DatabaseResultForGroup = await getResultForGroups(channel, databaseId);
     //console.log("DATAHere", data);
 
     const embeds: { embed: EmbedBuilder; attachment: AttachmentBuilder }[] = [];
@@ -69,29 +69,24 @@ export const createEmbedsForGroups = async (channel: string | undefined) => {
                     const bookingsList = bookings[booking];
                     //append bookings.startAt and booking.name with \n
                     for (const booking of bookingsList) {
-                        // prettier-ignore
-                        const datePart = `${dayjs(booking.start).format("D.M")}`;
-                        // prettier-ignore
+
                         const timePart = `${dayjs(booking.start).format("HH:mm")}-${dayjs(booking.end).format("HH:mm")}`;
-                        // prettier-ignore
+
                         let namePart = createNamePart(booking.name);
 
-
-                        // const userMentionPart = `${userMention(booking.uniqueId)} ${time(dayjs(booking.createdAt).toDate(), "R")}`
-                        const userMentionPart = `${time(dayjs(booking.createdAt).toDate(), "R")}`
-
-                        value += `${bold(timePart)} : ${namePart} ${userMentionPart} \n`;
+                        value += `${bold(timePart)} : ${namePart}\n`;
                     }
 
                     const ss = dayjs(booking);
 
                     //Fields
                     const fieldName = `Date ${ss.format("D.M.YY")}`;
+
                     embed.addFields(
                         {
                             name: fieldName,
                             value: value,
-                            inline: false,
+                            inline: true,
                         }
                     );
                 }
@@ -127,17 +122,17 @@ function createNamePart(names: Name) {
 
     if (names.userInputName && names.userInputName !== "") {
         console.log("userInputName !=");
-        return `char:${names.userInputName} DC:${names.displayName}`;
+        return `${names.userInputName}`;
 
     }
     if (names.guildNickName && names.guildNickName !== "") {
         console.log("guildNickName !=");
-        return `DC:${names.guildNickName}`
+        return `${names.guildNickName}`
 
     }
 
 
-    return `DC:${names.displayName}`;
+    return `${names.displayName}`;
 }
 
 //main();

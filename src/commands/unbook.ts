@@ -95,7 +95,7 @@ const deleteReservation = async (interaction: ChatInputCommandInteraction, dataT
 
     if (huntingSpot !== undefined && channelName !== undefined && start !== undefined && end !== undefined) {
         await deleteBookingsForUserId(channelName, huntingSpot, interaction.user.id, start, end);
-        await createChart();
+        await createChart(member.guild.id);
         const channelToSend = member.guild.channels.cache.find((channel: any) => channel.name === "summary") as TextChannel;
 
         if (channelToSend !== undefined) {
@@ -106,8 +106,6 @@ const deleteReservation = async (interaction: ChatInputCommandInteraction, dataT
             }
 
         }
-
-
         await interaction.channel?.messages.fetch({limit: 100}).then(async (msgs) => {
             if (interaction.channel?.type === ChannelType.DM) return;
             await interaction.channel?.bulkDelete(msgs, true);
@@ -116,7 +114,7 @@ const deleteReservation = async (interaction: ChatInputCommandInteraction, dataT
         const replyContent = `Your reservation ${reservation?.huntingSpot} has been deleted`;
         await interaction.editReply({content: replyContent});
 
-        const embedsForChannel = await createEmbedsForGroups(channelName);
+        const embedsForChannel = await createEmbedsForGroups(channelName, member.guild.id);
         const embedsArray = embedsForChannel.map((item) => item.embed);
         const embedsAttachment = embedsForChannel.map((item) => item.attachment);
 

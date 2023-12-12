@@ -13,5 +13,5 @@ export const ImageService = async (interaction: ChatInputCommandInteraction) => 
     context.drawImage(background, 0, 0, canvas.width, canvas.height);
     const attachment = new AttachmentBuilder(await canvas.encode('png'), {name: 'profile-image.png'});
 
-    await interaction.editReply({files: [attachment]});
+    await interaction.followUp({files: [attachment]});
 }

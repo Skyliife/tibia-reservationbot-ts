@@ -64,13 +64,17 @@ export type DatabaseResultForGroup = {
 declare global {
     namespace NodeJS {
         interface ProcessEnv {
-            DISCORD_TOKEN: string;
-            CLIENTID: string;
-            DBURI: string;
-            DBNAME: string;
-            GUILDSERVER: string;
-            DBUSER: string;
-            DBPASS: string;
+            DISCORD_TOKEN: string,
+            CLIENTID: string,
+            DBURI_GODS: string,
+            DBURI_REFUGIA: string,
+            DBURI: string,
+            DBNAME: string,
+            GUILDSERVER: string,
+            GUILDSERVER_GODS: string,
+            GUILDSERVER_REFUGIA: string,
+            DBUSER: string,
+            DBPASS: string,
         }
     }
 }

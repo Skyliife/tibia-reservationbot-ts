@@ -1,17 +1,29 @@
-import mongoose, {model} from "mongoose";
+import {model} from "mongoose";
 import logger from "../logging/logger";
 import BookingSchema from "../schemas/Booking";
 import Booking from "./booking";
+
 import {DatabaseResultForGroup, DatabaseResultForSummary, IBooking} from "../types";
 import dayjs, {Dayjs} from "dayjs";
 import {
     areAllCurrentReservationsFromUserWithinRoleDuration,
     isCurrentReservationOverlappingWithExistingReservations
 } from "../utils";
+import {REFUGIADB} from "../database/RefugiaDatabase";
+import {GODSDB} from "../database/GodsDatabase";
 
-
-export const InsertBooking = async (reservation: Booking) => {
-    const BookingModel = model<IBooking>("booking", BookingSchema, reservation.huntingPlace);
+//how to add a reservation to different databases?
+export const InsertBooking = async (reservation: Booking, databaseId: string) => {
+    let BookingModel;
+    if (databaseId === "REFUGIA") {
+        BookingModel = GODSDB.model<IBooking>("booking", BookingSchema, reservation.huntingPlace);
+    } else if (databaseId === "1184160493011730452") {
+        // Example: Connect to another database
+        BookingModel = REFUGIADB.model<IBooking>("booking", BookingSchema, reservation.huntingPlace);
+    } else {
+        // Handle the case where the database ID is not recognized
+        throw new Error(`Unknown database ID: ${databaseId}`);
+    }
 
     const existingReservationsForID = await BookingModel.find({
         huntingSpot: reservation.huntingSpot,
@@ -19,6 +31,11 @@ export const InsertBooking = async (reservation: Booking) => {
         deletedAt: null,
         displaySlot: reservation.displaySlot,
     });
+
+    if (existingReservationsForID.length >= 4) {
+        throw new Error(`You have reached the maximum of 4 reservations for hunting spot ${reservation.huntingSpot}!`);
+    }
+
     const isWithinRoleDuration = areAllCurrentReservationsFromUserWithinRoleDuration(reservation.roleDuration, reservation, existingReservationsForID);
 
 
@@ -90,32 +107,30 @@ export const deleteBookingsForUserId = async (
     start: Dayjs,
     end: Dayjs
 ) => {
-    try {
-        // Get bookings for the specified userId
-        const BookingModel = model<IBooking>("booking", BookingSchema, collectionName);
 
-        const bookingToDelete = await BookingModel.find({
-            uniqueId: userId,
-            deletedAt: null,
-            huntingSpot: huntingSpot,
-            start: start,
-            end: end
-        });
+    // Get bookings for the specified userId
+    const BookingModel = model<IBooking>("booking", BookingSchema, collectionName);
 
-        if (bookingToDelete === undefined) throw new Error("Error deleting bookings");
-        const updateResult = await BookingModel.updateMany(
-            {_id: {$in: bookingToDelete.map((booking) => booking._id)}},
-            {$set: {deletedAt: dayjs()}}
-        );
-
-        logger.info(`Bookings for userId ${userId} marked as deleted.`);
-    } catch (error: any) {
-        // Handle errors appropriately (e.g., log or throw)
-        logger.error(`Error deleting bookings for userId ${userId}: ${error.message}`);
-        throw new Error(`Error deleting bookings for userId ${userId}: ${error.message}`);
-    } finally {
-        logger.info("deleted reservation");
+    const bookingToDelete = await BookingModel.findOne({
+        uniqueId: userId,
+        deletedAt: null,
+        huntingSpot: huntingSpot,
+        start: start,
+        end: end
+    });
+    if (!bookingToDelete) {
+        throw new Error("No matching booking found for deletion");
     }
+    await BookingModel.deleteOne({
+        uniqueId: userId,
+        deletedAt: null,
+        huntingSpot: huntingSpot,
+        start: start,
+        end: end
+    });
+
+    logger.info(`Bookings for userId: ${userId} on spot: ${huntingSpot} deleted.`);
+
 };
 
 // export const testingInClass = async () => {
@@ -161,150 +176,161 @@ type DatabaseResult = {
     [collectionName: string]: IBooking[];
 };
 
-export const getAllCollectionsAndValues = async () => {
+export const getAllCollectionsAndValues = async (databaseId: string) => {
     //mongoose.pluralize(null);
     //await mongoose.connect(`mongodb://127.0.0.1:27017/TibiaBotReservationDB`);
     const result: DatabaseResult = {}; // Object to store collections and documents
-    try {
-        const db = mongoose.connection.db;
 
-        // List all collections in the database
-        const collections = await db.listCollections().toArray();
-        const names = collections.map((e) => `${e.name}`);
 
-        logger.debug(`Found ${collections.length} collections: [${names}]`);
-
-        // Iterate over collections
-        for (const collection of collections) {
-            const collectionName = collection.name;
-
-            const documents = await db
-                .collection<IBooking>(collectionName)
-                .find({deletedAt: null})
-                .toArray();
-            result[collectionName] = documents;
-            //console.log(`Collection: ${collectionName}`);
-        }
-        //console.log(result);
-        return result; // Return the result object with collections and documents
-    } catch (error: any) {
-        logger.error(`Error retrieving collections and values: ${error.message}`);
-    } finally {
-        logger.debug("DONE! getting all collections and documents");
-        return result;
+    let db;
+    if (databaseId === "REFUGIA") {
+        db = GODSDB.db;
+    } else if (databaseId === "1184160493011730452") {
+        // Example: Connect to another database
+        db = REFUGIADB.db;
+    } else {
+        // Handle the case where the database ID is not recognized
+        throw new Error(`Unknown database ID: ${databaseId}`);
     }
+
+
+    // List all collections in the database
+    const collections = await db.listCollections().toArray();
+    const names = collections.map((e) => `${e.name}`);
+
+    logger.debug(`Found ${collections.length} collections: [${names}]`);
+
+    // Iterate over collections
+    for (const collection of collections) {
+        const collectionName = collection.name;
+
+        result[collectionName] = await db
+            .collection<IBooking>(collectionName)
+            .find({deletedAt: null})
+            .toArray();
+        //console.log(`Collection: ${collectionName}`);
+    }
+    //console.log(result);
+    logger.debug("DONE! getting all collections and documents");
+    return result; // Return the result object with collections and documents
+
 };
 
-export const getResultForSummary = async () => {
-    // mongoose.pluralize(null);
-    // await mongoose.connect(`mongodb://127.0.0.1:27017/TibiaBotReservationDB`);
-    const db = mongoose.connection.db;
+export const getResultForSummary = async (databaseId: string) => {
+
+    let db;
+    if (databaseId === "REFUGIA") {
+        db = GODSDB.db;
+    } else if (databaseId === "1184160493011730452") {
+        // Example: Connect to another database
+        db = REFUGIADB.db;
+    } else {
+        // Handle the case where the database ID is not recognized
+        throw new Error(`Unknown database ID: ${databaseId}`);
+    }
     const result: DatabaseResultForSummary = {};
-    try {
-        const collections = await db.listCollections().toArray();
-        const names = collections.map((e) => `${e.name}`);
 
-        logger.debug(`Found ${collections.length} collections: [${names}]`);
-        for (const collection of collections) {
-            const collectionName = collection.name;
-            //console.log(collectionName);
-            result[collectionName] = {};
+    const collections = await db.listCollections().toArray();
+    const names = collections.map((e) => `${e.name}`);
 
-            const uniqueHuntingSpots = await db
+    logger.debug(`Found ${collections.length} collections: [${names}]`);
+    for (const collection of collections) {
+        const collectionName = collection.name;
+        //console.log(collectionName);
+        result[collectionName] = {};
+
+        const uniqueHuntingSpots = await db
+            .collection<IBooking>(collectionName)
+            .distinct("huntingSpot", {deletedAt: null});
+        for (const huntingSpot of uniqueHuntingSpots) {
+            result[collectionName][huntingSpot] = [];
+            const bookingsForHuntingSpot = await db
                 .collection<IBooking>(collectionName)
-                .distinct("huntingSpot", {deletedAt: null});
-            for (const huntingSpot of uniqueHuntingSpots) {
-                result[collectionName][huntingSpot] = [];
-                const bookingsForHuntingSpot = await db
-                    .collection<IBooking>(collectionName)
-                    .find({huntingSpot, deletedAt: null})
-                    .toArray();
+                .find({huntingSpot, deletedAt: null})
+                .toArray();
 
-                const sortedBookings = bookingsForHuntingSpot.sort((a, b) =>
-                    dayjs(a.start).diff(dayjs(b.start))
-                );
-
-                result[collectionName][huntingSpot] = sortedBookings;
-            }
+            result[collectionName][huntingSpot] = bookingsForHuntingSpot.sort((a, b) =>
+                dayjs(a.start).diff(dayjs(b.start))
+            );
         }
-        //console.log(JSON.stringify(result, null, 2));
-        return result;
-    } catch (error: any) {
-        logger.error(`Error retrieving grouped collections and values: ${error.message}`);
-    } finally {
-        logger.debug("DONE! Getting grouped collections and values");
-        return result;
     }
+    //console.log(JSON.stringify(result, null, 2));
+    logger.debug("DONE! Getting grouped collections and values");
+    return result;
+
+
 };
 
-export const getResultForGroups = async (collection: string | undefined) => {
-    //mongoose.pluralize(null);
-    //await mongoose.connect(`mongodb://127.0.0.1:27017/TibiaBotReservationDB`);
-    const db = mongoose.connection.db;
+export const getResultForGroups = async (collection: string | undefined, databaseId: string) => {
+    let db;
+    if (databaseId === "REFUGIA") {
+        db = GODSDB.db;
+    } else if (databaseId === "1184160493011730452") {
+        // Example: Connect to another database
+        db = REFUGIADB.db;
+    } else {
+        // Handle the case where the database ID is not recognized
+        throw new Error(`Unknown database ID: ${databaseId}`);
+    }
     const result: DatabaseResultForGroup = {};
-    try {
-        const collections = await db.listCollections({name: collection}).toArray();
-        if (!collections) {
-            logger.error(`Collection '${collection}' not found.`);
-            return result;
-        }
-        const names = collections.map((e) => `${e.name}`);
 
-        logger.debug(`Found ${collections.length} collections: [${names}]`);
-        for (const collection of collections) {
-            const collectionName = collection.name;
-            //console.log(collectionName);
-            result[collectionName] = {};
-
-            const uniqueHuntingSpots = await db
-                .collection<IBooking>(collectionName)
-                .distinct("huntingSpot", {deletedAt: null});
-            for (const huntingSpot of uniqueHuntingSpots) {
-                result[collectionName][huntingSpot] = {};
-
-                const bookingsForHuntingSpot = await db
-                    .collection<IBooking>(collectionName)
-                    .find({huntingSpot, deletedAt: null})
-                    .toArray();
-
-                for (const booking of bookingsForHuntingSpot) {
-                    const displaySlot = dayjs(booking.displaySlot).format();
-
-                    if (!result[collectionName][huntingSpot][displaySlot]) {
-                        result[collectionName][huntingSpot][displaySlot] = [];
-                    }
-
-                    result[collectionName][huntingSpot][displaySlot].push(booking);
-                }
-
-                // Sort the bookings for each displaySlot by startTime
-                for (const displaySlot in result[collectionName][huntingSpot]) {
-                    if (result[collectionName][huntingSpot].hasOwnProperty(displaySlot)) {
-                        result[collectionName][huntingSpot][displaySlot].sort((a, b) =>
-                            dayjs(a.start).diff(dayjs(b.start))
-                        );
-                    }
-                }
-                // Sort the outer object keys (displaySlot)
-                const sortedDisplaySlots = Object.keys(result[collectionName][huntingSpot]).sort((a, b) =>
-                    dayjs(a).diff(dayjs(b))
-                );
-
-                const sortedResult: any = {};
-                for (const displaySlot of sortedDisplaySlots) {
-                    sortedResult[displaySlot] = result[collectionName][huntingSpot][displaySlot];
-                }
-
-                // Update the result
-                result[collectionName][huntingSpot] = sortedResult;
-            }
-        }
-        //console.log(JSON.stringify(result, null, 2));
-        return result;
-    } catch (error: any) {
-        logger.error(`Error retrieving grouped collections and values: ${error.message}`);
-    } finally {
-        logger.debug("DONE! Getting grouped collections and values");
+    const collections = await db.listCollections({name: collection}).toArray();
+    if (!collections) {
+        logger.error(`Collection '${collection}' not found.`);
         return result;
     }
+    const names = collections.map((e) => `${e.name}`);
+
+    logger.debug(`Found ${collections.length} collections: [${names}]`);
+    for (const collection of collections) {
+        const collectionName = collection.name;
+        //console.log(collectionName);
+        result[collectionName] = {};
+
+        const uniqueHuntingSpots = await db
+            .collection<IBooking>(collectionName)
+            .distinct("huntingSpot", {deletedAt: null});
+        for (const huntingSpot of uniqueHuntingSpots) {
+            result[collectionName][huntingSpot] = {};
+
+            const bookingsForHuntingSpot = await db
+                .collection<IBooking>(collectionName)
+                .find({huntingSpot, deletedAt: null})
+                .toArray();
+
+            for (const booking of bookingsForHuntingSpot) {
+                const displaySlot = dayjs(booking.displaySlot).format();
+
+                if (!result[collectionName][huntingSpot][displaySlot]) {
+                    result[collectionName][huntingSpot][displaySlot] = [];
+                }
+
+                result[collectionName][huntingSpot][displaySlot].push(booking);
+            }
+
+            // Sort the bookings for each displaySlot by startTime
+            for (const displaySlot in result[collectionName][huntingSpot]) {
+                if (result[collectionName][huntingSpot].hasOwnProperty(displaySlot)) {
+                    result[collectionName][huntingSpot][displaySlot].sort((a, b) =>
+                        dayjs(a.start).diff(dayjs(b.start))
+                    );
+                }
+            }
+            // Sort the outer object keys (displaySlot)
+            const sortedDisplaySlots = Object.keys(result[collectionName][huntingSpot]).sort((a, b) =>
+                dayjs(a).diff(dayjs(b))
+            );
+
+            const sortedResult: any = {};
+            for (const displaySlot of sortedDisplaySlots) {
+                sortedResult[displaySlot] = result[collectionName][huntingSpot][displaySlot];
+            }
+
+            // Update the result
+            result[collectionName][huntingSpot] = sortedResult;
+        }
+    }
+    //console.log(JSON.stringify(result, null, 2));
+    logger.debug("DONE! Getting grouped collections and values");
+    return result;
 };

@@ -10,7 +10,12 @@ const command: SlashCommand = {
     execute: async (interaction) => {
         await interaction.deferReply({ephemeral: true});
         const channel = interaction.channel;
-        await ImageService(interaction);
+        await interaction.followUp({
+            content: "Done",
+        });
+
+
+
         let channelName;
         if (channel && "name" in channel) {
             channelName = channel.name;
@@ -22,7 +27,7 @@ const command: SlashCommand = {
         });
 
 
-        await createChart();
+        await createChart(member.guild.id);
         if (interaction.inCachedGuild()) {
             const channelToSend = member.guild.channels.cache.find((channel: any) => channel.name === "summary") as TextChannel;
             if (channelToSend !== undefined) {
@@ -31,12 +36,12 @@ const command: SlashCommand = {
             }
         }
 
-
-        const embedsForChannel = await createEmbedsForGroups(channelName);
+        await ImageService(interaction);
+        const embedsForChannel = await createEmbedsForGroups(channelName, member.guild.id);
         const embedsArray = embedsForChannel.map((item) => item.embed);
         const embedsAttachment = embedsForChannel.map((item) => item.attachment);
         if (embedsForChannel.length > 0) {
-            await interaction.editReply({
+            await interaction.followUp({
                 embeds: embedsArray,
                 files: embedsAttachment,
             });

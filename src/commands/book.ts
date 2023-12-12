@@ -27,7 +27,7 @@ const command: SlashCommand = {
         .addStringOption((option) => option.setName(optionNames.date).setDescription("Select a date").setRequired(true).setAutocomplete(true))
         .addStringOption((option) => option.setName(optionNames.start).setDescription("Select a start time").setRequired(true).setAutocomplete(true))
         .addStringOption((option) => option.setName(optionNames.end).setDescription("Select an end time").setRequired(true).setAutocomplete(true))
-        .addStringOption((option) => option.setName(optionNames.name).setDescription("Select a name or leave empty"))
+        .addStringOption((option) => option.setName(optionNames.name).setDescription("Select a name or leave empty").setMaxLength(15))
         .setDescription("Book a hunting ground"),
 
     autocomplete: async (interaction) => {

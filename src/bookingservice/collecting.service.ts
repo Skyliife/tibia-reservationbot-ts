@@ -164,6 +164,13 @@ class CollectingService {
 
     private collectDuration(start: Dayjs, end: Dayjs) {
 
+        const durationInMilliseconds = end.diff(start);
+        const isAtLeast15Minutes = durationInMilliseconds >= 900000;
+        if (isAtLeast15Minutes) {
+            console.log('The duration is at least 15 minutes.');
+        } else {
+            throw new Error("Your reservation must be at least 15 minutes long.");
+        }
         return end.diff(start);
     }
 

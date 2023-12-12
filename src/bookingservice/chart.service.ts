@@ -1,15 +1,16 @@
 import {getAllCollectionsAndValues} from "./database.service";
 import {Chart, Colors, registerables} from "chart.js";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import {createCanvas} from "canvas";
+import {createCanvas, loadImage} from "canvas";
 import * as fs from "fs";
 import path from "path";
+
 
 Chart.register(...registerables, ChartDataLabels, Colors);
 
 
-export const createChart = async () => {
-    const data = await getAllCollectionsAndValues();
+export const createChart = async (databaseId:string) => {
+    const data = await getAllCollectionsAndValues(databaseId);
 
     const counts: { [key: string]: number } = {};
     Object.keys(data).forEach((huntingPlace) => {
@@ -26,10 +27,11 @@ export const createChart = async () => {
     const canvas: any = createCanvas(1000, 600);
     const ctx = canvas.getContext('2d');
 
+
     const plugin = {
         id: 'customCanvasBackgroundColor',
-        //@ts-ignore
-        beforeDraw: (chart, args, options) => {
+
+        beforeDraw: (chart: Chart, args: any, options: any) => {
             const {ctx} = chart;
             ctx.save();
             ctx.globalCompositeOperation = 'destination-over';
@@ -40,77 +42,76 @@ export const createChart = async () => {
     };
 
     const myDoughnutChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: percentages.map((data) => data.label),
-            datasets: [
-                {
-                    data: percentages.map((data) => data.value),
-                    datalabels: {
-                        labels: {
-                            index: {
-                                //@ts-ignore
-                                backgroundColor: (ctx) => ctx.dataset.backgroundColor,
-                                borderRadius: 4,
-                                color: '#000',
-                                font: {
-                                    size: 22,
-                                },
-                                // @ts-ignore
-                                formatter: (val, ctx) => ctx.chart.data.labels[ctx.dataIndex],
-                                align: 'end',
-                                offset: 20,
-                                anchor: 'end',
+            type: 'doughnut',
+            data: {
+                labels: percentages.map((data) => data.label),
+                datasets: [
+                    {
+                        data: percentages.map((data) => data.value),
+                        datalabels: {
+                            labels: {
+                                index: {
+                                    //@ts-ignore
+                                    backgroundColor: (ctx) => ctx.dataset.backgroundColor,
+                                    borderRadius: 4,
+                                    color: '#000',
+                                    font: {
+                                        size: 22,
+                                    },
+                                    // @ts-ignore
+                                    formatter: (val, ctx) => ctx.chart.data.labels[ctx.dataIndex],
+                                    align: 'end',
+                                    offset: 20,
+                                    anchor: 'end',
 
-                            },
-                            name: {
-                                //@ts-ignore
-                                color: (ctx) => ctx.dataset.backgroundColor,
-                                font: {
-                                    size: 20,
                                 },
-                                backgroundColor: '#424549',
-                                borderRadius: 4,
-                                offset: 0,
-                                padding: 2,
-                                formatter: (value) => {
-                                    const floatValue = parseFloat(value);
-                                    const integerValue = Math.floor(floatValue);
-                                    return integerValue.toString(10) + '%';
+                                name: {
+                                    //@ts-ignore
+                                    color: (ctx) => ctx.dataset.backgroundColor,
+                                    font: {
+                                        size: 20,
+                                    },
+                                    backgroundColor: '#424549',
+                                    borderRadius: 4,
+                                    offset: 0,
+                                    padding: 2,
+                                    formatter: (value) => {
+                                        const floatValue = parseFloat(value);
+                                        const integerValue = Math.floor(floatValue);
+                                        return integerValue.toString(10) + '%';
+                                    },
+                                    align: 'top',
                                 },
-                                align: 'top',
-                            },
+                            }
                         }
-                    }
+                    },
+                ],
+            },
+            options: {
+                maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        left: 230,
+                        right: 230,
+                        top: 50,
+                        bottom: 50,
+                    },
                 },
-            ],
-        },
-        options: {
-            maintainAspectRatio: false,
-            layout: {
-                padding: {
-                    left: 230,
-                    right: 230,
-                    top: 50,
-                    bottom: 50,
+                plugins: {
+                    //@ts-ignore
+                    customCanvasBackgroundColor: {
+                        color: '#424549',
+                    },
+                    legend: {
+                        display: false,
+                    },
+                    datalabels: {
+                        display: true,
+                    },
                 },
             },
-            plugins: {
-                //@ts-ignore
-                customCanvasBackgroundColor: {
-                    color: '#424549',
-                },
-                legend: {
-                    display: false,
-                },
-                datalabels: {
-                    display: true,
-                },
-            },
-        },
-        //plugins: [plugin],
-    }
-
+            //plugins: [background],
+        }
     );
 
     const relativeImgFolderPath = path.join(__dirname, '../img');
