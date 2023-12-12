@@ -79,8 +79,8 @@ const command: SlashCommand = {
             await commandProcessor.createImage();
             await commandProcessor.createEmbed();
             await commandProcessor.createChart();
-
             await interaction.editReply({content: `${verifiedData.booking.displayBookingInfo()}!`});
+            await interaction.deleteReply();
         } catch (error: any) {
             logger.error(error.message);
             console.log(error);

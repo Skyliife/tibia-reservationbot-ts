@@ -93,6 +93,7 @@ const deleteReservation = async (interaction: ChatInputCommandInteraction, dataT
             await commandProcessor.createEmbed();
             await commandProcessor.createChart();
             await interaction.editReply({content: `Your reservation ${reservation?.huntingSpot} has been deleted`});
+            await interaction.deleteReply();
 
         } else {
             const replyContent = "No reservation found, nothing has been deleted";
