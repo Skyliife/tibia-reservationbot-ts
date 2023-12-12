@@ -1,9 +1,11 @@
-import {ChannelType, GuildMember, SlashCommandBuilder, TextChannel} from "discord.js";
+import {AttachmentBuilder, ChannelType, GuildMember, SlashCommandBuilder, TextChannel} from "discord.js";
 
 import {SlashCommand} from "../types";
 import {createEmbedsForGroups} from "../bookingservice/embed.service";
 import {createChart} from "../bookingservice/chart.service";
 import {ImageService} from "../bookingservice/image.service";
+import {writeFileSync} from "fs";
+import {join} from "path";
 
 const command: SlashCommand = {
     command: new SlashCommandBuilder().setName("embed").setDescription("test embed"),
@@ -27,12 +29,13 @@ const command: SlashCommand = {
         });
 
 
-        await createChart(member.guild.id);
+        const canvas = await createChart(member.guild.id);
         if (interaction.inCachedGuild()) {
             const channelToSend = member.guild.channels.cache.find((channel: any) => channel.name === "summary") as TextChannel;
             if (channelToSend !== undefined) {
                 await channelToSend.bulkDelete(100, true);
-                await channelToSend.send({files: [{attachment: '../tibia-reservationbot-ts/build/img/summary.png'}]})
+                const attachment = new AttachmentBuilder(await canvas.encode('png'), {name: 'summary.png'});
+                await channelToSend.send({files: [attachment]})
             }
         }
 

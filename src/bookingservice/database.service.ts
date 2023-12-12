@@ -1,4 +1,3 @@
-import {model} from "mongoose";
 import logger from "../logging/logger";
 import BookingSchema from "../schemas/Booking";
 import Booking from "./booking";
@@ -15,9 +14,9 @@ import {GODSDB} from "../database/GodsDatabase";
 //how to add a reservation to different databases?
 export const InsertBooking = async (reservation: Booking, databaseId: string) => {
     let BookingModel;
-    if (databaseId === "REFUGIA") {
+    if (databaseId === process.env.GUILDSERVER_GODS) {
         BookingModel = GODSDB.model<IBooking>("booking", BookingSchema, reservation.huntingPlace);
-    } else if (databaseId === "1184160493011730452") {
+    } else if (databaseId === process.env.GUILDSERVER_REFUGIA) {
         // Example: Connect to another database
         BookingModel = REFUGIADB.model<IBooking>("booking", BookingSchema, reservation.huntingPlace);
     } else {
@@ -76,28 +75,34 @@ export const InsertBooking = async (reservation: Booking, databaseId: string) =>
     }
 };
 
-export const getBookingsForUserId = async (collectionName: string | undefined, userId: string) => {
+export const getBookingsForUserId = async (collectionName: string | undefined, userId: string, databaseId: string) => {
     const formattedArray: { formattedString: string; reservation: IBooking }[] = [];
-    try {
-        if (collectionName === undefined) return formattedArray;
-        const BookingModel = model<IBooking>("booking", BookingSchema, collectionName);
-        //console.log(bookings.map((e) => e.uniqueId));
-        const result = await BookingModel.find({uniqueId: userId, deletedAt: null}).sort({
-            start: 1,
-        });
-        result.forEach((item) => {
-            const {huntingPlace, huntingSpot, start, end} = item;
-            const formattedString = `Reservation ${huntingSpot} - from ${dayjs(start).format("D.M HH:mm")} to ${dayjs(end).format("D.M HH:mm")}`;
-            formattedArray.push({formattedString: formattedString, reservation: item});
-        })
 
+    if (collectionName === undefined) return formattedArray;
+    let BookingModel;
+    if (databaseId === process.env.GUILDSERVER_GODS) {
+        BookingModel = GODSDB.model<IBooking>("booking", BookingSchema, collectionName);
 
-        return formattedArray;
-    } catch (error: any) {
-        logger.error(`Error retrieving bookings for userId ${userId}: ${error.message}`);
-        throw new Error(error.message);
-    } finally {
+    } else if (databaseId === process.env.GUILDSERVER_REFUGIA) {
+        // Example: Connect to another database
+        BookingModel = REFUGIADB.model<IBooking>("booking", BookingSchema, collectionName);
+    } else {
+        // Handle the case where the database ID is not recognized
+        throw new Error(`Unknown database ID: ${databaseId}`);
     }
+
+    //console.log(bookings.map((e) => e.uniqueId));
+    const result = await BookingModel.find({uniqueId: userId, deletedAt: null}).sort({
+        start: 1,
+    });
+    result.forEach((item) => {
+        const {huntingPlace, huntingSpot, start, end} = item;
+        const formattedString = `Reservation ${huntingSpot} - from ${dayjs(start).format("D.M HH:mm")} to ${dayjs(end).format("D.M HH:mm")}`;
+        formattedArray.push({formattedString: formattedString, reservation: item});
+    })
+
+
+    return formattedArray;
 };
 
 export const deleteBookingsForUserId = async (
@@ -105,11 +110,23 @@ export const deleteBookingsForUserId = async (
     huntingSpot: string,
     userId: string,
     start: Dayjs,
-    end: Dayjs
+    end: Dayjs,
+    databaseId: string
 ) => {
 
+    let BookingModel;
+    if (databaseId === process.env.GUILDSERVER_GODS) {
+        BookingModel = GODSDB.model<IBooking>("booking", BookingSchema, collectionName);
+
+    } else if (databaseId === process.env.GUILDSERVER_REFUGIA) {
+        // Example: Connect to another database
+        BookingModel = REFUGIADB.model<IBooking>("booking", BookingSchema, collectionName);
+    } else {
+        // Handle the case where the database ID is not recognized
+        throw new Error(`Unknown database ID: ${databaseId}`);
+    }
     // Get bookings for the specified userId
-    const BookingModel = model<IBooking>("booking", BookingSchema, collectionName);
+
 
     const bookingToDelete = await BookingModel.findOne({
         uniqueId: userId,
@@ -183,9 +200,9 @@ export const getAllCollectionsAndValues = async (databaseId: string) => {
 
 
     let db;
-    if (databaseId === "REFUGIA") {
+    if (databaseId === process.env.GUILDSERVER_GODS) {
         db = GODSDB.db;
-    } else if (databaseId === "1184160493011730452") {
+    } else if (databaseId === process.env.GUILDSERVER_REFUGIA) {
         // Example: Connect to another database
         db = REFUGIADB.db;
     } else {
@@ -219,9 +236,9 @@ export const getAllCollectionsAndValues = async (databaseId: string) => {
 export const getResultForSummary = async (databaseId: string) => {
 
     let db;
-    if (databaseId === "REFUGIA") {
+    if (databaseId === process.env.GUILDSERVER_GODS) {
         db = GODSDB.db;
-    } else if (databaseId === "1184160493011730452") {
+    } else if (databaseId === process.env.GUILDSERVER_REFUGIA) {
         // Example: Connect to another database
         db = REFUGIADB.db;
     } else {
@@ -263,9 +280,9 @@ export const getResultForSummary = async (databaseId: string) => {
 
 export const getResultForGroups = async (collection: string | undefined, databaseId: string) => {
     let db;
-    if (databaseId === "REFUGIA") {
+    if (databaseId === process.env.GUILDSERVER_GODS) {
         db = GODSDB.db;
-    } else if (databaseId === "1184160493011730452") {
+    } else if (databaseId === process.env.GUILDSERVER_REFUGIA) {
         // Example: Connect to another database
         db = REFUGIADB.db;
     } else {

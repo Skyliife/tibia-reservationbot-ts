@@ -75,11 +75,12 @@ const command: SlashCommand = {
             const verifiedData = commandProcessor.verifyData(data);
             //Step3: Process data to database
             await commandProcessor.processData(verifiedData);
-
+            await commandProcessor.clearMessages();
+            await commandProcessor.createImage();
             await commandProcessor.createEmbed();
             await commandProcessor.createChart();
 
-            await interaction.editReply({content: `Done!`});
+            await interaction.editReply({content: `${verifiedData.booking.displayBookingInfo()}!`});
         } catch (error: any) {
             logger.error(error.message);
             console.log(error);

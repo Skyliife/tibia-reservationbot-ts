@@ -1,18 +1,8 @@
-import {
-    CacheType,
-    CacheTypeReducer,
-    ChannelType,
-    ChatInputCommandInteraction,
-    GuildMember,
-    SlashCommandBuilder,
-    TextChannel
-} from "discord.js";
+import {ChannelType, ChatInputCommandInteraction, GuildMember, SlashCommandBuilder} from "discord.js";
 import {IBooking, SlashCommand} from "../types";
 import {deleteBookingsForUserId, getBookingsForUserId} from "../bookingservice/database.service";
-import {createEmbedsForGroups} from "../bookingservice/embed.service";
 import logger from "../logging/logger";
-import {createChart} from "../bookingservice/chart.service";
-import * as fs from 'fs';
+import CommandProcessor from "../bookingservice/CommandProcessor";
 
 let choices: { formattedString: string; reservation: IBooking | null }[] = [];
 
@@ -31,8 +21,9 @@ const command: SlashCommand = {
     autocomplete: async (interaction) => {
         const channel = interaction.channel;
         const channelName = fetchChannelName(channel);
+        const member = interaction.member as GuildMember
 
-        await fetchAndSetChoices(channelName, interaction.user.id);
+        await fetchAndSetChoices(channelName, interaction.user.id, member.guild.id);
 
         await interaction.respond(generateAutocompleteChoices(choices));
     },
@@ -72,9 +63,9 @@ const generateAutocompleteChoices = (choices: { formattedString: string }[]): an
     }));
 };
 
-const fetchAndSetChoices = async (channelName: string | undefined, userId: string) => {
+const fetchAndSetChoices = async (channelName: string | undefined, userId: string, databaseId: string) => {
     try {
-        choices = await getBookingsForUserId(channelName, userId);
+        choices = await getBookingsForUserId(channelName, userId, databaseId);
         if (choices.length === 0) {
             choices = [{formattedString: "No reservation found", reservation: null}];
         }
@@ -86,47 +77,32 @@ const fetchAndSetChoices = async (channelName: string | undefined, userId: strin
 const deleteReservation = async (interaction: ChatInputCommandInteraction, dataToDelete: {
     reservation?: IBooking | null
 }) => {
-    const {reservation} = dataToDelete;
-    const channelName = fetchChannelName(interaction.channel);
-    const huntingSpot = reservation?.huntingSpot;
-    const start = reservation?.start;
-    const end = reservation?.end;
-    const member: CacheTypeReducer<CacheType, GuildMember, any> = interaction.member;
+    try {
+        const {reservation} = dataToDelete;
 
-    if (huntingSpot !== undefined && channelName !== undefined && start !== undefined && end !== undefined) {
-        await deleteBookingsForUserId(channelName, huntingSpot, interaction.user.id, start, end);
-        await createChart(member.guild.id);
-        const channelToSend = member.guild.channels.cache.find((channel: any) => channel.name === "summary") as TextChannel;
+        const channelName = fetchChannelName(interaction.channel);
+        const huntingSpot = reservation?.huntingSpot;
+        const start = reservation?.start;
+        const end = reservation?.end;
+        const member = interaction.member as GuildMember
+        const commandProcessor = new CommandProcessor(interaction);
+        if (huntingSpot !== undefined && channelName !== undefined && start !== undefined && end !== undefined) {
+            await deleteBookingsForUserId(channelName, huntingSpot, interaction.user.id, start, end, member.guild.id);
+            await commandProcessor.clearMessages();
+            await commandProcessor.createImage();
+            await commandProcessor.createEmbed();
+            await commandProcessor.createChart();
+            await interaction.editReply({content: `Your reservation ${reservation?.huntingSpot} has been deleted`});
 
-        if (channelToSend !== undefined) {
-            const file = '../tibia-reservationbot-ts/build/img/summary.png'
-            if (fs.existsSync(file)) {
-                await channelToSend.bulkDelete(100, true);
-                await channelToSend.send({files: [{attachment: file}]});
-            }
-
+        } else {
+            const replyContent = "No reservation found, nothing has been deleted";
+            await interaction.editReply({content: replyContent});
         }
-        await interaction.channel?.messages.fetch({limit: 100}).then(async (msgs) => {
-            if (interaction.channel?.type === ChannelType.DM) return;
-            await interaction.channel?.bulkDelete(msgs, true);
-        });
 
-        const replyContent = `Your reservation ${reservation?.huntingSpot} has been deleted`;
-        await interaction.editReply({content: replyContent});
-
-        const embedsForChannel = await createEmbedsForGroups(channelName, member.guild.id);
-        const embedsArray = embedsForChannel.map((item) => item.embed);
-        const embedsAttachment = embedsForChannel.map((item) => item.attachment);
-
-        if (embedsForChannel.length > 0) {
-            await interaction.followUp({
-                embeds: embedsArray,
-                files: embedsAttachment,
-            });
-        }
-    } else {
-        const replyContent = "No reservation found, nothing has been deleted";
-        await interaction.editReply({content: replyContent});
+    } catch (error: any) {
+        logger.error(error.message);
+        console.log(error);
+        await interaction.editReply({content: `Something went wrong... ${error.message}`});
     }
 };
 

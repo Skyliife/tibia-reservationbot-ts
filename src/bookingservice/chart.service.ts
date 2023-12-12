@@ -1,15 +1,17 @@
 import {getAllCollectionsAndValues} from "./database.service";
 import {Chart, Colors, registerables} from "chart.js";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import {createCanvas, loadImage} from "canvas";
+
 import * as fs from "fs";
-import path from "path";
+import path, {join} from "path";
+import {createCanvas, loadImage} from "@napi-rs/canvas"
+import {writeFileSync} from "fs";
 
 
 Chart.register(...registerables, ChartDataLabels, Colors);
 
 
-export const createChart = async (databaseId:string) => {
+export const createChart = async (databaseId: string) => {
     const data = await getAllCollectionsAndValues(databaseId);
 
     const counts: { [key: string]: number } = {};
@@ -24,9 +26,39 @@ export const createChart = async (databaseId:string) => {
         return {label: key, value: percentage};
     });
 
-    const canvas: any = createCanvas(1000, 600);
+    const canvas = createCanvas(1000, 800);
     const ctx = canvas.getContext('2d');
 
+
+    // const image = await loadImage('./src/images/Gods-Wallpaper-logo.png');
+    //
+    // const background = {
+    //     id: 'customCanvasBackgroundImage',
+    //     beforeDraw: (chart: Chart) => {
+    //
+    //         const ctx = chart.ctx;
+    //         const {top, left, width, height} = chart.chartArea;
+    //         const x = left + width / 2 - image.width / 2;
+    //         const y = top + height / 2 - image.height / 2;
+    //
+    //         const aspectRatio = image.width / image.height;
+    //         let newWidth, newHeight;
+    //
+    //         if (aspectRatio > 1) {
+    //             // Landscape image
+    //             newWidth = 180;
+    //             newHeight = 180 / aspectRatio;
+    //         } else {
+    //             // Portrait or square image
+    //             newWidth = 180 * aspectRatio;
+    //             newHeight = 180;
+    //         }
+    //
+    //         // @ts-ignore
+    //         ctx.drawImage(image, x, y, newWidth, newHeight);
+    //
+    //     }
+    // };
 
     const plugin = {
         id: 'customCanvasBackgroundColor',
@@ -40,7 +72,7 @@ export const createChart = async (databaseId:string) => {
             ctx.restore();
         }
     };
-
+    // @ts-ignore
     const myDoughnutChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
@@ -110,19 +142,25 @@ export const createChart = async (databaseId:string) => {
                     },
                 },
             },
-            //plugins: [background],
+           // plugins: [background],
         }
     );
 
-    const relativeImgFolderPath = path.join(__dirname, '../img');
+    return canvas;
 
-    if (!fs.existsSync(relativeImgFolderPath)) {
-        fs.mkdirSync(relativeImgFolderPath);
-    }
-
-    const filePath = path.join(relativeImgFolderPath, 'summary.png');
-    const buffer = canvas.toBuffer('image/png');
-    fs.writeFileSync(filePath, buffer);
+    // const relativeImgFolderPath = path.join(__dirname, '../img');
+    //
+    // if (!fs.existsSync(relativeImgFolderPath)) {
+    //     fs.mkdirSync(relativeImgFolderPath);
+    // }
+    //
+    // const filePath = path.join(relativeImgFolderPath, 'summary.png');
+    // const buffer = canvas.toBuffer('image/png');
+    // fs.writeFileSync(filePath, buffer);
+    //
+    // // const b = canvas.toBuffer('image/png')
+    // //
+    // // writeFileSync(join(__dirname, 'draw-emoji.png'), b)
 }
 
 
