@@ -1,14 +1,15 @@
 import {AttachmentBuilder, ChannelType, ChatInputCommandInteraction, GuildMember, TextChannel} from "discord.js";
 import CollectingService from "./collecting.service";
 import VerifyingService from "./verifying.service";
-import {InsertBooking} from "./database.service";
+import {getAllCollectionsAndValues, InsertBooking} from "./database.service";
 import {createEmbedsForGroups} from "./embed.service";
 import {createChart} from "./chart.service";
 import {ImageService} from "./image.service";
+import {getHuntingPlaceByChannelName} from "../huntingplaces/huntingplaces";
 
 //This class processes the command by collecting data, verifying it, and processing it.
 
-class CommandProcessor {
+export default class CommandProcessor {
     private readonly interaction: ChatInputCommandInteraction;
     private readonly channelName;
     private readonly member;
@@ -45,11 +46,12 @@ class CommandProcessor {
     }
 
     async createImage() {
-        await ImageService(this.interaction);
+        const data = await this.getDataFromDatabase(this.member.guild.id);
+        await ImageService(this.interaction, data);
     }
 
     async createEmbed() {
-
+        if (getHuntingPlaceByChannelName(this.channelName) === undefined) return;
         const embedsForChannel = await createEmbedsForGroups(this.channelName, this.member.guild.id);
         const embedsArray = embedsForChannel.map((item) => item.embed);
         const embedsAttachment = embedsForChannel.map((item) => item.attachment);
@@ -66,8 +68,9 @@ class CommandProcessor {
     }
 
     async createChart() {
+        const data = await this.getDataFromDatabase(this.member.guild.id);
 
-        const canvas = await createChart(this.member.guild.id);
+        const canvas = await createChart(data);
         if (this.interaction.inCachedGuild()) {
             const channelToSend = this.member.guild.channels.cache.find((channel: any) => channel.name === "summary") as TextChannel;
             if (channelToSend !== undefined) {
@@ -80,7 +83,9 @@ class CommandProcessor {
 
     }
 
+    private async getDataFromDatabase(databaseId: string) {
+        return await getAllCollectionsAndValues(databaseId);
+
+    }
 
 }
-
-export default CommandProcessor;

@@ -20,7 +20,7 @@ module.exports = async (client: Client) => {
     const rest = new REST({version: "10"}).setToken(process.env.DISCORD_TOKEN);
 
     // rest
-    //   .put(Routes.applicationGuildCommands(process.env.CLIENTID, process.env.GUILDTESTSERVER), {
+    //   .put(Routes.applicationGuildCommands(process.env.CLIENTID, process.env.GUILDSERVER), {
     //     body: [],
     //   })
     //   .then(() => {
@@ -28,12 +28,7 @@ module.exports = async (client: Client) => {
     //   })
     //   .catch(console.error);
 
-    // rest
-    //   .put(Routes.applicationCommands(process.env.CLIENTID), { body: [] })
-    //   .then(() => {
-    //     console.log("Successfully deleted all application commands.");
-    //   })
-    //   .catch(console.error);
+
 
     await rest.put(
         Routes.applicationGuildCommands(process.env.CLIENTID, process.env.GUILDSERVER),

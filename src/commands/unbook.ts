@@ -78,6 +78,7 @@ const deleteReservation = async (interaction: ChatInputCommandInteraction, dataT
     reservation?: IBooking | null
 }) => {
     try {
+        await interaction.deferReply({ephemeral: true});
         const {reservation} = dataToDelete;
 
         const channelName = fetchChannelName(interaction.channel);
@@ -98,6 +99,7 @@ const deleteReservation = async (interaction: ChatInputCommandInteraction, dataT
         } else {
             const replyContent = "No reservation found, nothing has been deleted";
             await interaction.editReply({content: replyContent});
+            await interaction.deleteReply();
         }
 
     } catch (error: any) {

@@ -48,6 +48,9 @@ export type Name = {
     guildNickName: string;
     interactionName: string;
 };
+export type DatabaseResult = {
+    [collectionName: string]: IBooking[];
+};
 
 export type DatabaseResultForSummary = {
     [huntingPlace: string]: {

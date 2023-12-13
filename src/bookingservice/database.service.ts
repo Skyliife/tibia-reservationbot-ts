@@ -2,7 +2,7 @@ import logger from "../logging/logger";
 import BookingSchema from "../schemas/Booking";
 import Booking from "./booking";
 
-import {DatabaseResultForGroup, DatabaseResultForSummary, IBooking} from "../types";
+import {DatabaseResult, DatabaseResultForGroup, DatabaseResultForSummary, IBooking} from "../types";
 import dayjs, {Dayjs} from "dayjs";
 import {
     areAllCurrentReservationsFromUserWithinRoleDuration,
@@ -189,11 +189,9 @@ export const deleteBookingsForUserId = async (
 //     mongoose.connection.close(); // Close the Mongoose connection
 //   }
 // };
-type DatabaseResult = {
-    [collectionName: string]: IBooking[];
-};
 
-export const getAllCollectionsAndValues = async (databaseId: string) => {
+
+export const getAllCollectionsAndValues = async (databaseId: string):Promise<DatabaseResult> => {
     //mongoose.pluralize(null);
     //await mongoose.connect(`mongodb://127.0.0.1:27017/TibiaBotReservationDB`);
     const result: DatabaseResult = {}; // Object to store collections and documents

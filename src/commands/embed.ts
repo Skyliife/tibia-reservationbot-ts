@@ -1,55 +1,35 @@
-import {AttachmentBuilder, ChannelType, GuildMember, SlashCommandBuilder, TextChannel} from "discord.js";
+import {ChannelType, SlashCommandBuilder} from "discord.js";
 
 import {SlashCommand} from "../types";
-import {createEmbedsForGroups} from "../bookingservice/embed.service";
-import {createChart} from "../bookingservice/chart.service";
-import {ImageService} from "../bookingservice/image.service";
-import {writeFileSync} from "fs";
-import {join} from "path";
+import logger from "../logging/logger";
+import CommandProcessor from "../bookingservice/CommandProcessor";
 
 const command: SlashCommand = {
-    command: new SlashCommandBuilder().setName("embed").setDescription("test embed"),
+    command: new SlashCommandBuilder().setName("update").setDescription("update the reservations of the channel"),
     execute: async (interaction) => {
-        await interaction.deferReply({ephemeral: true});
-        const channel = interaction.channel;
-        await interaction.followUp({
-            content: "Done",
-        });
+        const commandProcessor = new CommandProcessor(interaction);
+        try {
+            await interaction.deferReply({ephemeral: true});
+            const channel = fetchChannelName(interaction.channel);
 
-
-
-        let channelName;
-        if (channel && "name" in channel) {
-            channelName = channel.name;
-        }
-        const member = interaction.member as GuildMember;
-        interaction.channel?.messages.fetch({limit: 100}).then(async (msgs) => {
-            if (interaction.channel?.type === ChannelType.DM) return;
-            const deletedMessages = await interaction.channel?.bulkDelete(msgs, true);
-        });
-
-
-        const canvas = await createChart(member.guild.id);
-        if (interaction.inCachedGuild()) {
-            const channelToSend = member.guild.channels.cache.find((channel: any) => channel.name === "summary") as TextChannel;
-            if (channelToSend !== undefined) {
-                await channelToSend.bulkDelete(100, true);
-                const attachment = new AttachmentBuilder(await canvas.encode('png'), {name: 'summary.png'});
-                await channelToSend.send({files: [attachment]})
-            }
-        }
-
-        await ImageService(interaction);
-        const embedsForChannel = await createEmbedsForGroups(channelName, member.guild.id);
-        const embedsArray = embedsForChannel.map((item) => item.embed);
-        const embedsAttachment = embedsForChannel.map((item) => item.attachment);
-        if (embedsForChannel.length > 0) {
-            await interaction.followUp({
-                embeds: embedsArray,
-                files: embedsAttachment,
+            await commandProcessor.clearMessages();
+            await commandProcessor.createImage();
+            await commandProcessor.createEmbed();
+            await commandProcessor.createChart();
+            await interaction.editReply({
+                content: "Updated reservations!",
             });
+            await interaction.deleteReply();
+        } catch (error: any) {
+            logger.error(error.message);
+            console.log(error);
+            await interaction.editReply({content: `Something went wrong... ${error.message}`});
         }
+
     },
+};
+const fetchChannelName = (channel: any): string | undefined => {
+    return channel?.name;
 };
 
 export default command;

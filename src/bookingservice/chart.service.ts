@@ -2,13 +2,14 @@ import {getAllCollectionsAndValues} from "./database.service";
 import {Chart, Colors, registerables} from "chart.js";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import {createCanvas} from "@napi-rs/canvas"
-
+import utils from "../chartutlis/utils";
+import {resolve} from 'chart.js/helpers';
+import {DatabaseResult} from "../types";
 
 Chart.register(...registerables, ChartDataLabels, Colors);
 
 
-export const createChart = async (databaseId: string) => {
-    const data = await getAllCollectionsAndValues(databaseId);
+export const createChart = async (data :DatabaseResult) => {
 
     const counts: { [key: string]: number } = {};
     Object.keys(data).forEach((huntingPlace) => {
@@ -22,6 +23,7 @@ export const createChart = async (databaseId: string) => {
         const amount = counts[key];
         return {label: key, value: amount};
     });
+
     const totalReservations = Object.values(counts).reduce((sum, count) => sum + count, 0);
     const percentages: { label: string; value: number }[] = Object.keys(counts).map((key, index) => {
         const percentage = (counts[key] / totalReservations) * 100;
@@ -31,72 +33,16 @@ export const createChart = async (databaseId: string) => {
     console.log("totalReservations", totalReservations);
     console.log("percentages", percentages);
 
-    const canvas = createCanvas(1000, 800);
+    const canvas = createCanvas(1500, 800);
     const ctx = canvas.getContext('2d');
 
 
-    // const image = await loadImage('./src/images/Gods-Wallpaper-logo.png');
-    //
-    // const background = {
-    //     id: 'customCanvasBackgroundImage',
-    //     beforeDraw: (chart: Chart) => {
-    //
-    //         const ctx = chart.ctx;
-    //         const {top, left, width, height} = chart.chartArea;
-    //         const x = left + width / 2 - image.width / 2;
-    //         const y = top + height / 2 - image.height / 2;
-    //
-    //         const aspectRatio = image.width / image.height;
-    //         let newWidth, newHeight;
-    //
-    //         if (aspectRatio > 1) {
-    //             // Landscape image
-    //             newWidth = 180;
-    //             newHeight = 180 / aspectRatio;
-    //         } else {
-    //             // Portrait or square image
-    //             newWidth = 180 * aspectRatio;
-    //             newHeight = 180;
-    //         }
-    //
-    //         // @ts-ignore
-    //         ctx.drawImage(image, x, y, newWidth, newHeight);
-    //
-    //     }
-    // };
-    const test = {
-        beforeDraw: function (chart: Chart) {
-            const width = chart.width;
-            const height = chart.height;
-            const ctx = chart.ctx;
-
-            // Center the text
-            const text1 = `${totalReservations}`;
-            const text2 = 'Total';
-
-
-            const fontSize = 60;
-            ctx.font = `bold ${fontSize}px Arial`;
-            const fontSize2 = 35;
-            ctx.font = `${fontSize}px Arial`;
-
-            const textWidth1 = ctx.measureText(text1).width;
-            const textWidth2 = ctx.measureText(text2).width;
-
-
-            const x1 = (width - textWidth1) / 2;
-            const x2 = (width - textWidth2) / 2;
-
-
-            const y = height / 2 + fontSize / 2;
-
-            // Draw the texts
-            ctx.fillStyle = '#ffffff'; // Set text color
-            ctx.fillText(text1, x1, y - fontSize);
-            ctx.fillText(text2, x2, y + fontSize2);
-
-        },
-    }
+    const doughnutLabel = {
+        id: 'doughnutlabel',
+        beforeDatasetDraw: function (chart: any, args: any, options: typeof resolve) {
+            drawDoughnutLabel(chart, options);
+        }
+    };
 
     const plugin = {
         id: 'customCanvasBackgroundColor',
@@ -114,6 +60,7 @@ export const createChart = async (databaseId: string) => {
     const myDoughnutChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
+
                 labels: percentages.map((data) => data.label),
                 datasets: [
                     {
@@ -175,45 +122,122 @@ export const createChart = async (databaseId: string) => {
                     padding: {
                         left: 200,
                         right: 200,
-                        top: 20,
-                        bottom: 20,
+                        top: 0,
+                        bottom: 60,
                     },
                 },
                 plugins: {
                     //@ts-ignore
                     customCanvasBackgroundColor: {
-                        color: '#424549',
+                        color: '#100d2b',
                     },
                     legend: {
                         display: false,
                     },
+                    title: {
+                        display: true,
+                        text: 'Current reservations',
+                        font: {weight: 'bold', size: 30},
+                        color: '#fff',
+
+                        padding: {
+                            top: 10,
+                            bottom: 60
+                        },
+                        position: 'top',
+                    },
                     datalabels: {
                         display: true,
                     },
+                    doughnutlabel: {
+                        labels: [
+                            {
+                                text: `${totalReservations}`,
+                                color: '#fff',
+                                font: {
+                                    size: 50,
+                                    weight: 'bold',
+                                },
+                            },
+                            {
+                                text: 'total',
+                                color: '#cccccc',
+                                font: {
+                                    size: 20,
+                                },
+                            },
+                        ],
+                    },
                 },
             },
-            plugins: [plugin, test],
+            plugins: [plugin, doughnutLabel],
         }
     );
 
 
     return canvas;
-
-
-// const relativeImgFolderPath = path.join(__dirname, '../img');
-//
-// if (!fs.existsSync(relativeImgFolderPath)) {
-//     fs.mkdirSync(relativeImgFolderPath);
-// }
-//
-// const filePath = path.join(relativeImgFolderPath, 'summary.png');
-// const buffer = canvas.toBuffer('image/png');
-// fs.writeFileSync(filePath, buffer);
-//
-// // const b = canvas.toBuffer('image/png')
-// //
-// // writeFileSync(join(__dirname, 'draw-emoji.png'), b)
 }
+
+function drawDoughnutLabel(chart: any, options: any) {
+    if (options && options.labels && options.labels.length > 0) {
+        let ctx = chart.ctx;
+
+        let innerLabels: any = [];
+        options.labels.forEach(function (label: any) {
+            let text = typeof (label.text) === 'function' ? label.text(chart) : label.text;
+            let innerLabel = {
+                text: text,
+                font: utils.parseFont(resolve([label.font, options.font, {}], ctx, 0)),
+                color: resolve([label.color, options.color, Chart.defaults.color], ctx, 0)
+            };
+            innerLabels.push(innerLabel);
+        });
+
+        let textAreaSize = utils.textSize(ctx, innerLabels);
+
+        // Calculate the adjustment ratio to fit the text area into the doughnut inner circle
+        let hypotenuse = Math.sqrt(Math.pow(textAreaSize.width, 2) + Math.pow(textAreaSize.height, 2));
+        let innerDiameter = chart.innerRadius * 2;
+        let fitRatio = innerDiameter / hypotenuse;
+
+        // Adjust the font if necessary and recalculate the text area after applying the fit ratio
+        if (fitRatio < 1) {
+            innerLabels.forEach(function (innerLabel: any) {
+                innerLabel.font.size = Math.floor(innerLabel.font.size * fitRatio);
+                innerLabel.font.lineHeight = undefined;
+                innerLabel.font = utils.parseFont(resolve([innerLabel.font, {}], ctx, 0));
+            });
+
+            textAreaSize = utils.textSize(ctx, innerLabels);
+        }
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // The center of the inner circle
+        let centerX = ((chart.chartArea.left + chart.chartArea.right) / 2);
+        let centerY = ((chart.chartArea.top + chart.chartArea.bottom) / 2);
+
+        // The top Y coordinate of the text area
+        let topY = centerY - textAreaSize.height / 2;
+
+        let i;
+        let ilen = innerLabels.length;
+        let currentHeight = 0;
+        for (i = 0; i < ilen; ++i) {
+            ctx.fillStyle = innerLabels[i].color;
+            ctx.font = innerLabels[i].font.string;
+
+            // The Y center of each line
+            let lineCenterY = topY + innerLabels[i].font.lineHeight / 2 + currentHeight;
+            currentHeight += innerLabels[i].font.lineHeight;
+
+            // Draw each line of text
+            ctx.fillText(innerLabels[i].text, centerX, lineCenterY);
+        }
+    }
+}
+
 
 
 
