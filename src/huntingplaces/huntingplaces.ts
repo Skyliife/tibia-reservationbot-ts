@@ -20,16 +20,29 @@ const BuriedCathedral = {
     location: "Buried-cathedral",
     choices: [
         {
-            name: "Floor-6",
+            name: "Floor -6",
             link: "https://tibia.fandom.com/wiki/The_Dream_Courts_Quest",
         },
         {
-            name: "Floor-7",
+            name: "Floor -7",
             link: "https://tibia.fandom.com/wiki/Buried_Cathedral",
         },
         {
-            name: "Floor-8",
+            name: "Floor -8",
             link: "https://tibia.fandom.com/wiki/The_Dream_Courts_Quest#Buried_Cathedral",
+        },
+    ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
+};
+const Bulltaurs = {
+    location: "bulltaurs",
+    choices: [
+        {
+            name: "Upper Bulltaur",
+            link: "https://tibia.fandom.com/wiki/The_Dream_Courts_Quest",
+        },
+        {
+            name: "Lower Bulltaur",
+            link: "https://tibia.fandom.com/wiki/Buried_Cathedral",
         },
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
@@ -42,7 +55,20 @@ const Cobras = {
             link: "https://tibia.fandom.com/wiki/Cobra_Bastion",
         },
         {
-            name: "Gaffir",
+            name: "Basement",
+            link: "https://tibia.fandom.com/wiki/Gaffir",
+        },
+    ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
+};
+const Dragolisks = {
+    location: "Dragolisks",
+    choices: [
+        {
+            name: "Upper Dragolisk",
+            link: "https://tibia.fandom.com/wiki/Cobra_Bastion",
+        },
+        {
+            name: "Lower Dragolisk",
             link: "https://tibia.fandom.com/wiki/Gaffir",
         },
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
@@ -52,32 +78,36 @@ const Feru = {
     location: "Feru",
     choices: [
         {
-            name: "Grounds of Plague",
+            name: "Plagirath Seal",
             link: "https://tibia.fandom.com/wiki/Grounds_of_Plague",
         },
         {
-            name: "Grounds of Deceit",
+            name: "Bazir Seal",
             link: "https://tibia.fandom.com/wiki/Grounds_of_Deceit",
         },
         {
-            name: "Grounds of Fire",
+            name: "Mazoran Seal",
             link: "https://tibia.fandom.com/wiki/Grounds_of_Fire",
         },
         {
-            name: "Grounds of Destruction",
+            name: "Juggernaut Seal",
             link: "https://tibia.fandom.com/wiki/Grounds_of_Destruction",
         },
         {
-            name: "Grounds of Undeath",
+            name: "Undead Seal",
             link: "https://tibia.fandom.com/wiki/Grounds_of_Undeath",
         },
         {
-            name: "Grounds of Despair",
+            name: "Pumin Seal",
             link: "https://tibia.fandom.com/wiki/Grounds_of_Despair",
         },
         {
-            name: "Grounds of Damnation",
+            name: "DT Seal -1",
             link: "https://tibia.fandom.com/wiki/Grounds_of_Damnation",
+        },
+        {
+            name: "DT Seal -2",
+            link: "https://tibia.fandom.com/wiki/Grounds_of_Damnation#DarkTorturer",
         },
         {
             name: "Feru Way",
@@ -90,16 +120,16 @@ const FlimsyVenore = {
     location: "flimsy-venore",
     choices: [
         {
-            name: "Flimsy -1",
-            link: "https://tibia.fandom.com/wiki/Monster_Graveyard",
+            name: "Flimsy Jakundaf Desert",
+            link: "https://tibia.fandom.com/wiki/Brain_Grounds",
         },
         {
-            name: "Flimsy -2",
-            link: "https://tibia.fandom.com/wiki/Crystal_Enigma",
+            name: "Flimsy Banuta",
+            link: "https://tibia.fandom.com/wiki/Netherworld",
         },
         {
-            name: "Flimsy -3",
-            link: "https://tibia.fandom.com/wiki/Sparkling_Pools",
+            name: "Flimsy Vengoth",
+            link: "https://tibia.fandom.com/wiki/Zarganash",
         },
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
@@ -203,15 +233,18 @@ const Issavi = {
             name: "Kilmaresh Catacombs -2",
             link: "https://tibia.fandom.com/wiki/Kilmaresh_Catacombs",
         },
-        {name: "Salt Caves", link: "https://tibia.fandom.com/wiki/Salt_Caves"},
-        {name: "Pirat Mine", link: "https://tibia.fandom.com/wiki/Pirat_Mine"},
+
         {
             name: "The Wreckoning",
             link: "https://tibia.fandom.com/wiki/The_Wreckoning",
         },
         {
-            name: "Ruins of Nuur",
+            name: "Ruins of Nuur Girtablilu",
             link: "https://tibia.fandom.com/wiki/Ruins_of_Nuur",
+        },
+        {
+            name: "Salt Caves Bashmu",
+            link: "https://tibia.fandom.com/wiki/Bashmu",
         },
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
@@ -230,16 +263,12 @@ const SecretLibrary = {
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
 
-const Nagas = {
-    location: "Nagas",
+const Marapur = {
+    location: "Marapur",
     choices: [
         {
-            name: "Temple of the Moon Goddess -1",
+            name: "Temple of the Moon Goddess",
             link: "https://tibia.fandom.com/wiki/Temple_of_the_Moon_Goddess",
-        },
-        {
-            name: "Temple of the Moon Goddess -2",
-            link: "https://tibia.fandom.com/wiki/Marapur",
         },
         {
             name: "Great Pearl Fan Reef",
@@ -410,8 +439,8 @@ const Weremonster = {
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
 
-const warzone7 = {
-    location: "Warzone-7-9",
+const Warzone7 = {
+    location: "Warzones-7-9",
     choices: [
         {
             name: "Warzone 7",
@@ -431,16 +460,18 @@ const warzone7 = {
 export const getHuntingPlaceByChannelName = (locationName: string) => {
     const locations = [
         Asuras,
+        Bulltaurs,
         BuriedCathedral,
         Cobras,
+        Dragolisks,
         Feru,
         FlimsyVenore,
         Gnomprona,
         Ingol,
         Inquisition,
         Issavi,
+        Marapur,
         SecretLibrary,
-        Nagas,
         Roshamuul,
         RottenBlood,
         IceLibrary,
@@ -448,6 +479,7 @@ export const getHuntingPlaceByChannelName = (locationName: string) => {
         Spectres,
         TheDreamCourts,
         Weremonster,
+        Warzone7
     ];
     const matchingLocation = locations.find(
         (obj) => obj.location.toLowerCase() === locationName.toLowerCase()
@@ -458,16 +490,18 @@ export const getHuntingPlaceByChannelName = (locationName: string) => {
 export const getHuntingSpotsByHuntingPlace = (choiceName: string | undefined) => {
     const locations = [
         Asuras,
+        Bulltaurs,
         BuriedCathedral,
         Cobras,
+        Dragolisks,
         Feru,
         FlimsyVenore,
         Gnomprona,
         Ingol,
         Inquisition,
         Issavi,
+        Marapur,
         SecretLibrary,
-        Nagas,
         Roshamuul,
         RottenBlood,
         IceLibrary,
@@ -475,6 +509,7 @@ export const getHuntingSpotsByHuntingPlace = (choiceName: string | undefined) =>
         Spectres,
         TheDreamCourts,
         Weremonster,
+        Warzone7
     ];
     for (const location of locations) {
         const matchingChoice = location.choices.find(
@@ -490,16 +525,18 @@ export const getHuntingSpotsByHuntingPlace = (choiceName: string | undefined) =>
 export const getChoicesForSpot = (locationName: string | undefined): { name: string, value: string }[] => {
     const locations = [
         Asuras,
+        Bulltaurs,
         BuriedCathedral,
         Cobras,
+        Dragolisks,
         Feru,
         FlimsyVenore,
         Gnomprona,
         Ingol,
         Inquisition,
         Issavi,
+        Marapur,
         SecretLibrary,
-        Nagas,
         Roshamuul,
         RottenBlood,
         IceLibrary,
@@ -507,6 +544,7 @@ export const getChoicesForSpot = (locationName: string | undefined): { name: str
         Spectres,
         TheDreamCourts,
         Weremonster,
+        Warzone7
     ];
 
     const matchedLocation = locations.find((location) => location.location.toLowerCase() === locationName);

@@ -1,11 +1,7 @@
 import {getAllCollectionsAndValues} from "./database.service";
 import {Chart, Colors, registerables} from "chart.js";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-
-import * as fs from "fs";
-import path, {join} from "path";
-import {createCanvas, loadImage} from "@napi-rs/canvas"
-import {writeFileSync} from "fs";
+import {createCanvas} from "@napi-rs/canvas"
 
 
 Chart.register(...registerables, ChartDataLabels, Colors);
@@ -20,11 +16,20 @@ export const createChart = async (databaseId: string) => {
         counts[huntingPlace] = data[huntingPlace].length;
     });
 
+    console.log("Counts:", counts);
+
+    const values = Object.keys(counts).map((key, index) => {
+        const amount = counts[key];
+        return {label: key, value: amount};
+    });
     const totalReservations = Object.values(counts).reduce((sum, count) => sum + count, 0);
     const percentages: { label: string; value: number }[] = Object.keys(counts).map((key, index) => {
         const percentage = (counts[key] / totalReservations) * 100;
-        return {label: key, value: percentage};
+        return {label: key, name: percentage, value: counts[key]};
     });
+    console.log("values", values);
+    console.log("totalReservations", totalReservations);
+    console.log("percentages", percentages);
 
     const canvas = createCanvas(1000, 800);
     const ctx = canvas.getContext('2d');
@@ -59,6 +64,39 @@ export const createChart = async (databaseId: string) => {
     //
     //     }
     // };
+    const test = {
+        beforeDraw: function (chart: Chart) {
+            const width = chart.width;
+            const height = chart.height;
+            const ctx = chart.ctx;
+
+            // Center the text
+            const text1 = `${totalReservations}`;
+            const text2 = 'Total';
+
+
+            const fontSize = 60;
+            ctx.font = `bold ${fontSize}px Arial`;
+            const fontSize2 = 35;
+            ctx.font = `${fontSize}px Arial`;
+
+            const textWidth1 = ctx.measureText(text1).width;
+            const textWidth2 = ctx.measureText(text2).width;
+
+
+            const x1 = (width - textWidth1) / 2;
+            const x2 = (width - textWidth2) / 2;
+
+
+            const y = height / 2 + fontSize / 2;
+
+            // Draw the texts
+            ctx.fillStyle = '#ffffff'; // Set text color
+            ctx.fillText(text1, x1, y - fontSize);
+            ctx.fillText(text2, x2, y + fontSize2);
+
+        },
+    }
 
     const plugin = {
         id: 'customCanvasBackgroundColor',
@@ -67,7 +105,7 @@ export const createChart = async (databaseId: string) => {
             const {ctx} = chart;
             ctx.save();
             ctx.globalCompositeOperation = 'destination-over';
-            ctx.fillStyle = options.color || '#424549';
+            ctx.fillStyle = options.color || '#001CC3';
             ctx.fillRect(0, 0, chart.width, chart.height);
             ctx.restore();
         }
@@ -79,7 +117,7 @@ export const createChart = async (databaseId: string) => {
                 labels: percentages.map((data) => data.label),
                 datasets: [
                     {
-                        data: percentages.map((data) => data.value),
+                        data: values.map((data) => data.value),
                         datalabels: {
                             labels: {
                                 index: {
@@ -108,11 +146,23 @@ export const createChart = async (databaseId: string) => {
                                     offset: 0,
                                     padding: 2,
                                     formatter: (value) => {
-                                        const floatValue = parseFloat(value);
-                                        const integerValue = Math.floor(floatValue);
+                                        const percentage = (value / totalReservations) * 100;
+                                        const integerValue = Math.floor(percentage);
                                         return integerValue.toString(10) + '%';
                                     },
                                     align: 'top',
+                                },
+                                value: {
+                                    color: '#404040',
+                                    backgroundColor: '#fff',
+                                    borderColor: '#fff',
+                                    borderWidth: 2,
+                                    borderRadius: 4,
+                                    padding: 0,
+                                    formatter: (value) => {
+                                        return value;
+                                    },
+                                    align: 'bottom',
                                 },
                             }
                         }
@@ -123,10 +173,10 @@ export const createChart = async (databaseId: string) => {
                 maintainAspectRatio: false,
                 layout: {
                     padding: {
-                        left: 230,
-                        right: 230,
-                        top: 50,
-                        bottom: 50,
+                        left: 200,
+                        right: 200,
+                        top: 20,
+                        bottom: 20,
                     },
                 },
                 plugins: {
@@ -142,25 +192,30 @@ export const createChart = async (databaseId: string) => {
                     },
                 },
             },
-           // plugins: [background],
+            plugins: [plugin, test],
         }
     );
 
+
     return canvas;
 
-    // const relativeImgFolderPath = path.join(__dirname, '../img');
-    //
-    // if (!fs.existsSync(relativeImgFolderPath)) {
-    //     fs.mkdirSync(relativeImgFolderPath);
-    // }
-    //
-    // const filePath = path.join(relativeImgFolderPath, 'summary.png');
-    // const buffer = canvas.toBuffer('image/png');
-    // fs.writeFileSync(filePath, buffer);
-    //
-    // // const b = canvas.toBuffer('image/png')
-    // //
-    // // writeFileSync(join(__dirname, 'draw-emoji.png'), b)
+
+// const relativeImgFolderPath = path.join(__dirname, '../img');
+//
+// if (!fs.existsSync(relativeImgFolderPath)) {
+//     fs.mkdirSync(relativeImgFolderPath);
+// }
+//
+// const filePath = path.join(relativeImgFolderPath, 'summary.png');
+// const buffer = canvas.toBuffer('image/png');
+// fs.writeFileSync(filePath, buffer);
+//
+// // const b = canvas.toBuffer('image/png')
+// //
+// // writeFileSync(join(__dirname, 'draw-emoji.png'), b)
 }
+
+
+
 
 

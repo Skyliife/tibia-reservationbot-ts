@@ -76,19 +76,36 @@ export const createEmbedsForGroups = async (channel: string | undefined, databas
 
                         value += `${bold(timePart)} : ${namePart}\n`;
                     }
-
+                    console.log(booking);
                     const ss = dayjs(booking);
+                    const ssn = dayjs(ss).add(1, "day");
 
                     //Fields
-                    const fieldName = `Date ${ss.format("D.M.YY")}`;
-
-                    embed.addFields(
-                        {
-                            name: fieldName,
-                            value: value,
-                            inline: true,
-                        }
-                    );
+                    const fieldName = `Date ${ss.format("D")}-${ssn.format("D.MM")}`;
+                    if (value.length <= 1024) {
+                        embed.addFields(
+                            {
+                                name: fieldName,
+                                value: value,
+                                inline: true,
+                            }
+                        );
+                    } else {
+                        embed.addFields(
+                            {
+                                name: fieldName,
+                                value: value.slice(0, 1024),
+                                inline: true,
+                            }
+                        );
+                        embed.addFields(
+                            {
+                                name: '\u200B',
+                                value: value.slice(1024, value.length),
+                                inline: true,
+                            }
+                        );
+                    }
                 }
 
                 //Thumbnail
