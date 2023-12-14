@@ -49,8 +49,6 @@ import dayjs from "dayjs";
 // };
 
 
-
-
 export const createEmbedsForGroups = async (channel: string | undefined, databaseId: string) => {
     const data: DatabaseResultForGroup = await getResultForGroups(channel, databaseId);
     //console.log("DATAHere", data);
@@ -78,7 +76,7 @@ export const createEmbedsForGroups = async (channel: string | undefined, databas
 
                         value += `${bold(timePart)} : ${namePart}\n`;
                     }
-                    console.log(booking);
+
                     const ss = dayjs(booking);
                     const ssn = dayjs(ss).add(1, "day");
 
@@ -118,17 +116,13 @@ export const createEmbedsForGroups = async (channel: string | undefined, databas
 function createNamePart(names: Name) {
 
     if (names.userInputName && names.userInputName !== "") {
-        console.log("userInputName !=");
         return `${names.userInputName}`;
 
     }
     if (names.guildNickName && names.guildNickName !== "") {
-        console.log("guildNickName !=");
         return `${names.guildNickName}`
 
     }
-
-
     return `${names.displayName}`;
 }
 
@@ -156,6 +150,7 @@ const addThumbnail = async (embed: EmbedBuilder, name: string) => {
 async function main() {
     //await createEmbedsForGroups();
 }
+
 function createFields(value: string, embed: EmbedBuilder, fieldName: string) {
     if (value.length <= 1024) {
         embed.addFields({
@@ -165,9 +160,6 @@ function createFields(value: string, embed: EmbedBuilder, fieldName: string) {
         });
     } else {
         const x = splitStringIntoChunks(value, 1024);
-        console.log(x[0]);
-        console.log(x[0].length);
-
         if (x.length < 3) {
             embed.addFields(
                 {
@@ -202,6 +194,7 @@ function createFields(value: string, embed: EmbedBuilder, fieldName: string) {
         }
     }
 }
+
 function splitStringIntoChunks(inputString: string, maxCharacters: number) {
     const lines = inputString.split("\n");
     const resultArray = [];

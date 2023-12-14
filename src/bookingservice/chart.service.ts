@@ -16,7 +16,7 @@ export const createChartForSummary = async (data: DatabaseResult) => {
         counts[huntingPlace] = data[huntingPlace].length;
     });
 
-   // console.log("Counts:", counts);
+    // console.log("Counts:", counts);
 
     const values = Object.keys(counts).map((key, index) => {
         const amount = counts[key];
