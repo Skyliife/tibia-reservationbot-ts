@@ -42,17 +42,18 @@ export interface IBooking {
     displaySlot: Dayjs;
 }
 
-export interface ICommandExecution {
+export interface IStatistics {
     userId: string;
-    huntingPlaces: { type: Map<string, Map<string, number>> };
-    commandName: string;
-    executionCount: number;
+    name: Name;
+    commandsCount: Map<string, number>;
+    huntingPlaces: Map<string, Map<string, number>>;
 }
 
 export type Name = {
     userInputName: string
     displayName: string;
     guildNickName: string;
+    globalName: string,
     interactionName: string;
 };
 export type DatabaseResult = {

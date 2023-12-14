@@ -56,17 +56,17 @@ export const createEmbedsForGroups = async (channel: string | undefined, databas
     const embeds: { embed: EmbedBuilder; attachment: AttachmentBuilder }[] = [];
     for (const collectionName in data) {
         if (data.hasOwnProperty(collectionName)) {
-            const huntingSpawns = data[collectionName];
-            for (const huntingSpawn in huntingSpawns) {
+            const huntingPlaces = data[collectionName];
+            for (const huntingPlace in huntingPlaces) {
                 const embed = new EmbedBuilder();
 
                 //Title
-                embed.setTitle(`${huntingSpawn}`);
+                embed.setTitle(`${huntingPlace}`);
 
-                const bookings = huntingSpawns[huntingSpawn];
-                for (const booking in bookings) {
+                const huntingSpots = huntingPlaces[huntingPlace];
+                for (const huntingspot in huntingSpots) {
                     let value: string = "";
-                    const bookingsList = bookings[booking];
+                    const bookingsList = huntingSpots[huntingspot];
                     //append bookings.startAt and booking.name with \n
                     for (const booking of bookingsList) {
 
@@ -77,7 +77,7 @@ export const createEmbedsForGroups = async (channel: string | undefined, databas
                         value += `${bold(timePart)} : ${namePart}\n`;
                     }
 
-                    const ss = dayjs(booking);
+                    const ss = dayjs(huntingspot);
                     const ssn = dayjs(ss).add(1, "day");
 
                     //Fields
@@ -87,14 +87,14 @@ export const createEmbedsForGroups = async (channel: string | undefined, databas
                 }
 
                 //Thumbnail
-                const embedWithThumbnail = await addThumbnail(embed, huntingSpawn);
+                const embedWithThumbnail = await addThumbnail(embed, huntingPlace);
 
                 //console.log("EMBEEEEEED", embedWithThumbnail);
                 embeds.push(embedWithThumbnail);
             }
         }
     }
-    // add Header to first embedc
+    // add Header to first embed
     if (embeds.length > 0) {
         const lastEmbed = embeds[0].embed;
         lastEmbed.setAuthor({

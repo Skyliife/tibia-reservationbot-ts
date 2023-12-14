@@ -1,6 +1,6 @@
-import {ChannelType, ChatInputCommandInteraction, GuildMember, SlashCommandBuilder} from "discord.js";
+import {ChannelType, GuildMember, SlashCommandBuilder, TextChannel} from "discord.js";
 import {IBooking, SlashCommand} from "../types";
-import {deleteBookingsForUserId, getBookingsForUserId} from "../bookingservice/database.service";
+import {deleteBookingsForUserId, getCurrentBookingsForUserId} from "../bookingservice/database.service";
 import logger from "../logging/logger";
 import CommandProcessor from "../bookingservice/CommandProcessor";
 
@@ -29,16 +29,34 @@ const command: SlashCommand = {
     },
 
     execute: async (interaction) => {
-        const channel = interaction.channel;
-        const channelName = fetchChannelName(channel);
+        logger.debug("Start executing /unbook command!");
+        const commandProcessor = new CommandProcessor(interaction);
         const input = interaction.options.getString("reservation");
         const dataToDelete = choices.find((choice) => choice.formattedString === input);
 
         try {
             await interaction.deferReply({ephemeral: true});
 
-            if (dataToDelete && channelName !== undefined) {
-                await deleteReservation(interaction, dataToDelete);
+            if (dataToDelete && interaction.inCachedGuild() && dataToDelete.reservation !== null) {
+                const channel = interaction.channel as TextChannel;
+                const channelName = channel.name;
+                const {reservation} = dataToDelete;
+
+                const huntingSpot = reservation.huntingSpot;
+                const start = reservation.start;
+                const end = reservation.end;
+                const member = await interaction.guild.members.fetch(interaction.user.id);
+
+
+                await deleteBookingsForUserId(channelName, huntingSpot, interaction.user.id, start, end, member.guild.id);
+                await commandProcessor.clearMessages();
+                await commandProcessor.createImage();
+                await commandProcessor.createEmbed();
+                await commandProcessor.createSummaryChart();
+                await interaction.editReply({content: `Your reservation ${reservation.huntingSpot} has been deleted`});
+                await interaction.deleteReply();
+
+
             } else {
                 await interaction.editReply({
                     content: `No reservation found, nothing has been deleted`,
@@ -65,47 +83,12 @@ const generateAutocompleteChoices = (choices: { formattedString: string }[]): an
 
 const fetchAndSetChoices = async (channelName: string | undefined, userId: string, databaseId: string) => {
     try {
-        choices = await getBookingsForUserId(channelName, userId, databaseId);
+        choices = await getCurrentBookingsForUserId(channelName, userId, databaseId);
         if (choices.length === 0) {
             choices = [{formattedString: "No reservation found", reservation: null}];
         }
     } catch (error: any) {
         logger.error(error.message);
-    }
-};
-
-const deleteReservation = async (interaction: ChatInputCommandInteraction, dataToDelete: {
-    reservation?: IBooking | null
-}) => {
-    try {
-        await interaction.deferReply({ephemeral: true});
-        const {reservation} = dataToDelete;
-
-        const channelName = fetchChannelName(interaction.channel);
-        const huntingSpot = reservation?.huntingSpot;
-        const start = reservation?.start;
-        const end = reservation?.end;
-        const member = interaction.member as GuildMember
-        const commandProcessor = new CommandProcessor(interaction);
-        if (huntingSpot !== undefined && channelName !== undefined && start !== undefined && end !== undefined) {
-            await deleteBookingsForUserId(channelName, huntingSpot, interaction.user.id, start, end, member.guild.id);
-            await commandProcessor.clearMessages();
-            await commandProcessor.createImage();
-            await commandProcessor.createEmbed();
-            await commandProcessor.createChart();
-            await interaction.editReply({content: `Your reservation ${reservation?.huntingSpot} has been deleted`});
-            await interaction.deleteReply();
-
-        } else {
-            const replyContent = "No reservation found, nothing has been deleted";
-            await interaction.editReply({content: replyContent});
-            await interaction.deleteReply();
-        }
-
-    } catch (error: any) {
-        logger.error(error.message);
-        console.log(error);
-        await interaction.editReply({content: `Something went wrong... ${error.message}`});
     }
 };
 

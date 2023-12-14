@@ -81,7 +81,7 @@ export const ImageService = async (interaction: ChatInputCommandInteraction, dat
         if (resultObject.value > 20) {
             workload = Workload.High;
         }
-        const replaced = resultObject.label.replace('-', ' ');
+        const replaced = resultObject.label.replaceAll('-', ' ');
         const text = `${workload} reservations at ${replaced}!`;
 
         context.font = applyText(canvas, text, canvas.width / 3);
@@ -97,7 +97,7 @@ export const ImageService = async (interaction: ChatInputCommandInteraction, dat
         context.fillStyle = '#ffffff';
         context.fillText(text.substring(text.indexOf(' ') + 1), canvas.width / 3 + context.measureText(workloadText).width, canvas.height * 0.8);
     } else {
-        const channelName = channel.name.replace('-', ' ');
+        const channelName = channel.name.replaceAll('-', ' ');
         const text = `currently no reservations for ${channelName}!`;
         context.font = applyText(canvas, text, canvas.width / 3);
         context.fillText(text, canvas.width / 3, canvas.height * 0.8);

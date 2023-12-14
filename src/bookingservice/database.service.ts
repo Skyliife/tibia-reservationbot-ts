@@ -2,7 +2,7 @@ import logger from "../logging/logger";
 import BookingSchema from "../schemas/Booking";
 import Booking from "./booking";
 
-import {DatabaseResult, DatabaseResultForGroup, DatabaseResultForSummary, IBooking, ICommandExecution} from "../types";
+import {DatabaseResult, DatabaseResultForGroup, DatabaseResultForSummary, IBooking, IStatistics} from "../types";
 import dayjs, {Dayjs} from "dayjs";
 import {
     areAllCurrentReservationsFromUserWithinRoleDuration,
@@ -10,8 +10,8 @@ import {
 } from "../utils";
 import {REFUGIADB} from "../database/RefugiaDatabase";
 import {GODSDB} from "../database/GodsDatabase";
-import CommandExecutionSchema from "../schemas/CommandExecution";
 import {ChatInputCommandInteraction, TextChannel} from "discord.js";
+import StatisticsSchema from "../schemas/StatisticsSchema";
 
 //how to add a reservation to different databases?
 export const InsertBooking = async (reservation: Booking, databaseId: string) => {
@@ -19,10 +19,10 @@ export const InsertBooking = async (reservation: Booking, databaseId: string) =>
     if (databaseId === process.env.GUILDSERVER_GODS) {
         BookingModel = GODSDB.model<IBooking>("booking", BookingSchema, reservation.huntingPlace);
     } else if (databaseId === process.env.GUILDSERVER_REFUGIA) {
-        // Example: Connect to another database
+
         BookingModel = REFUGIADB.model<IBooking>("booking", BookingSchema, reservation.huntingPlace);
     } else {
-        // Handle the case where the database ID is not recognized
+
         throw new Error(`Unknown database ID: ${databaseId}`);
     }
 
@@ -77,7 +77,7 @@ export const InsertBooking = async (reservation: Booking, databaseId: string) =>
     }
 };
 
-export const getBookingsForUserId = async (collectionName: string | undefined, userId: string, databaseId: string) => {
+export const getCurrentBookingsForUserId = async (collectionName: string | undefined, userId: string, databaseId: string) => {
     const formattedArray: { formattedString: string; reservation: IBooking }[] = [];
 
     if (collectionName === undefined) return formattedArray;
@@ -86,10 +86,10 @@ export const getBookingsForUserId = async (collectionName: string | undefined, u
         BookingModel = GODSDB.model<IBooking>("booking", BookingSchema, collectionName);
 
     } else if (databaseId === process.env.GUILDSERVER_REFUGIA) {
-        // Example: Connect to another database
+
         BookingModel = REFUGIADB.model<IBooking>("booking", BookingSchema, collectionName);
     } else {
-        // Handle the case where the database ID is not recognized
+
         throw new Error(`Unknown database ID: ${databaseId}`);
     }
 
@@ -103,7 +103,7 @@ export const getBookingsForUserId = async (collectionName: string | undefined, u
         formattedArray.push({formattedString: formattedString, reservation: item});
     })
 
-    logger.info(`Bookings for userId: ${userId} found.`);
+    logger.info(`${result.length} bookings for userId: ${userId} found.`);
     return formattedArray;
 };
 
@@ -121,10 +121,10 @@ export const deleteBookingsForUserId = async (
         BookingModel = GODSDB.model<IBooking>("booking", BookingSchema, collectionName);
 
     } else if (databaseId === process.env.GUILDSERVER_REFUGIA) {
-        // Example: Connect to another database
+
         BookingModel = REFUGIADB.model<IBooking>("booking", BookingSchema, collectionName);
     } else {
-        // Handle the case where the database ID is not recognized
+
         throw new Error(`Unknown database ID: ${databaseId}`);
     }
     // Get bookings for the specified userId
@@ -140,80 +140,43 @@ export const deleteBookingsForUserId = async (
     if (!bookingToDelete) {
         throw new Error("No matching booking found for deletion");
     }
-    await BookingModel.deleteOne({
-        uniqueId: userId,
-        deletedAt: null,
-        huntingSpot: huntingSpot,
-        start: start,
-        end: end
-    });
+    const updateResult = await BookingModel.updateOne(
+        {_id: {$in: bookingToDelete._id}},
+        {$set: {deletedAt: dayjs()}}
+    );
+
+    // await BookingModel.deleteOne({
+    //     uniqueId: userId,
+    //     deletedAt: null,
+    //     huntingSpot: huntingSpot,
+    //     start: start,
+    //     end: end
+    // });
 
     logger.info(`Bookings for userId: ${userId} on spot: ${huntingSpot} deleted.`);
 
 };
 
-// export const testingInClass = async () => {
-//   mongoose.pluralize(null);
-//   await mongoose.connect(`mongodb://127.0.0.1:27017/TibiaBotReservationDB`);
-
-//   const result: Record<string, unknown> = {}; // Object to store collections and documents
-//   console.log("connected");
-//   try {
-//     const db = mongoose.connection.db;
-
-//     // List all collections in the database
-//     const collections = await db.listCollections().toArray();
-//     const names = collections.map((e) => `${e.name}`);
-
-//     logger.debug(`Found ${collections.length} collections: [${names}]`);
-
-//     // Iterate over collections
-//     for (const collection of collections) {
-//       const collectionName = collection.name;
-
-//       // Fetch documents from the collection
-//       try {
-//         const documents = await db
-//           .collection<IBooking>(collectionName)
-//           .find({ deletedAt: null })
-//           .toArray();
-//         result[collectionName] = documents; // Store documents in the result object
-//         //console.log(`Collection: ${collectionName}`);
-//       } catch (error) {
-//         logger.error(`Error fetching documents from ${collectionName}:`, error);
-//       }
-//     }
-//     console.log(result);
-//     return result; // Return the result object with collections and documents
-//   } catch (error: any) {
-//     logger.error(`Error retrieving collections and values: ${error.message}`);
-//   } finally {
-//     mongoose.connection.close(); // Close the Mongoose connection
-//   }
-// };
-
-
 export const getAllCollectionsAndValues = async (databaseId: string): Promise<DatabaseResult> => {
-    //mongoose.pluralize(null);
-    //await mongoose.connect(`mongodb://127.0.0.1:27017/TibiaBotReservationDB`);
-    const result: DatabaseResult = {}; // Object to store collections and documents
+
+    const result: DatabaseResult = {};
 
 
     let db;
     if (databaseId === process.env.GUILDSERVER_GODS) {
         db = GODSDB.db;
     } else if (databaseId === process.env.GUILDSERVER_REFUGIA) {
-        // Example: Connect to another database
+
         db = REFUGIADB.db;
     } else {
-        // Handle the case where the database ID is not recognized
+
         throw new Error(`Unknown database ID: ${databaseId}`);
     }
 
 
     // List all collections in the database
     const collections = await db.listCollections().toArray();
-    const filteredCollections = collections.filter((e) => e.name !== 'commandexecution');
+    const filteredCollections = collections.filter((e) => e.name !== 'statisticsForUsers');
     const names = collections.map((e) => `${e.name}`);
 
     logger.debug(`Found ${filteredCollections.length} collections: [${names}]`);
@@ -228,7 +191,7 @@ export const getAllCollectionsAndValues = async (databaseId: string): Promise<Da
             .toArray();
         //console.log(`Collection: ${collectionName}`);
     }
-    //console.log(result);
+    console.log("=========================",result);
     logger.debug("DONE! getting all collections and documents");
     return result; // Return the result object with collections and documents
 
@@ -240,10 +203,10 @@ export const getResultForSummary = async (databaseId: string) => {
     if (databaseId === process.env.GUILDSERVER_GODS) {
         db = GODSDB.db;
     } else if (databaseId === process.env.GUILDSERVER_REFUGIA) {
-        // Example: Connect to another database
+
         db = REFUGIADB.db;
     } else {
-        // Handle the case where the database ID is not recognized
+
         throw new Error(`Unknown database ID: ${databaseId}`);
     }
     const result: DatabaseResultForSummary = {};
@@ -353,50 +316,158 @@ export const getResultForGroups = async (collection: string | undefined, databas
     return result;
 };
 
-export const createOrUpdateCommandExecution = async (interaction: ChatInputCommandInteraction, commandName: string, databaseId: string) => {
-    let CommandExecutionModel;
+export const createOrUpdateStatistics = async (interaction: ChatInputCommandInteraction, commandName: string, databaseId: string) => {
+    let StatisticsModel;
     if (databaseId === process.env.GUILDSERVER_GODS) {
-        CommandExecutionModel = GODSDB.model<ICommandExecution>("CommandExecution", CommandExecutionSchema, "commandexecution");
+        StatisticsModel = GODSDB.model<IStatistics>("statistics", StatisticsSchema, "statisticsForUsers");
     } else if (databaseId === process.env.GUILDSERVER_REFUGIA) {
-        // Example: Connect to another database
-        CommandExecutionModel = REFUGIADB.model<ICommandExecution>("CommandExecution", CommandExecutionSchema, "commandexecution");
+
+        StatisticsModel = REFUGIADB.model<IStatistics>("statistics", StatisticsSchema, "statisticsForUsers");
     } else {
-        // Handle the case where the database ID is not recognized
+
         throw new Error(`Unknown database ID: ${databaseId}`);
     }
     const userId = interaction.user.id;
     const huntingSpot = interaction.channel as TextChannel
-    const spot = interaction.options.getString("spot");
+    const spot = interaction.options.getString("spot")!;
 
-    const result = await CommandExecutionModel.findOneAndUpdate(
-        {
-            userId,
-            commandName,
 
-        },
-        {
-            $inc: {
-                executionCount: 1,
-                [`huntingPlaces.${huntingSpot.name}.${spot}`]: 1,
+    console.log("<<<<<<<<<<<<<<<<<<<<<<<huntingspot", huntingSpot.name);
+    console.log("<<<<<<<<<<<<<<<<<<<<<<<spot", spot);
+
+    const existingDocument = await StatisticsModel.findOne({
+        userId,
+    });
+
+    if (existingDocument) {
+
+        const result = await StatisticsModel.findOneAndUpdate(
+            {
+                userId,
             },
-        },
-        //new: returns the updated result not the old one
-        {upsert: true, new: true},
-    );
+            {
+                $inc: {
+                    [`commandsCount.${commandName}`]: 1,
+                    [`huntingPlaces.${huntingSpot.name}.${spot}`]: 1,
+                },
+            },
+            // Set 'new' option to true to return the updated document
+            {new: true}
+        );
+        logger.info(`Statistic updated successfully.`);
+    } else {
+
+        const result = await StatisticsModel.create({
+            userId,
+            commandsCount: {[commandName]: 1},
+            huntingPlaces: {[huntingSpot.name]: {[spot]: 1}},
+            name: {
+                interactionName: interaction.user.username,
+                displayName: interaction.user.displayName,
+                globalName: interaction.user.globalName
+            }
+        });
+        logger.info(`New Statistic created successfully.`);
+    }
+};
+export const getDataForUserStatistics = async (interaction: ChatInputCommandInteraction, userId: string, databaseId: string): Promise<{
+    spot: string;
+    amount: number
+}[]> => {
+    const formattedArray: { spot: string; amount: number }[] = [];
+    let StatisticsModel;
+    if (databaseId === process.env.GUILDSERVER_GODS) {
+        StatisticsModel = GODSDB.model<IStatistics>("statistics", StatisticsSchema, "statisticsForUsers");
+    } else if (databaseId === process.env.GUILDSERVER_REFUGIA) {
+
+        StatisticsModel = REFUGIADB.model<IStatistics>("statistics", StatisticsSchema, "statisticsForUsers");
+    } else {
+
+        throw new Error(`Unknown database ID: ${databaseId}`);
+    }
+    const statistics: IStatistics[] = [];
+    const result = await StatisticsModel.findOne({
+        userId,
+    });
+
+    if (result) {
+        for (const [outerKey, outerValue] of result.huntingPlaces.entries()) {
+            // console.log(`Outer Key: ${outerKey}`);
+
+            // Initialize a variable to store the sum of inner values
+            let sumOfInnerValues = 0;
+
+            for (const [innerKey, innerValue] of outerValue.entries()) {
+                // console.log(`Inner Key: ${innerKey}, Inner Value: ${innerValue}`);
+
+                // Add inner values to the sum
+                sumOfInnerValues += innerValue;
+            }
+
+            // Push the result to formattedArray
+            formattedArray.push({spot: outerKey, amount: sumOfInnerValues});
+        }
+    }
+    console.log(formattedArray);
     logger.info(`CommandExecution updated successfully.`);
+    return formattedArray;
 };
 
-export const getDataForStatistics = async (interaction: ChatInputCommandInteraction, databaseId:string) => {
-    let CommandExecutionModel;
+function mapToObject(map: Map<string, Map<string, number>>): Record<string, Record<string, number>> {
+    const result: Record<string, Record<string, number>> = {};
+
+    map.forEach((innerMap, outerKey) => {
+        const innerObject: Record<string, number> = {};
+        innerMap.forEach((value, innerKey) => {
+            innerObject[innerKey] = value;
+        });
+        result[outerKey] = innerObject;
+    });
+
+    return result;
+}
+
+export const getDataForHuntingPlaceStatistics = async (interaction: ChatInputCommandInteraction, databaseId: string): Promise<IStatistics[]> => {
+    let StatisticsModel;
     if (databaseId === process.env.GUILDSERVER_GODS) {
-        CommandExecutionModel = GODSDB.model<ICommandExecution>("CommandExecution", CommandExecutionSchema, "commandexecution");
+        StatisticsModel = GODSDB.model<IStatistics>("statistics", StatisticsSchema, "statisticsForUsers");
     } else if (databaseId === process.env.GUILDSERVER_REFUGIA) {
-        // Example: Connect to another database
-        CommandExecutionModel = REFUGIADB.model<ICommandExecution>("CommandExecution", CommandExecutionSchema, "commandexecution");
+
+        StatisticsModel = REFUGIADB.model<IStatistics>("statistics", StatisticsSchema, "statisticsForUsers");
     } else {
-        // Handle the case where the database ID is not recognized
+
         throw new Error(`Unknown database ID: ${databaseId}`);
+    }
+    const statistics: IStatistics[] = [];
+    const allStatistics = await StatisticsModel.find({});
+    if (allStatistics) {
+        statistics.push(...allStatistics);
     }
 
     logger.info(`CommandExecution updated successfully.`);
+    return statistics;
 };
+// export const getDeletedBookingsForUserId = async (collectionName: string, userId: string, databaseId: string) => {
+//     let StatisticsModel;
+//     if (databaseId === process.env.GUILDSERVER_GODS) {
+//         StatisticsModel = GODSDB.model<IStatistics>("statistics", StatisticsSchema, "statisticsForUsers");
+//
+//     } else if (databaseId === process.env.GUILDSERVER_REFUGIA) {
+//         // Example: Connect to another database
+//         StatisticsModel = REFUGIADB.model<IStatistics>("statistics", StatisticsSchema, "statisticsForUsers");
+//     } else {
+//         // Handle the case where the database ID is not recognized
+//         throw new Error(`Unknown database ID: ${databaseId}`);
+//     }
+//
+//     //console.log(bookings.map((e) => e.uniqueId));
+//     const result = await StatisticsModel.find({uniqueId: userId, deletedAt: {$ne: null}}).sort({
+//         deletedAt: 1,
+//     });
+//
+//
+//     logger.info(`Statistics for userId: ${userId} found.`);
+//     return result;
+// };
+
+

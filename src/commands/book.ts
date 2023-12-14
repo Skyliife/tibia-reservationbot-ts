@@ -65,9 +65,9 @@ const command: SlashCommand = {
 
     execute: async (interaction: ChatInputCommandInteraction) => {
         logger.debug("Start executing /book command!");
-        const commandProcessor = new CommandProcessor(interaction);
         try {
             await interaction.deferReply({ephemeral: true});
+            const commandProcessor = new CommandProcessor(interaction);
             //Step1: Collect data
             const data = commandProcessor.collectData();
             //Step2: Verify data
@@ -77,7 +77,7 @@ const command: SlashCommand = {
             await commandProcessor.clearMessages();
             await commandProcessor.createImage();
             await commandProcessor.createEmbed();
-            await commandProcessor.createChart();
+            await commandProcessor.createSummaryChart();
             await commandProcessor.updateCommandExecutionCount();
             await interaction.editReply({content: `${verifiedData.booking.displayBookingInfo()}!`});
             await interaction.deleteReply();

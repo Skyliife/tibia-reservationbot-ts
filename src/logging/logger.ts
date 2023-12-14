@@ -28,7 +28,7 @@ winston.addColors(customColors);
 
 const customFormat = format.combine(
     format.timestamp({
-        format: "YYYY-MM-DD HH:mm:ss",
+        format: "DD-MM-YYYY HH:mm:ss",
     }),
     align(),
     format.printf((info) => {

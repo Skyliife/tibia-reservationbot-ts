@@ -37,7 +37,6 @@ class Booking implements IBooking {
         this.start = start;
         this.end = end;
         this.createdAt = createdAt;
-
         this.roleDuration = roleDuration;
         this.displaySlot = this.getDisplaySlot(this.start);
     }

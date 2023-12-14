@@ -7,18 +7,13 @@ import {GuildRoles} from "../enums";
 import isBetween from "dayjs/plugin/isBetween";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import {Name} from "../types";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(isBetween);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
-type Name = {
-    userInputName: string
-    displayName: string;
-    guildNickName: string;
-    interactionName: string;
-};
 
 class CollectingService {
 
@@ -27,7 +22,7 @@ class CollectingService {
     public date: Dayjs = dayjs();
     public start: Dayjs = dayjs();
     public end: Dayjs = dayjs();
-    public names: Name = {userInputName: "", displayName: "", guildNickName: "", interactionName: ""};
+    public names: Name;
     public uniqueId = "";
     public role: GuildRoles;
     public duration = 0;
@@ -37,6 +32,7 @@ class CollectingService {
 
 
     constructor(interaction: ChatInputCommandInteraction) {
+
         this.interaction = interaction;
         this.member = interaction.member as GuildMember;
 
@@ -117,21 +113,22 @@ class CollectingService {
     };
 
     private collectNames = (): Name => {
-        let name: Name = {userInputName: "", displayName: "", guildNickName: "", interactionName: ""}
+        let name: Name = {userInputName: "", displayName: "", guildNickName: "", interactionName: "", globalName: ""};
 
-        if (this.interaction.inCachedGuild()) {
-            name.displayName = this.interaction.user.displayName;
-            name.interactionName = this.interaction.user.username;
+        name.displayName = this.interaction.user.displayName;
+        name.interactionName = this.interaction.user.username;
 
-            if (this.member.nickname) {
-                name.guildNickName = this.member.nickname;
-            }
-
-            if (this.options.name) {
-                name.userInputName = this.options.name.toString();
-            }
-
+        if (this.member.nickname) {
+            name.guildNickName = this.member.nickname;
         }
+
+        if (this.options.name) {
+            name.userInputName = this.options.name.toString();
+        }
+        if (this.interaction.user.globalName) {
+            name.globalName = this.interaction.user.globalName;
+        }
+
         logger.debug(`Usernames: ${JSON.stringify(name)}`);
         return name;
     };

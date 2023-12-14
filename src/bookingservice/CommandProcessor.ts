@@ -1,10 +1,12 @@
-import {AttachmentBuilder, ChannelType, ChatInputCommandInteraction, GuildMember, TextChannel} from "discord.js";
+import {AttachmentBuilder, ChannelType, ChatInputCommandInteraction, TextChannel} from "discord.js";
 import CollectingService from "./collecting.service";
 import VerifyingService from "./verifying.service";
 import {
-    createOrUpdateCommandExecution,
+    createOrUpdateStatistics,
     getAllCollectionsAndValues,
-    getDataForStatistics,
+    getDataForHuntingPlaceStatistics,
+    getDataForUserStatistics,
+    getResultForSummary,
     InsertBooking
 } from "./database.service";
 import {createEmbedsForGroups} from "./embed.service";
@@ -18,12 +20,20 @@ export default class CommandProcessor {
     private readonly interaction: ChatInputCommandInteraction;
     private readonly channelName;
     private readonly member;
+    private readonly databaseId: string;
 
     //The constructor takes a ChatInputCommandInteraction as a parameter and assigns it to the interaction property.
     constructor(interaction: ChatInputCommandInteraction) {
-        this.interaction = interaction;
-        this.channelName = (interaction.channel as TextChannel).name;
-        this.member = interaction.member as GuildMember;
+
+        if (interaction.inCachedGuild()) {
+            this.interaction = interaction;
+            const channel = interaction.channel as TextChannel;
+            this.channelName = channel.name;
+            this.member = interaction.member;
+            this.databaseId = interaction.guild.id;
+        } else {
+            throw new Error("Interaction is not in a cached guild.");
+        }
     }
 
     collectData(): CollectingService {
@@ -35,12 +45,9 @@ export default class CommandProcessor {
     }
 
     async processData(verifiedData: VerifyingService) {
-        await InsertBooking(verifiedData.booking, this.member.guild.id);
+        await InsertBooking(verifiedData.booking, this.databaseId);
         await this.interaction.editReply({content: verifiedData.booking.displayBookingInfo()});
-
         //await new Promise(resolve => setTimeout(resolve, 5000));
-
-
     }
 
     async clearMessages() {
@@ -51,48 +58,58 @@ export default class CommandProcessor {
     }
 
     async createImage() {
-        const data = await this.getDataFromDatabase(this.member.guild.id);
+        const data = await this.getDataFromDatabase(this.databaseId);
         await ImageService(this.interaction, data);
     }
 
     async createEmbed() {
         if (getHuntingPlaceByChannelName(this.channelName) === undefined) return;
-        const embedsForChannel = await createEmbedsForGroups(this.channelName, this.member.guild.id);
+        const embedsForChannel = await createEmbedsForGroups(this.channelName, this.databaseId);
         const embedsArray = embedsForChannel.map((item) => item.embed);
         const embedsAttachment = embedsForChannel.map((item) => item.attachment);
-
-
         if (embedsForChannel.length > 0) {
-            // await this.interaction.followUp({
-            //     embeds: embedsArray,
-            //     files: embedsAttachment,
-            // });
             const channelToSend = this.interaction.channel as TextChannel;
             await channelToSend.send({embeds: embedsArray, files: embedsAttachment});
         }
     }
 
-    async createChart() {
-        const data = await this.getDataFromDatabase(this.member.guild.id);
-        const channelForStatistics = this.interaction.channel as TextChannel;
-        if (channelForStatistics.name === "statistics") {
-            const dataForStatistics = await getDataForStatistics(this.interaction, this.member.guild.id);
-            const canvas = await createChartForStatistics(dataForStatistics);
+    async createSummaryChart() {
+        const data = await this.getDataFromDatabase(this.databaseId);
+        const data2 = await getResultForSummary(this.databaseId);
+        const canvas = await createChartForSummary(data, data2);
+        const channelToSend = this.interaction.guild?.channels.cache.find((channel: any) => channel.name === "summary") as TextChannel;
+        if (channelToSend !== undefined) {
+            await channelToSend.bulkDelete(100, true);
+            const attachment = new AttachmentBuilder(await canvas.encode('png'), {name: 'summary.png'});
+            await channelToSend.send({files: [attachment]})
+        } else {
+            throw new Error("Channel not found");
         }
 
-        const canvas = await createChartForSummary(data);
-        if (this.interaction.inCachedGuild()) {
-            const channelToSend = this.member.guild.channels.cache.find((channel: any) => channel.name === "summary") as TextChannel;
-            if (channelToSend !== undefined) {
-                await channelToSend.bulkDelete(100, true);
-                const attachment = new AttachmentBuilder(await canvas.encode('png'), {name: 'summary.png'});
-                await channelToSend.send({files: [attachment]})
-            }
+    }
+
+    async createStatisticsChartForUser(userId: string) {
+        const channelForStatistics = this.interaction.channel as TextChannel;
+        if (channelForStatistics.name === "statistics") {
+            const dataForStatistics = await getDataForUserStatistics(this.interaction, userId, this.databaseId);
+            const canvas = await createChartForStatistics(dataForStatistics);
+            const attachment = new AttachmentBuilder(await canvas.encode('png'), {name: 'summary.png'});
+            await this.interaction.editReply({files: [attachment]});
+
+        }
+    }
+
+    async createStatisticsChartForHuntingPlace(channel: TextChannel) {
+        const channelForStatistics = this.interaction.channel as TextChannel;
+        if (channelForStatistics.name === "statistics") {
+            const dataForStatistics = await getDataForHuntingPlaceStatistics(this.interaction, this.databaseId);
+            // const canvas = await createChartForStatistics(dataForStatistics);
+
         }
     }
 
     async updateCommandExecutionCount() {
-        await createOrUpdateCommandExecution(this.interaction, this.interaction.commandName, this.member.guild.id);
+        await createOrUpdateStatistics(this.interaction, this.interaction.commandName, this.databaseId);
     }
 
     private async getDataFromDatabase(databaseId: string) {
