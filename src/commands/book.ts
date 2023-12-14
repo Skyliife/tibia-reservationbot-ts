@@ -19,7 +19,6 @@ const optionNames = {
     name: "name",
 };
 
-
 const command: SlashCommand = {
     command: new SlashCommandBuilder()
         .setName("book")
@@ -79,6 +78,7 @@ const command: SlashCommand = {
             await commandProcessor.createImage();
             await commandProcessor.createEmbed();
             await commandProcessor.createChart();
+            await commandProcessor.updateCommandExecutionCount();
             await interaction.editReply({content: `${verifiedData.booking.displayBookingInfo()}!`});
             await interaction.deleteReply();
         } catch (error: any) {

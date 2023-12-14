@@ -1,6 +1,5 @@
 import {AttachmentBuilder, ChatInputCommandInteraction, GuildMember, TextChannel} from "discord.js";
 import {Canvas, createCanvas, loadImage} from "@napi-rs/canvas"
-import {request} from "undici";
 import {DatabaseResult} from "../types";
 
 const {writeFileSync} = require('fs')
@@ -18,10 +17,10 @@ const applyText = (canvas: Canvas, text: string, width: number) => {
 
     do {
         context.font = `${fontSize -= 1}px Martel`;
-        console.log(context.font);
-        console.log(`${context.measureText(text).width} > ${canvas.width - width}`);
+        // console.log(context.font);
+        // console.log(`${context.measureText(text).width} > ${canvas.width - width}`);
     } while (context.measureText(text).width > canvas.width - width);
-    console.log("---------------DONE----------------")
+
     return context.font;
 };
 const getWorkloadColor = (workload: Workload) => {
@@ -97,6 +96,11 @@ export const ImageService = async (interaction: ChatInputCommandInteraction, dat
         context.font = applyText(canvas, text, canvas.width / 3);
         context.fillStyle = '#ffffff';
         context.fillText(text.substring(text.indexOf(' ') + 1), canvas.width / 3 + context.measureText(workloadText).width, canvas.height * 0.8);
+    } else {
+        const channelName = channel.name.replace('-', ' ');
+        const text = `currently no reservations for ${channelName}!`;
+        context.font = applyText(canvas, text, canvas.width / 3);
+        context.fillText(text, canvas.width / 3, canvas.height * 0.8);
     }
 
 
@@ -105,8 +109,6 @@ export const ImageService = async (interaction: ChatInputCommandInteraction, dat
     context.closePath();
     context.clip();
 
-
-    const {body} = await request(interaction.client.user.displayAvatarURL({extension: 'jpg'}));
     const avatar = await loadImage('./src/images/mage.jpg');
     context.drawImage(avatar, 25, 25, 200, 200);
     const b = canvas.toBuffer('image/png')

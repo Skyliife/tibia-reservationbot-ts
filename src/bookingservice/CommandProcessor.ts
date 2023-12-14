@@ -1,9 +1,14 @@
 import {AttachmentBuilder, ChannelType, ChatInputCommandInteraction, GuildMember, TextChannel} from "discord.js";
 import CollectingService from "./collecting.service";
 import VerifyingService from "./verifying.service";
-import {getAllCollectionsAndValues, InsertBooking} from "./database.service";
+import {
+    createOrUpdateCommandExecution,
+    getAllCollectionsAndValues,
+    getDataForStatistics,
+    InsertBooking
+} from "./database.service";
 import {createEmbedsForGroups} from "./embed.service";
-import {createChart} from "./chart.service";
+import {createChartForStatistics, createChartForSummary} from "./chart.service";
 import {ImageService} from "./image.service";
 import {getHuntingPlaceByChannelName} from "../huntingplaces/huntingplaces";
 
@@ -69,8 +74,13 @@ export default class CommandProcessor {
 
     async createChart() {
         const data = await this.getDataFromDatabase(this.member.guild.id);
+        const channelForStatistics = this.interaction.channel as TextChannel;
+        if (channelForStatistics.name === "statistics") {
+            const dataForStatistics = await getDataForStatistics(this.interaction, this.member.guild.id);
+            const canvas = await createChartForStatistics(dataForStatistics);
+        }
 
-        const canvas = await createChart(data);
+        const canvas = await createChartForSummary(data);
         if (this.interaction.inCachedGuild()) {
             const channelToSend = this.member.guild.channels.cache.find((channel: any) => channel.name === "summary") as TextChannel;
             if (channelToSend !== undefined) {
@@ -79,8 +89,10 @@ export default class CommandProcessor {
                 await channelToSend.send({files: [attachment]})
             }
         }
+    }
 
-
+    async updateCommandExecutionCount() {
+        await createOrUpdateCommandExecution(this.interaction, this.interaction.commandName, this.member.guild.id);
     }
 
     private async getDataFromDatabase(databaseId: string) {

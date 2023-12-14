@@ -49,6 +49,8 @@ import dayjs from "dayjs";
 // };
 
 
+
+
 export const createEmbedsForGroups = async (channel: string | undefined, databaseId: string) => {
     const data: DatabaseResultForGroup = await getResultForGroups(channel, databaseId);
     //console.log("DATAHere", data);
@@ -82,30 +84,8 @@ export const createEmbedsForGroups = async (channel: string | undefined, databas
 
                     //Fields
                     const fieldName = `Date ${ss.format("D")}-${ssn.format("D.MM")}`;
-                    if (value.length <= 1024) {
-                        embed.addFields(
-                            {
-                                name: fieldName,
-                                value: value,
-                                inline: true,
-                            }
-                        );
-                    } else {
-                        embed.addFields(
-                            {
-                                name: fieldName,
-                                value: value.slice(0, 1024),
-                                inline: true,
-                            }
-                        );
-                        embed.addFields(
-                            {
-                                name: '\u200B',
-                                value: value.slice(1024, value.length),
-                                inline: true,
-                            }
-                        );
-                    }
+                    createFields(value, embed, fieldName);
+
                 }
 
                 //Thumbnail
@@ -116,7 +96,7 @@ export const createEmbedsForGroups = async (channel: string | undefined, databas
             }
         }
     }
-    // add Header to first embed
+    // add Header to first embedc
     if (embeds.length > 0) {
         const lastEmbed = embeds[0].embed;
         lastEmbed.setAuthor({
@@ -175,4 +155,72 @@ const addThumbnail = async (embed: EmbedBuilder, name: string) => {
 
 async function main() {
     //await createEmbedsForGroups();
+}
+function createFields(value: string, embed: EmbedBuilder, fieldName: string) {
+    if (value.length <= 1024) {
+        embed.addFields({
+            name: fieldName,
+            value: value,
+            inline: true,
+        });
+    } else {
+        const x = splitStringIntoChunks(value, 1024);
+        console.log(x[0]);
+        console.log(x[0].length);
+
+        if (x.length < 3) {
+            embed.addFields(
+                {
+                    name: fieldName,
+                    value: x[0],
+                    inline: true,
+                },
+                {
+                    name: fieldName,
+                    value: x[1],
+                    inline: true,
+                }
+            );
+        } else if (x.length < 4) {
+            embed.addFields(
+                {
+                    name: fieldName,
+                    value: x[0],
+                    inline: true,
+                },
+                {
+                    name: fieldName,
+                    value: x[1],
+                    inline: true,
+                },
+                {
+                    name: fieldName,
+                    value: x[2],
+                    inline: true,
+                }
+            );
+        }
+    }
+}
+function splitStringIntoChunks(inputString: string, maxCharacters: number) {
+    const lines = inputString.split("\n");
+    const resultArray = [];
+    let currentChunk = "";
+
+    for (const line of lines) {
+        const lineWithNewline = line + "\n";
+
+        if ((currentChunk + lineWithNewline).length <= maxCharacters) {
+            currentChunk += lineWithNewline;
+        } else {
+            resultArray.push(currentChunk);
+            currentChunk = lineWithNewline;
+        }
+    }
+
+    if (currentChunk.length > 0) {
+        resultArray.push(currentChunk);
+    }
+
+    return resultArray;
 }

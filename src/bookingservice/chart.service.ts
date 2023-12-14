@@ -1,4 +1,3 @@
-import {getAllCollectionsAndValues} from "./database.service";
 import {Chart, Colors, registerables} from "chart.js";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import {createCanvas} from "@napi-rs/canvas"
@@ -9,7 +8,7 @@ import {DatabaseResult} from "../types";
 Chart.register(...registerables, ChartDataLabels, Colors);
 
 
-export const createChart = async (data :DatabaseResult) => {
+export const createChartForSummary = async (data: DatabaseResult) => {
 
     const counts: { [key: string]: number } = {};
     Object.keys(data).forEach((huntingPlace) => {
@@ -17,7 +16,7 @@ export const createChart = async (data :DatabaseResult) => {
         counts[huntingPlace] = data[huntingPlace].length;
     });
 
-    console.log("Counts:", counts);
+   // console.log("Counts:", counts);
 
     const values = Object.keys(counts).map((key, index) => {
         const amount = counts[key];
@@ -29,9 +28,9 @@ export const createChart = async (data :DatabaseResult) => {
         const percentage = (counts[key] / totalReservations) * 100;
         return {label: key, name: percentage, value: counts[key]};
     });
-    console.log("values", values);
-    console.log("totalReservations", totalReservations);
-    console.log("percentages", percentages);
+    // console.log("values", values);
+    // console.log("totalReservations", totalReservations);
+    // console.log("percentages", percentages);
 
     const canvas = createCanvas(1500, 800);
     const ctx = canvas.getContext('2d');
@@ -238,6 +237,9 @@ function drawDoughnutLabel(chart: any, options: any) {
     }
 }
 
+export const createChartForStatistics = async (data: any) => {
+
+}
 
 
 

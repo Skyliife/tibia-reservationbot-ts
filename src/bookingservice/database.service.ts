@@ -2,7 +2,7 @@ import logger from "../logging/logger";
 import BookingSchema from "../schemas/Booking";
 import Booking from "./booking";
 
-import {DatabaseResult, DatabaseResultForGroup, DatabaseResultForSummary, IBooking} from "../types";
+import {DatabaseResult, DatabaseResultForGroup, DatabaseResultForSummary, IBooking, ICommandExecution} from "../types";
 import dayjs, {Dayjs} from "dayjs";
 import {
     areAllCurrentReservationsFromUserWithinRoleDuration,
@@ -10,6 +10,8 @@ import {
 } from "../utils";
 import {REFUGIADB} from "../database/RefugiaDatabase";
 import {GODSDB} from "../database/GodsDatabase";
+import CommandExecutionSchema from "../schemas/CommandExecution";
+import {ChatInputCommandInteraction, TextChannel} from "discord.js";
 
 //how to add a reservation to different databases?
 export const InsertBooking = async (reservation: Booking, databaseId: string) => {
@@ -101,7 +103,7 @@ export const getBookingsForUserId = async (collectionName: string | undefined, u
         formattedArray.push({formattedString: formattedString, reservation: item});
     })
 
-
+    logger.info(`Bookings for userId: ${userId} found.`);
     return formattedArray;
 };
 
@@ -191,7 +193,7 @@ export const deleteBookingsForUserId = async (
 // };
 
 
-export const getAllCollectionsAndValues = async (databaseId: string):Promise<DatabaseResult> => {
+export const getAllCollectionsAndValues = async (databaseId: string): Promise<DatabaseResult> => {
     //mongoose.pluralize(null);
     //await mongoose.connect(`mongodb://127.0.0.1:27017/TibiaBotReservationDB`);
     const result: DatabaseResult = {}; // Object to store collections and documents
@@ -211,12 +213,13 @@ export const getAllCollectionsAndValues = async (databaseId: string):Promise<Dat
 
     // List all collections in the database
     const collections = await db.listCollections().toArray();
+    const filteredCollections = collections.filter((e) => e.name !== 'commandexecution');
     const names = collections.map((e) => `${e.name}`);
 
-    logger.debug(`Found ${collections.length} collections: [${names}]`);
+    logger.debug(`Found ${filteredCollections.length} collections: [${names}]`);
 
     // Iterate over collections
-    for (const collection of collections) {
+    for (const collection of filteredCollections) {
         const collectionName = collection.name;
 
         result[collectionName] = await db
@@ -348,4 +351,52 @@ export const getResultForGroups = async (collection: string | undefined, databas
     //console.log(JSON.stringify(result, null, 2));
     logger.debug("DONE! Getting grouped collections and values");
     return result;
+};
+
+export const createOrUpdateCommandExecution = async (interaction: ChatInputCommandInteraction, commandName: string, databaseId: string) => {
+    let CommandExecutionModel;
+    if (databaseId === process.env.GUILDSERVER_GODS) {
+        CommandExecutionModel = GODSDB.model<ICommandExecution>("CommandExecution", CommandExecutionSchema, "commandexecution");
+    } else if (databaseId === process.env.GUILDSERVER_REFUGIA) {
+        // Example: Connect to another database
+        CommandExecutionModel = REFUGIADB.model<ICommandExecution>("CommandExecution", CommandExecutionSchema, "commandexecution");
+    } else {
+        // Handle the case where the database ID is not recognized
+        throw new Error(`Unknown database ID: ${databaseId}`);
+    }
+    const userId = interaction.user.id;
+    const huntingSpot = interaction.channel as TextChannel
+    const spot = interaction.options.getString("spot");
+
+    const result = await CommandExecutionModel.findOneAndUpdate(
+        {
+            userId,
+            commandName,
+
+        },
+        {
+            $inc: {
+                executionCount: 1,
+                [`huntingPlaces.${huntingSpot.name}.${spot}`]: 1,
+            },
+        },
+        //new: returns the updated result not the old one
+        {upsert: true, new: true},
+    );
+    logger.info(`CommandExecution updated successfully.`);
+};
+
+export const getDataForStatistics = async (interaction: ChatInputCommandInteraction, databaseId:string) => {
+    let CommandExecutionModel;
+    if (databaseId === process.env.GUILDSERVER_GODS) {
+        CommandExecutionModel = GODSDB.model<ICommandExecution>("CommandExecution", CommandExecutionSchema, "commandexecution");
+    } else if (databaseId === process.env.GUILDSERVER_REFUGIA) {
+        // Example: Connect to another database
+        CommandExecutionModel = REFUGIADB.model<ICommandExecution>("CommandExecution", CommandExecutionSchema, "commandexecution");
+    } else {
+        // Handle the case where the database ID is not recognized
+        throw new Error(`Unknown database ID: ${databaseId}`);
+    }
+
+    logger.info(`CommandExecution updated successfully.`);
 };
