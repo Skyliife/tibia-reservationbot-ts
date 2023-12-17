@@ -54,7 +54,7 @@ class LocaleManager {
 
         // Replace variables in the translation
         Object.keys(variables).forEach(variable => {
-            console.log('Replacing', `{${variable}}`, 'with', variables[variable]);
+            //console.log('Replacing', `{${variable}}`, 'with', variables[variable]);
             translation = translation.split(`{${variable}}`).join(variables[variable]);
         });
 
@@ -82,7 +82,7 @@ class LocaleManager {
 
         // Replace variables in the translation
         Object.keys(variables).forEach(variable => {
-            console.log('Replacing', `{${variable}}`, 'with', variables[variable]);
+            //console.log('Replacing', `{${variable}}`, 'with', variables[variable]);
             translation = translation.split(`{${variable}}`).join(variables[variable]);
         });
         return translation;

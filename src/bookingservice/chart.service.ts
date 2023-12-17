@@ -61,7 +61,7 @@ export const createChartForSummary = async (data: DatabaseResult, data2: Databas
         const amount = counts2[key];
         return {label: key, value: amount};
     });
-    console.log("Counts2:", counts2);
+    //console.log("Counts2:", counts2);
 
     const canvas = createCanvas(1500, 1000);
     const ctx = canvas.getContext('2d');
@@ -147,12 +147,12 @@ export const createChartForSummary = async (data: DatabaseResult, data2: Databas
                                     // @ts-ignore
                                     formatter: (value, ctx) => ctx.chart.data.datasets[1].label[ctx.dataIndex],
                                     anchor: (ctx) => {
-                                        console.log(ctx.dataIndex);
+                                        //console.log(ctx.dataIndex);
                                         if (ctx.dataIndex % 2 === 0) {
-                                            console.log("center");
+                                            //console.log("center");
                                             return 'center'
                                         }
-                                        console.log("start");
+                                        //console.log("start");
                                         return 'start'
                                     },
                                     align: 'top',

@@ -28,7 +28,7 @@ export function isCurrentTimeAfter10AM(currentDate: Dayjs) {
 }
 
 export const areAllCurrentReservationsFromUserWithinRoleDuration = (roleDuration: number, currentReservation: IBooking, existingReservations: IBooking[]) => {
-    console.log(roleDuration);
+    //console.log(roleDuration);
     const durationInMilliseconds = dayjs.duration(roleDuration, "minutes").asMilliseconds();
     const currentReservationDuration = dayjs(currentReservation.end).diff(dayjs(currentReservation.start), "millisecond");
     //collect the duration of all reservations from user
@@ -36,9 +36,9 @@ export const areAllCurrentReservationsFromUserWithinRoleDuration = (roleDuration
         (accumulator, reservation) => accumulator + dayjs(reservation.end).diff(dayjs(reservation.start), "millisecond"),
         0,
     );
-    console.log(durationOfAllReservationsFromUser);
-    console.log(durationInMilliseconds);
-    console.log(durationOfAllReservationsFromUser <= durationInMilliseconds);
+    //console.log(durationOfAllReservationsFromUser);
+    //console.log(durationInMilliseconds);
+    //console.log(durationOfAllReservationsFromUser <= durationInMilliseconds);
     return durationOfAllReservationsFromUser + currentReservationDuration <= durationInMilliseconds;
 
 

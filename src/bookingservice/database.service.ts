@@ -338,8 +338,8 @@ export const createOrUpdateStatistics = async (interaction: ChatInputCommandInte
     const spot = interaction.options.getString("spot")!;
 
 
-    console.log("<<<<<<<<<<<<<<<<<<<<<<<huntingspot", huntingSpot.name);
-    console.log("<<<<<<<<<<<<<<<<<<<<<<<spot", spot);
+    //console.log("<<<<<<<<<<<<<<<<<<<<<<<huntingspot", huntingSpot.name);
+    //console.log("<<<<<<<<<<<<<<<<<<<<<<<spot", spot);
 
     const existingDocument = await StatisticsModel.findOne({
         userId,
@@ -411,7 +411,7 @@ export const getDataForUserStatistics = async (interaction: ChatInputCommandInte
             formattedArray.push({spot: outerKey, amount: sumOfInnerValues});
         }
     }
-    console.log(formattedArray);
+    //console.log(formattedArray);
     logger.info(`CommandExecution updated successfully.`);
     return formattedArray;
 };

@@ -53,7 +53,7 @@ export const ImageService = async (interaction: ChatInputCommandInteraction, dat
 
     const member = interaction.member as GuildMember
     const currentPath = process.cwd();
-    console.log(currentPath);
+    //console.log(currentPath);
 
     const canvas = createCanvas(700, 250);
     const context = canvas.getContext('2d');

@@ -69,7 +69,6 @@ class CollectingService {
         if (!location) {
 
             const message = LocaleManager.translate("collectSpot.location", {prop: `${place}`});
-            console.log(message);
             throw new Error(message);
         }
         const huntingSpot = location.choices.find((choice) => choice.name === userInputSpot);
@@ -175,7 +174,7 @@ class CollectingService {
         const durationInMilliseconds = end.diff(start);
         const isAtLeast15Minutes = durationInMilliseconds >= 900000;
         if (isAtLeast15Minutes) {
-            console.log('The duration is at least 15 minutes.');
+            logger.info('The duration is at least 15 minutes.');
         } else {
             const message = LocaleManager.translate("collectDuration");
             throw new Error(message);
