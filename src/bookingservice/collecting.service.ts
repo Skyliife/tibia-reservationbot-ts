@@ -8,6 +8,7 @@ import isBetween from "dayjs/plugin/isBetween";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import {Name} from "../types";
+import LocaleManager from "../locale/LocaleManager";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(isBetween);
@@ -53,7 +54,9 @@ class CollectingService {
     private collectPlace = (): string => {
         const channel = this.interaction.channel as TextChannel;
         if (!channel) {
-            throw new Error("Channel not found.");
+            const message = LocaleManager.translate("collectPlace");
+            logger.error(LocaleManager.printInDefaultLanguage("collectPlace"));
+            throw new Error(message);
         }
         logger.debug(`Hunting place: ${channel.name}`);
         return channel.name;
@@ -64,12 +67,19 @@ class CollectingService {
         const location = getHuntingPlaceByChannelName(place);
 
         if (!location) {
-            throw new Error(`Hunting place ${place} not found. Please use a hunting channel to make a reservation`);
+
+            const message = LocaleManager.translate("collectSpot.location", {prop: `${place}`});
+            console.log(message);
+            throw new Error(message);
         }
         const huntingSpot = location.choices.find((choice) => choice.name === userInputSpot);
 
         if (!huntingSpot) {
-            throw new Error(`Hunting spot ${userInputSpot} in ${place} not found.`);
+            const message = LocaleManager.translate("collectSpot.huntingSpot", {
+                prop: `${userInputSpot}`,
+                prop2: `${place}`
+            });
+            throw new Error(message);
         }
         return this.options.spot.toString();
     };
@@ -79,10 +89,9 @@ class CollectingService {
         const date = dayjs(userInputDate, ["DD.MM.YYYY", "DD.M.YYYY", "D.MM.YYYY", "D.M.YYYY"], true);
         const isValidDate = date.isValid();
         if (!isValidDate) {
+            const message = LocaleManager.translate("collectDate", {prop: `${userInputDate}`});
             logger.error(`your selected date: ${date.format()} is not valid`);
-            throw new Error(
-                `your selected date: ${userInputDate} is not valid! Please keep to the format like: 01.09.2023`
-            );
+            throw new Error(message);
         }
 
         logger.debug(`Selected Date: ${date.format("DD.MM.YYYY")}`);
@@ -106,7 +115,8 @@ class CollectingService {
         const endDate = this.parseEndTime(date, startDate, userInputEnd);
 
         if (endDate.isBefore(startDate)) {
-            throw new Error(`your selected end time ${endDate.format("HH:mm")} is in the past`);
+            const message = LocaleManager.translate("collectEnd", {prop: `${endDate.format("HH:mm")}`});
+            throw new Error(message);
         }
         logger.debug(`Selected End Date: ${endDate.format("DD.MM.YYYY")}`);
         return endDate;
@@ -155,7 +165,8 @@ class CollectingService {
                 }
             }
         }
-        throw new Error("you are not allowed to use this command");
+        const message = LocaleManager.translate("collectRole");
+        throw new Error(message);
 
     };
 
@@ -166,7 +177,8 @@ class CollectingService {
         if (isAtLeast15Minutes) {
             console.log('The duration is at least 15 minutes.');
         } else {
-            throw new Error("Your reservation must be at least 15 minutes long.");
+            const message = LocaleManager.translate("collectDuration");
+            throw new Error(message);
         }
         return end.diff(start);
     }
@@ -175,7 +187,8 @@ class CollectingService {
         // Define the regex pattern for 24-hour time format
         const pattern = /^(?:2[0-3]|1[0-9]|0?[0-9]):[0-5]\d$/;
         if (!pattern.test(inputString)) {
-            throw new Error(`Your input time ${inputString} has not the right format \"hh:mm\": type something like 00:50, 12:30 or 23:59`);
+            const message = LocaleManager.translate("isTimeFormatValid", {prop: `${inputString}`});
+            throw new Error(message);
         }
         return pattern.test(inputString);
     };

@@ -1,0 +1,22 @@
+{
+  "collectPlace": "Canal no encontrado",
+  "collectSpot": {
+    "location": "Lugar de caza {prop} no encontrado. Por favor, utiliza un canal de caza para hacer una reserva.",
+    "huntingSpot": "Lugar de caza {prop} en el canal {prop2} no encontrado. Por favor, selecciona uno de la lista."
+  },
+  "collectDate": "Tu fecha seleccionada: {prop} no es válida. ¡Por favor, sigue el formato: DD.MM.AAAA!",
+  "isTimeFormatValid": "Tu hora seleccionada: {prop} no es válida. ¡Por favor, sigue el formato: HH:mm!",
+  "collectEnd": "Tu hora de finalización seleccionada {prop} está en el pasado",
+  "collectRole": "No tienes permiso para usar este comando",
+  "collectDuration": "Tu reserva debe durar por lo menos 15 minutos.",
+  "getServerSaveValidation": {
+    "start": "Tu hora de inicio seleccionada {prop} no está dentro de las reglas de Gods",
+    "end": "Tu hora de finalización seleccionada {prop} no está dentro de las reglas de Gods"
+  },
+  "isValidReservationDuration": "La duración de la reserva excede las {prop} horas.",
+  "insertBooking": {
+    "existingReservationsForID": "¡Has alcanzado el máximo de 4 reservas para el lugar de caza {prop}!",
+    "isWithinRoleDuration": "Tu tiempo máximo de reserva de {prop} horas se ha excedido para el lugar {prop2} - usa \"/cancelar\" primero si quieres cambiar tu reserva.",
+    "isOverlapping": "Tu reserva para el lugar de caza: {prop} se solapa con otra reserva: {prop}"
+  }
+}

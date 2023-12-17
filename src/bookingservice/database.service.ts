@@ -12,6 +12,7 @@ import {REFUGIADB} from "../database/RefugiaDatabase";
 import {GODSDB} from "../database/GodsDatabase";
 import {ChatInputCommandInteraction, TextChannel} from "discord.js";
 import StatisticsSchema from "../schemas/StatisticsSchema";
+import LocaleManager from "../locale/LocaleManager";
 
 //how to add a reservation to different databases?
 export const InsertBooking = async (reservation: Booking, databaseId: string) => {
@@ -34,7 +35,8 @@ export const InsertBooking = async (reservation: Booking, databaseId: string) =>
     });
 
     if (existingReservationsForID.length >= 4) {
-        throw new Error(`You have reached the maximum of 4 reservations for hunting spot ${reservation.huntingSpot}!`);
+        const message = LocaleManager.translate("insertBooking",{prop: `${reservation.huntingSpot}`});
+        throw new Error(message);
     }
 
     const isWithinRoleDuration = areAllCurrentReservationsFromUserWithinRoleDuration(reservation.roleDuration, reservation, existingReservationsForID);
@@ -54,10 +56,12 @@ export const InsertBooking = async (reservation: Booking, databaseId: string) =>
     //const dev = false;
     if (!dev) {
         logger.warn(`Booking with uniqueId ${reservation.uniqueId}, name: ${reservation.name.displayName} already exists for hunting spot ${reservation.huntingSpot}. Not inserting.`);
-        throw new Error(`Your maximum reservation time of ${reservation.roleDuration / 60} hours is exceeded: ${reservation.huntingSpot} - use "/unbook" first if you want to change your reservation!`);
+        const message = LocaleManager.translate("insertBooking.isWithinRoleDuration",{prop: `${reservation.roleDuration / 60}`,prop2:`${reservation.huntingSpot}`});
+        throw new Error(message);
     } else if (isOverlapping) {
         logger.warn(`Overlapping reservation found!`);
-        throw new Error(`Your reservation for the ${reservation.huntingSpot}, overlaps with an existing reservation}!`);
+        const message = LocaleManager.translate("insertBooking.isOverlapping",{prop: `${reservation.huntingSpot}`});
+        throw new Error(message);
     } else {
         let newBooking = new BookingModel({
             huntingPlace: reservation.huntingPlace,
@@ -140,8 +144,9 @@ export const deleteBookingsForUserId = async (
     if (!bookingToDelete) {
         throw new Error("No matching booking found for deletion");
     }
+
     const updateResult = await BookingModel.updateOne(
-        {_id: {$in: bookingToDelete._id}},
+        {_id: {$in: bookingToDelete?._id}},
         {$set: {deletedAt: dayjs()}}
     );
 
@@ -177,7 +182,7 @@ export const getAllCollectionsAndValues = async (databaseId: string): Promise<Da
     // List all collections in the database
     const collections = await db.listCollections().toArray();
     const filteredCollections = collections.filter((e) => e.name !== 'statisticsForUsers');
-    const names = collections.map((e) => `${e.name}`);
+    const names = filteredCollections.map((e) => `${e.name}`);
 
     logger.debug(`Found ${filteredCollections.length} collections: [${names}]`);
 
@@ -191,7 +196,7 @@ export const getAllCollectionsAndValues = async (databaseId: string): Promise<Da
             .toArray();
         //console.log(`Collection: ${collectionName}`);
     }
-    console.log("=========================",result);
+    //console.log("=========================", result);
     logger.debug("DONE! getting all collections and documents");
     return result; // Return the result object with collections and documents
 
@@ -212,10 +217,11 @@ export const getResultForSummary = async (databaseId: string) => {
     const result: DatabaseResultForSummary = {};
 
     const collections = await db.listCollections().toArray();
-    const names = collections.map((e) => `${e.name}`);
+    const filteredCollections = collections.filter((e) => e.name !== 'statisticsForUsers');
+    const names = filteredCollections.map((e) => `${e.name}`);
 
     logger.debug(`Found ${collections.length} collections: [${names}]`);
-    for (const collection of collections) {
+    for (const collection of filteredCollections) {
         const collectionName = collection.name;
         //console.log(collectionName);
         result[collectionName] = {};
@@ -236,7 +242,7 @@ export const getResultForSummary = async (databaseId: string) => {
         }
     }
     //console.log(JSON.stringify(result, null, 2));
-    logger.debug("DONE! Getting grouped collections and values");
+    logger.debug("DONE! Getting summary collections and values");
     return result;
 
 
@@ -385,7 +391,7 @@ export const getDataForUserStatistics = async (interaction: ChatInputCommandInte
 
         throw new Error(`Unknown database ID: ${databaseId}`);
     }
-    const statistics: IStatistics[] = [];
+
     const result = await StatisticsModel.findOne({
         userId,
     });
@@ -394,17 +400,14 @@ export const getDataForUserStatistics = async (interaction: ChatInputCommandInte
         for (const [outerKey, outerValue] of result.huntingPlaces.entries()) {
             // console.log(`Outer Key: ${outerKey}`);
 
-            // Initialize a variable to store the sum of inner values
             let sumOfInnerValues = 0;
 
             for (const [innerKey, innerValue] of outerValue.entries()) {
                 // console.log(`Inner Key: ${innerKey}, Inner Value: ${innerValue}`);
 
-                // Add inner values to the sum
                 sumOfInnerValues += innerValue;
             }
 
-            // Push the result to formattedArray
             formattedArray.push({spot: outerKey, amount: sumOfInnerValues});
         }
     }

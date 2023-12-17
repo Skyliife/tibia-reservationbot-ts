@@ -5,6 +5,7 @@ import {isCurrentTimeAfter10AM, isCurrentTimeBefore10AM, isCurrentTimeBeforeMidn
 import logger from "../logging/logger";
 import {Name} from "../types";
 import Booking from "./booking";
+import LocaleManager from "../locale/LocaleManager";
 
 class VerifyingService {
 
@@ -68,12 +69,14 @@ class VerifyingService {
         const isValidStart = this.isDateBetweenSS(start, serverSaveStart, serverSaveEnd);
 
         if (!isValidStart) {
-            throw new Error(`Your selected start time ${start.format("DD.MM.YYYY HH:mm")} is not within the god rules`);
+            const message = LocaleManager.translate("getServerSaveValidation.start", {prop: `${start.format("DD.MM.YYYY HH:mm")}`})
+            throw new Error(message);
         }
         const isValidEnd = this.isDateBetweenSS(end, serverSaveStart, serverSaveEnd);
 
         if (!isValidEnd) {
-            throw new Error(`Your selected end time ${end.format("DD.MM.YYYY HH:mm")} is not within the god rules`);
+            const message = LocaleManager.translate("getServerSaveValidation.end", {prop: `${end.format("DD.MM.YYYY HH:mm")}`})
+            throw new Error(message);
         }
         this.isValidReservationDuration(start, end, duration);
     };
@@ -82,7 +85,8 @@ class VerifyingService {
         const durationInMinutes = end.diff(start, "minute");
 
         if (durationInMinutes > duration) {
-            throw new Error(`Reservation duration exceeds ${duration / 60} hours.`);
+            const message = LocaleManager.translate("isValidReservationDuration", {prop: `${duration / 60}`})
+            throw new Error(message);
         }
 
         return true;

@@ -1,0 +1,22 @@
+{
+  "collectPlace": "Channel not found",
+  "collectSpot": {
+    "location": "Hunting place {prop} not found. Please use a hunting channel to make a reservation.",
+    "huntingSpot": "Hunting spot {prop} in channel {prop2} not found. Please select one from the list."
+  },
+  "collectDate": "Your selected date: {prop} is not valid! Please keep to the format like: DD.MM.YYYY",
+  "isTimeFormatValid": "Your selected time: {prop} is not valid! Please keep to the format like: HH:mm",
+  "collectEnd": "Your selected end time {prop} is in the past",
+  "collectRole": "You are not allowed to use this command",
+  "collectDuration": "Your reservation must be at least 15 minutes long.",
+  "getServerSaveValidation": {
+    "start": "Your selected start time {prop} is not within the god rules",
+    "end": "Your selected end time {prop} is not within the god rules"
+  },
+  "isValidReservationDuration": "Reservation duration exceeds {prop} hours.",
+  "insertBooking": {
+    "existingReservationsForID": "You have reached the maximum of 4 reservations for hunting spot {prop}!",
+    "isWithinRoleDuration": "Your maximum reservation time of {prop} hours is exceeded for spot {prop2} - use \"/unbook\" first if you want to change your reservation!",
+    "isOverlapping": "Your reservation for hunting spot: {prop} is overlapping with another reservation: {prop}"
+  }
+}

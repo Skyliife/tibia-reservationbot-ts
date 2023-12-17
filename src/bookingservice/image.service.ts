@@ -1,6 +1,7 @@
 import {AttachmentBuilder, ChatInputCommandInteraction, GuildMember, TextChannel} from "discord.js";
 import {Canvas, createCanvas, loadImage} from "@napi-rs/canvas"
 import {DatabaseResult} from "../types";
+import {getHuntingPlaceByChannelName} from "../huntingplaces/huntingplaces";
 
 const {writeFileSync} = require('fs')
 const {join} = require('path')
@@ -75,10 +76,10 @@ export const ImageService = async (interaction: ChatInputCommandInteraction, dat
     if (resultObject) {
 
         let workload = Workload.Low;
-        if (resultObject.value > 10) {
+        if (resultObject.value > 15) {
             workload = Workload.Medium;
         }
-        if (resultObject.value > 20) {
+        if (resultObject.value > 25) {
             workload = Workload.High;
         }
         const replaced = resultObject.label.replaceAll('-', ' ');
@@ -117,6 +118,7 @@ export const ImageService = async (interaction: ChatInputCommandInteraction, dat
     const attachment = new AttachmentBuilder(await canvas.encode('png'), {name: 'botmessage.png'});
 
     const channelToSend = interaction.channel as TextChannel;
+    if (getHuntingPlaceByChannelName(channelToSend.name) === undefined) return;
     await channelToSend.send({files: [attachment]});
 
 }

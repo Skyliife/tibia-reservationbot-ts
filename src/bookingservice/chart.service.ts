@@ -34,29 +34,36 @@ export const createChartForSummary = async (data: DatabaseResult, data2: Databas
         counts[huntingPlace] = data[huntingPlace].length;
     });
 
+    //console.log("Counts:", counts);
 
     const values = Object.keys(counts).map((key, index) => {
         const amount = counts[key];
         return {label: key, value: amount};
     });
+    //console.log("values", values);
 
     const totalReservations = Object.values(counts).reduce((sum, count) => sum + count, 0);
     const percentages: { label: string; value: number }[] = Object.keys(counts).map((key, index) => {
         const percentage = (counts[key] / totalReservations) * 100;
         return {label: key, name: percentage, value: counts[key]};
     });
-
-
-
-
-
-
-
     // console.log("values", values);
     // console.log("totalReservations", totalReservations);
     // console.log("percentages", percentages);
+    const counts2: { [key: string]: number } = {};
+    Object.keys(data2).forEach((huntingPlace) => {
+        Object.keys(data2[huntingPlace]).forEach((huntingSpot) => {
+            if (data2[huntingPlace][huntingSpot].length === 0) return;
+            counts2[huntingSpot] = data2[huntingPlace][huntingSpot].length;
+        });
+    });
+    const values2 = Object.keys(counts2).map((key, index) => {
+        const amount = counts2[key];
+        return {label: key, value: amount};
+    });
+    console.log("Counts2:", counts2);
 
-    const canvas = createCanvas(1500, 800);
+    const canvas = createCanvas(1500, 1000);
     const ctx = canvas.getContext('2d');
 
 
@@ -65,10 +72,11 @@ export const createChartForSummary = async (data: DatabaseResult, data2: Databas
             type: 'doughnut',
             data: {
 
-                labels: percentages.map((data) => data.label),
+
                 datasets: [
                     {
                         data: values.map((data) => data.value),
+                        label: percentages.map((data) => data.label),
                         datalabels: {
                             labels: {
                                 index: {
@@ -80,7 +88,7 @@ export const createChartForSummary = async (data: DatabaseResult, data2: Databas
                                         size: 22,
                                     },
                                     // @ts-ignore
-                                    formatter: (val, ctx) => ctx.chart.data.labels[ctx.dataIndex],
+                                    formatter: (val, ctx) => ctx.chart.data.datasets[0].label[ctx.dataIndex],
                                     align: 'end',
                                     offset: 20,
                                     anchor: 'end',
@@ -90,7 +98,7 @@ export const createChartForSummary = async (data: DatabaseResult, data2: Databas
                                     //@ts-ignore
                                     color: (ctx) => ctx.dataset.backgroundColor,
                                     font: {
-                                        size: 20,
+                                        size: 17,
                                     },
                                     backgroundColor: '#424549',
                                     borderRadius: 4,
@@ -105,6 +113,9 @@ export const createChartForSummary = async (data: DatabaseResult, data2: Databas
                                 },
                                 value: {
                                     color: '#404040',
+                                    font: {
+                                        size: 15,
+                                    },
                                     backgroundColor: '#fff',
                                     borderColor: '#fff',
                                     borderWidth: 2,
@@ -119,50 +130,52 @@ export const createChartForSummary = async (data: DatabaseResult, data2: Databas
                         }
                     },
                     {
-                        data: values.map((data) => data.value),
+                        data: values2.map((data) => data.value),
+                        label: values2.map((data) => data.label),
                         datalabels: {
                             labels: {
-                                index: {
-                                    //@ts-ignore
-                                    backgroundColor: (ctx) => ctx.dataset.backgroundColor,
-                                    borderRadius: 4,
-                                    color: '#000',
-                                    font: {
-                                        size: 22,
-                                    },
-                                    // @ts-ignore
-                                    formatter: (val, ctx) => ctx.chart.data.labels[ctx.dataIndex],
-                                    align: 'end',
-                                    offset: 20,
-                                    anchor: 'end',
-
-                                },
                                 name: {
                                     //@ts-ignore
                                     color: (ctx) => ctx.dataset.backgroundColor,
                                     font: {
-                                        size: 20,
+                                        size: 15,
                                     },
                                     backgroundColor: '#424549',
                                     borderRadius: 4,
                                     offset: 0,
                                     padding: 2,
-                                    formatter: (value) => {
-                                        const percentage = (value / totalReservations) * 100;
-                                        const integerValue = Math.floor(percentage);
-                                        return integerValue.toString(10) + '%';
+                                    // @ts-ignore
+                                    formatter: (value, ctx) => ctx.chart.data.datasets[1].label[ctx.dataIndex],
+                                    anchor: (ctx) => {
+                                        console.log(ctx.dataIndex);
+                                        if (ctx.dataIndex % 2 === 0) {
+                                            console.log("center");
+                                            return 'center'
+                                        }
+                                        console.log("start");
+                                        return 'start'
                                     },
                                     align: 'top',
+
                                 },
                                 value: {
                                     color: '#404040',
                                     backgroundColor: '#fff',
+                                    font: {
+                                        size: 15,
+                                    },
                                     borderColor: '#fff',
                                     borderWidth: 2,
                                     borderRadius: 4,
                                     padding: 0,
                                     formatter: (value) => {
                                         return value;
+                                    },
+                                    anchor: (ctx) => {
+                                        if (ctx.dataIndex % 2 === 0) {
+                                            return 'center'
+                                        }
+                                        return 'start'
                                     },
                                     align: 'bottom',
                                 },
@@ -288,12 +301,15 @@ function drawDoughnutLabel(chart: any, options: any) {
     }
 }
 
-export const createChartForStatistics = async (data: { spot: string; amount: number }[]) => {
+export const createChartForStatistics = async (data: {
+    spot: string;
+    amount: number
+}[], username: string | undefined) => {
 
 
     const total = data.reduce((total, obj) => total + obj.amount, 0);
 
-    const canvas = createCanvas(600, 600);
+    const canvas = createCanvas(1500, 800);
     const ctx = canvas.getContext('2d');
     //@ts-ignore
     const myDoughnutChart = new Chart(ctx, {
@@ -304,42 +320,7 @@ export const createChartForStatistics = async (data: { spot: string; amount: num
                 datasets: [
                     {
                         data: data.map((data) => data.amount),
-                        datalabels: {
-                            labels: {
-                                name: {
-                                    //@ts-ignore
-                                    color: (ctx) => ctx.dataset.backgroundColor,
-                                    font: {
-                                        size: 20,
-                                    },
-                                    backgroundColor: '#424549',
-                                    borderRadius: 4,
-                                    offset: 0,
-                                    padding: 2,
-                                    formatter: (value) => {
-                                        const percentage = (value / total) * 100;
-                                        const integerValue = Math.floor(percentage);
-                                        return integerValue.toString(10) + '%';
-                                    },
-                                    align: 'top',
-                                },
-                                value: {
-                                    color: '#404040',
-                                    backgroundColor: '#fff',
-                                    borderColor: '#fff',
-                                    borderWidth: 2,
-                                    borderRadius: 4,
-                                    padding: 0,
-                                    formatter: (value) => {
-                                        return value;
-                                    },
-                                    align: 'bottom',
-                                },
-                            }
-                        }
-                    },
-                    {
-                        data: data.map((data) => data.amount),
+
                         datalabels: {
                             labels: {
                                 index: {
@@ -388,33 +369,30 @@ export const createChartForStatistics = async (data: { spot: string; amount: num
                                 },
                             }
                         }
-                    },
+                    }
                 ],
             },
             options: {
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
                 layout: {
-                    // padding: {
-                    //     left: 200,
-                    //     right: 200,
-                    //     top: 0,
-                    //     bottom: 60,
-                    // },
+                    padding: {
+                        left: 200,
+                        right: 200,
+                        top: 0,
+                        bottom: 60,
+                    },
                 },
                 plugins: {
                     //@ts-ignore
                     customCanvasBackgroundColor: {
                         color: '#100d2b',
-
                     },
                     legend: {
-                        display: true,
-                        font: {size: 400},
-                        color: '#fff',
+                        display: false,
                     },
                     title: {
-                        display: false,
-                        text: 'Current reservations',
+                        display: true,
+                        text: `ALL TIME RESERVATIONS OF ${username}`,
                         font: {weight: 'bold', size: 30},
                         color: '#fff',
 

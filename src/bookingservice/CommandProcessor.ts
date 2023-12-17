@@ -92,7 +92,8 @@ export default class CommandProcessor {
         const channelForStatistics = this.interaction.channel as TextChannel;
         if (channelForStatistics.name === "statistics") {
             const dataForStatistics = await getDataForUserStatistics(this.interaction, userId, this.databaseId);
-            const canvas = await createChartForStatistics(dataForStatistics);
+            const username = this.interaction.client.users.cache.get(userId)?.displayName;
+            const canvas = await createChartForStatistics(dataForStatistics, username);
             const attachment = new AttachmentBuilder(await canvas.encode('png'), {name: 'summary.png'});
             await this.interaction.editReply({files: [attachment]});
 

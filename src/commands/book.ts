@@ -10,24 +10,116 @@ import logger from "../logging/logger";
 import {getChoicesForDate, getChoicesForTime} from "../utils";
 import {getChoicesForSpot} from "../huntingplaces/huntingplaces";
 import CommandProcessor from "../bookingservice/CommandProcessor";
+import {
+    description,
+    descriptionDE,
+    descriptionES,
+    descriptionPL,
+    optionNames,
+    optionNamesDE,
+    optionNamesES,
+    optionNamesPL
+} from "../locale/locales/optionnames";
 
-const optionNames = {
-    spot: "spot",
-    date: "date",
-    start: "start",
-    end: "end",
-    name: "name",
-};
 
 const command: SlashCommand = {
     command: new SlashCommandBuilder()
         .setName("book")
-        .addStringOption((option) => option.setName(optionNames.spot).setDescription("Select the spot").setRequired(true).setAutocomplete(true))
-        .addStringOption((option) => option.setName(optionNames.date).setDescription("Select a date").setRequired(true).setAutocomplete(true))
-        .addStringOption((option) => option.setName(optionNames.start).setDescription("Select a start time").setRequired(true).setAutocomplete(true))
-        .addStringOption((option) => option.setName(optionNames.end).setDescription("Select an end time").setRequired(true).setAutocomplete(true))
-        .addStringOption((option) => option.setName(optionNames.name).setDescription("Select a name or leave empty").setMaxLength(15))
-        .setDescription("Book a hunting ground"),
+        .setNameLocalizations({
+            pl: "rezerwacja",
+            de: "reservierung",
+            'es-ES': 'reserva',
+        })
+        .addStringOption((option) => {
+            return option
+                .setName(optionNames.spot)
+                .setNameLocalizations({
+                    pl: optionNamesPL.spot,
+                    de: optionNamesDE.spot,
+                    'es-ES': optionNamesES.spot,
+                })
+                .setDescription(description.spot)
+                .setDescriptionLocalizations({
+                    pl: descriptionPL.spot,
+                    de: descriptionDE.spot,
+                    'es-ES': descriptionES.spot,
+                })
+                .setRequired(true)
+                .setAutocomplete(true);
+        })
+        .addStringOption((option) => {
+            return option
+                .setName(optionNames.date)
+                .setNameLocalizations({
+                    pl: optionNamesPL.date,
+                    de: optionNamesDE.date,
+                    'es-ES': optionNamesES.date,
+                })
+                .setDescription(description.date)
+                .setDescriptionLocalizations({
+                    pl: descriptionPL.date,
+                    de: descriptionDE.date,
+                    'es-ES': descriptionES.date,
+                })
+                .setRequired(true)
+                .setAutocomplete(true);
+        })
+        .addStringOption((option) => {
+            return option
+                .setName(optionNames.start)
+                .setNameLocalizations({
+                    pl: optionNamesPL.start,
+                    de: optionNamesDE.start,
+                    'es-ES': optionNamesES.start,
+                })
+                .setDescription(description.start)
+                .setDescriptionLocalizations({
+                    pl: descriptionPL.start,
+                    de: descriptionDE.start,
+                    'es-ES': descriptionES.start,
+                })
+                .setRequired(true)
+                .setAutocomplete(true);
+        })
+        .addStringOption((option) => {
+            return option
+                .setName(optionNames.end)
+                .setNameLocalizations({
+                    pl: optionNamesPL.end,
+                    de: optionNamesDE.end,
+                    'es-ES': optionNamesES.end,
+                })
+                .setDescription(description.end)
+                .setDescriptionLocalizations({
+                    pl: descriptionPL.end,
+                    de: descriptionDE.end,
+                    'es-ES': descriptionES.end,
+                })
+                .setRequired(true)
+                .setAutocomplete(true);
+        })
+        .addStringOption((option) => {
+            return option
+                .setName(optionNames.name)
+                .setNameLocalizations({
+                    pl: optionNamesPL.name,
+                    de: optionNamesDE.name,
+                    'es-ES': optionNamesES.name,
+                })
+                .setDescription(description.name)
+                .setDescriptionLocalizations({
+                    pl: descriptionPL.name,
+                    de: descriptionDE.name,
+                    'es-ES': descriptionES.name,
+                })
+                .setMaxLength(15);
+        })
+        .setDescription(description.command)
+        .setDescriptionLocalizations({
+            pl: descriptionPL.command,
+            de: descriptionDE.command,
+            'es-ES': descriptionES.command,
+        }),
 
     autocomplete: async (interaction) => {
 

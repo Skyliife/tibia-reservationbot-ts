@@ -1,0 +1,22 @@
+{
+  "collectPlace": "Kanal nicht gefunden",
+  "collectSpot": {
+    "location": "Jagdplatz {prop} nicht gefunden. Bitte benutzte einen Jagdkanal um einen Jagdplatz zu buchen.",
+    "huntingSpot": "Jagdplatz {prop} in Kanal {prop2} nicht gefunden. Bitte wähle einen Jagdplatz aus der liste."
+  },
+  "collectDate": "Das eingegebene Datum: {prop} ist nicht gültig! Bitte verwende das Format: DD.MM.YYYY",
+  "isTimeFormatValid": "Die ausgewählte Zeit: {prop} ist nicht gültig! Bitte verwende das Format: HH:mm",
+  "collectEnd": "Das ausgewählte Ende {prop} ist in der Vergangenheit",
+  "collectRole": "Du bist nicht berechtigt diesen Befehl zu nutzen.",
+  "collectDuration": "Die mindest Dauer für eine Reservierung beträgt 15 Minuten.",
+  "getServerSaveValidation": {
+    "start": "Die ausgewählte Beginnzeit {prop} entspricht nicht den Server Regeln",
+    "end": "Die ausgewählte Schlusszeit {prop} entspricht nicht den Server Regeln"
+  },
+  "isValidReservationDuration": "Die Reservierungsdauer überschreitet die vorgegebenen ${prop} Stunden.",
+  "insertBooking": {
+    "existingReservationsForID": "Sie haben die maximale Anzahl von 4 Reservierungen für Jagdgebiet {prop} erreicht!",
+    "isWithinRoleDuration": "Deine maximale Reservierungszeit von {prop} Stunden ist für Jagdgebiet {prop2} überschritten - benutze zuerst \"/stornieren\", wenn du deine Reservierung ändern willst!",
+    "isOverlapping": "Deine Reservierung für das Jagdgebiet: {prop} überschneidet sich mit einer anderen Reservierung: {prop}"
+  }
+}

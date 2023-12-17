@@ -5,9 +5,10 @@
   "main": "main.js",
   "scripts": {
     "test": "jest",
-    "start": "npm run build && npm run copy && npm test && npm run start-app",
-    "copy": "copyfiles -u 3 src/huntingplaces/thumbnails/* build/huntingplaces/thumbnails && echo 'Thumbnails copied.'",
-    "dev": "npm run build && npm run copy && npm run start-app",
+    "start": "npm run build && npm run copyThumbnails && npm run copyLocales && npm test && npm run start-app",
+    "copyThumbnails": "copyfiles -u 3 src/huntingplaces/thumbnails/* build/huntingplaces/thumbnails && echo 'Thumbnails copied.'",
+    "copyLocales": "copyfiles -u 3 src/locale/locales/* build/locale/locales && echo 'Locales copied.",
+    "dev": "npm run build && npm run copyThumbnails && npm run copyLocales && npm run start-app",
     "build": "tsc",
     "start-app": "node ./build/main.js"
   },

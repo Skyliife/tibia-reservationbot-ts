@@ -19,7 +19,7 @@ module.exports = async (client: Client) => {
 
     const rest = new REST({version: "10"}).setToken(process.env.DISCORD_TOKEN);
 
-    // rest
+    // await rest
     //     .put(Routes.applicationGuildCommands(process.env.CLIENTID, process.env.GUILDSERVER), {
     //         body: [],
     //     })
@@ -28,7 +28,7 @@ module.exports = async (client: Client) => {
     //     })
     //     .catch(console.error);
     //
-    // rest.put(Routes.applicationCommands(process.env.CLIENTID), {body: []})
+    // await rest.put(Routes.applicationCommands(process.env.CLIENTID), {body: []})
     //     .then(() => console.log('Successfully deleted all application commands.'))
     //     .catch(console.error);
 
@@ -40,11 +40,11 @@ module.exports = async (client: Client) => {
         }
     );
     logger.info(`Successfully loaded ${slashCommands.length} slash command(s) for GODS SERVER`);
-    await rest.put(
-        Routes.applicationGuildCommands(process.env.CLIENTID, process.env.GUILDSERVER_REFUGIA),
-        {
-            body: slashCommands.map((command) => command.toJSON()),
-        }
-    );
-    logger.info(`Successfully loaded ${slashCommands.length} slash command(s) for REFUGIA SERVER`);
-};
+    // await rest.put(
+    //     Routes.applicationGuildCommands(process.env.CLIENTID, process.env.GUILDSERVER_REFUGIA),
+    //     {
+    //         body: slashCommands.map((command) => command.toJSON()),
+    //     }
+    // );
+    // logger.info(`Successfully loaded ${slashCommands.length} slash command(s) for REFUGIA SERVER`);
+ };

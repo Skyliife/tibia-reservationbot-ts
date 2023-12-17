@@ -1,6 +1,8 @@
 
 import { Interaction, Events } from "discord.js";
 import { Event } from "../types";
+import LocaleManager from "../locale/LocaleManager";
+import Logger from "../logging/logger";
 
 const event: Event = {
   name: Events.InteractionCreate,
@@ -9,7 +11,8 @@ const event: Event = {
       let command = interaction.client.slashCommands.get(interaction.commandName);
 
       if (!command) return;
-
+      Logger.info(`used locale: ${interaction.locale}`);
+      LocaleManager.loadLanguage(interaction.locale);
       command.execute(interaction);
     } else if (interaction.isAutocomplete()) {
       const command = interaction.client.slashCommands.get(interaction.commandName);

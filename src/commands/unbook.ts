@@ -3,20 +3,41 @@ import {IBooking, SlashCommand} from "../types";
 import {deleteBookingsForUserId, getCurrentBookingsForUserId} from "../bookingservice/database.service";
 import logger from "../logging/logger";
 import CommandProcessor from "../bookingservice/CommandProcessor";
+import {descriptionDE, descriptionES, descriptionPL} from "../locale/locales/optionnames";
 
 let choices: { formattedString: string; reservation: IBooking | null }[] = [];
 
 const command: SlashCommand = {
     command: new SlashCommandBuilder()
         .setName("unbook")
+        .setNameLocalizations({
+            pl: "anuluj",
+            de: "stornieren",
+            'es-ES': 'cancelar',
+        })
         .addStringOption((option) => {
             return option
                 .setName("reservation")
+                .setNameLocalizations({
+                    pl: "rezerwacja",
+                    de: "reservierung",
+                    'es-ES': 'reserva',
+                })
                 .setDescription("Select a reservation to delete")
+                .setDescriptionLocalizations({
+                    pl: 'wybierz rezerwację do usunięcia',
+                    de: 'wähle eine reservierung zum löschen',
+                    'es-ES': 'elige la reserva que desea eliminar',
+                })
                 .setRequired(true)
                 .setAutocomplete(true);
         })
-        .setDescription("Delete a reservation"),
+        .setDescription("cancel a booking")
+        .setDescriptionLocalizations({
+            pl: 'anulowanie rezerwacji',
+            de: 'eine buchung stornieren',
+            'es-ES': 'cancelar una reserva',
+        }),
 
     autocomplete: async (interaction) => {
         const channel = interaction.channel;

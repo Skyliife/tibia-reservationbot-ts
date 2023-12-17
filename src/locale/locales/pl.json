@@ -1,0 +1,22 @@
+{
+  "collectPlace": "Nie znaleziono kanału",
+  "collectSpot": {
+    "location": "Miejsce polowań {prop} nieznalezione. Prosze użyj kanału do hunta by dokonać rezerwacji.",
+    "huntingSpot": "Miejsce polowań {prop} na kanale {prop2} nieznalezione. Prosze wybierz jedno z listy."
+  },
+  "collectDate": "Twoja wybrana data: {prop} jest nieprawidłowa! Prosze zachowaj format: DD.MM.YYYY",
+  "isTimeFormatValid": "Twoj wybrany czas: {prop} jest nieprawidłowy! Prosze zachowaj format: HH:mm",
+  "collectEnd": "Twoj wybrany czas zakończenia {prop} jest przeszły.",
+  "collectRole": "Nie jesteś upoważniony do użycia tej komendy.",
+  "collectDuration": "Twój czas polowania musi wynosić minimum 15 minut.",
+  "getServerSaveValidation": {
+    "start": "Twój czas rozpoczęcia {prop} nie jest zgodny z zasadami GODS",
+    "end": "Twój czas zakończenie {prop} nie jest zgodny z zasadami GODS"
+  },
+  "isValidReservationDuration": "Twój czas rezerwacji przekracza limit {prop} godzin ",
+  "insertBooking": {
+    "existingReservationsForID": "Osiągnałeś limit rezerwacji na tym miejscu polowań {prop}!",
+    "isWithinRoleDuration": "Twój czas rezerwacji {prop} przekracza dopuszczalny limit: {prop2} - Użyj \"/anuluj\" jeśli chcesz zmienić swoją rezerwację",
+    "isOverlapping": "Twoja rezerwacja na tym miejscu polowań: {prop} nakłada się z inną rezerwacją: {prop}"
+  }
+}

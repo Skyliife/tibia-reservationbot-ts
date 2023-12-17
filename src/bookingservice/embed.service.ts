@@ -105,7 +105,7 @@ export const createEmbedsForGroups = async (channel: string | undefined, databas
     if (embeds.length > 0) {
         const lastEmbed = embeds[embeds.length - 1].embed;
         lastEmbed.setFooter({
-            text: `Made with ❤️ by Gods version 0.0.3-beta.0`,
+            text: `Made with ❤️ by Gods version 1.0.3`,
             // iconURL: "https://static.tibia.com/images/community/default_logo.gif",
         });
     }
