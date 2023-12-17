@@ -276,6 +276,32 @@ const Marapur = {
         },
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
+const Oramond = {
+    location: "oramond",
+    choices: [
+        {
+            name: "Catacombs East",
+            link: "https://tibia.fandom.com/wiki/Temple_of_the_Moon_Goddess",
+        },
+        {
+            name: "Catacombs West",
+            link: "https://tibia.fandom.com/wiki/Great_Pearl_Fan_Reef",
+        },
+        {
+            name: "Oramond Sewers",
+            link: "https://tibia.fandom.com/wiki/Great_Pearl_Fan_Reef",
+        },
+        {
+            name: "Raid East",
+            link: "https://tibia.fandom.com/wiki/Great_Pearl_Fan_Reef",
+        },
+        {
+            name: "Raid West",
+            link: "https://tibia.fandom.com/wiki/Great_Pearl_Fan_Reef",
+        },
+    ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
+};
+
 
 const Roshamuul = {
     location: "Roshamuul",
@@ -471,6 +497,7 @@ export const getHuntingPlaceByChannelName = (locationName: string) => {
         Inquisition,
         Issavi,
         Marapur,
+        Oramond,
         SecretLibrary,
         Roshamuul,
         RottenBlood,
@@ -501,6 +528,7 @@ export const getHuntingSpotsByHuntingPlace = (choiceName: string | undefined) =>
         Inquisition,
         Issavi,
         Marapur,
+        Oramond,
         SecretLibrary,
         Roshamuul,
         RottenBlood,
@@ -536,6 +564,7 @@ export const getChoicesForSpot = (locationName: string | undefined): { name: str
         Inquisition,
         Issavi,
         Marapur,
+        Oramond,
         SecretLibrary,
         Roshamuul,
         RottenBlood,
