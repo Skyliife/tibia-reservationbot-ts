@@ -74,7 +74,10 @@ export const getChoicesForDate = (interaction: AutocompleteInteraction<CacheType
 
     let dates: [] = [];
     for (const roleToCheck of rolePriority) {
-        if (member?.roles.cache.some((role: any) => role.name === roleToCheck)) {
+        if (member?.roles.cache.some((role: any) => {
+
+            return role.name === roleToCheck
+        })) {
             dates = getFormattedTimeRange(roleToCheck)
             break;
         }
@@ -134,7 +137,7 @@ function getTimeRangeForUser(role: string) {
             const dateForNextNextDay = new Date(currentDate);
             dateForNextNextDay.setDate(currentDate.getDate() + 2);
             dates.push(dateForNextNextDay);
-        } else if (role === "Gods Member") {
+        } else if (role === "Gods Member" || role === "GODS" || role === "BAZANT") {
             const dateForNextDay = new Date(currentDate);
             dateForNextDay.setDate(currentDate.getDate() + 1);
             dates.push(dateForNextDay);
@@ -147,7 +150,7 @@ function getTimeRangeForUser(role: string) {
             const dateForNextDay = new Date(currentDate);
             dateForNextDay.setDate(currentDate.getDate() + 1);
             dates.push(dateForNextDay);
-        } else if (role === "Gods Member") {
+        } else if (role === "Gods Member" || role === "GODS" || role === "BAZANT") {
             const dateForNextDay = new Date(currentDate);
             dateForNextDay.setDate(currentDate.getDate() + 1);
             dates.push(dateForNextDay);

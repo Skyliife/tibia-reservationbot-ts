@@ -116,8 +116,8 @@ const Feru = {
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
 
-const FlimsyVenore = {
-    location: "flimsy-venore",
+const Flimsy = {
+    location: "flimsy",
     choices: [
         {
             name: "Flimsy Jakundaf Desert",
@@ -340,7 +340,7 @@ const IceLibrary = {
 };
 
 const Soulwar = {
-    location: "Soulwar",
+    location: "Soul-war",
     choices: [
         {
             name: "Brachiodemons",
@@ -369,15 +369,15 @@ const Spectres = {
     location: "Spectres",
     choices: [
         {
-            name: "Gazer Spectre",
+            name: "Haunted Temple",
             link: "https://tibia.fandom.com/wiki/Haunted_Temple",
         },
         {
-            name: "Burster Spectre",
+            name: "Haunted Tomb",
             link: "https://tibia.fandom.com/wiki/Haunted_Tomb",
         },
         {
-            name: "Ripper Spectre",
+            name: "Haunted Cellar",
             link: "https://tibia.fandom.com/wiki/Haunted_Cellar",
         },
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
@@ -465,7 +465,7 @@ export const getHuntingPlaceByChannelName = (locationName: string) => {
         Cobras,
         Dragolisks,
         Feru,
-        FlimsyVenore,
+        Flimsy,
         Gnomprona,
         Ingol,
         Inquisition,
@@ -495,7 +495,7 @@ export const getHuntingSpotsByHuntingPlace = (choiceName: string | undefined) =>
         Cobras,
         Dragolisks,
         Feru,
-        FlimsyVenore,
+        Flimsy,
         Gnomprona,
         Ingol,
         Inquisition,
@@ -530,7 +530,7 @@ export const getChoicesForSpot = (locationName: string | undefined): { name: str
         Cobras,
         Dragolisks,
         Feru,
-        FlimsyVenore,
+        Flimsy,
         Gnomprona,
         Ingol,
         Inquisition,

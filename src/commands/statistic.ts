@@ -32,7 +32,7 @@ const command: SlashCommand = {
                     await executeUserCommand(interaction, commandProcessor);
 
                 } else {
-                    await interaction.editReply({content: `You are not allowed to use this command!`});
+                    throw new Error(`You are not allowed to use this command!`);
                 }
             }
 
@@ -49,11 +49,21 @@ async function executeUserCommand(interaction: ChatInputCommandInteraction, comm
     const userId = selectedUser.id;
 
     const channel = fetchChannelName(interaction.channel);
-    await commandProcessor.createStatisticsChartForUser(userId);
+    if(channel === 'statistics') {
+        await commandProcessor.createStatisticsChartForUser(userId);
+        await interaction.editReply({
+            content: `Successfully executed statistics for user ${interaction.options.getUser(optionNames.target)}!`,
+        });
+
+    } else {
+
+        throw new Error(`You cannot use this command in channel ${channel}!`);
+    }
 
     await interaction.editReply({
         content: `Successfully executed statistics for user ${interaction.options.getUser(optionNames.target)}!`,
     });
+
 
 
 }

@@ -81,7 +81,7 @@ export const createEmbedsForGroups = async (channel: string | undefined, databas
                     const ssn = dayjs(ss).add(1, "day");
 
                     //Fields
-                    const fieldName = `Date ${ss.format("D")}-${ssn.format("D.MM")}`;
+                    const fieldName = `Date ${ss.format("D")}-${ssn.format("D.MM")} SS`;
                     createFields(value, embed, fieldName);
 
                 }
