@@ -76,10 +76,10 @@ export const ImageService = async (interaction: ChatInputCommandInteraction, dat
     if (resultObject) {
 
         let workload = Workload.Low;
-        if (resultObject.value > 15) {
+        if (resultObject.value > 8) {
             workload = Workload.Medium;
         }
-        if (resultObject.value > 25) {
+        if (resultObject.value > 15) {
             workload = Workload.High;
         }
         const replaced = resultObject.label.replaceAll('-', ' ');
