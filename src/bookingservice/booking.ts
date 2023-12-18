@@ -1,6 +1,12 @@
 import dayjs, {Dayjs} from "dayjs";
 import {IBooking, Name} from "../types";
-import {isCurrentTimeAfter10AM, isCurrentTimeBefore10AM, isCurrentTimeBeforeMidnight} from "../utils";
+import {
+    isAnyTimeAfter10AM,
+    isAnyTimeBefore10AM,
+    isCurrentTimeAfter10AM,
+    isCurrentTimeBefore10AM,
+    isCurrentTimeBeforeMidnight
+} from "../utils";
 
 class Booking implements IBooking {
     public huntingPlace: string;
@@ -54,9 +60,9 @@ class Booking implements IBooking {
             .set("minute", 0)
             .set("second", 0)
             .set("millisecond", 0);
-        if (isCurrentTimeBeforeMidnight(now) && isCurrentTimeAfter10AM(now)) {
+        if (isCurrentTimeBeforeMidnight(now) && isAnyTimeAfter10AM(now)) {
             serverSaveStart = temp;
-        } else if (isCurrentTimeBefore10AM(now)) {
+        } else if (isAnyTimeBefore10AM(now)) {
             serverSaveStart = temp.subtract(1, "day");
         }
         return serverSaveStart;

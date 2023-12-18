@@ -21,11 +21,21 @@ export function isCurrentTimeBefore10AM(currentDate: Dayjs) {
     const tenAM = dayjs().set("hour", 10).set("minute", 0).set("second", 0).set("millisecond", 0);
     return currentDate.isBefore(tenAM);
 }
+export function isAnyTimeBefore10AM(currentDate: Dayjs) {
+    const tenAM = dayjs(currentDate).set("hour", 10).set("minute", 0).set("second", 0).set("millisecond", 0);
+    return currentDate.isBefore(tenAM);
+}
 
 export function isCurrentTimeAfter10AM(currentDate: Dayjs) {
     const tenAM = dayjs().set("hour", 10).set("minute", 0).set("second", 0).set("millisecond", 0);
     return currentDate.isSameOrAfter(tenAM);
 }
+export function isAnyTimeAfter10AM(currentDate: Dayjs) {
+    const tenAM = dayjs(currentDate).set("hour", 10).set("minute", 0).set("second", 0).set("millisecond", 0);
+    return currentDate.isSameOrAfter(tenAM);
+}
+
+
 
 export const areAllCurrentReservationsFromUserWithinRoleDuration = (roleDuration: number, currentReservation: IBooking, existingReservations: IBooking[]) => {
     //console.log(roleDuration);
