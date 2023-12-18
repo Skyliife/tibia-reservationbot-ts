@@ -3,6 +3,7 @@ import {getResultForGroups} from "./database.service";
 import {DatabaseResultForGroup, Name} from "../types";
 import * as fs from "fs";
 import dayjs from "dayjs";
+import {isCurrentTimeAfter10AM, isCurrentTimeBefore10AM, isCurrentTimeBeforeMidnight} from "../utils";
 
 // export const createEmbedsForSummary = async () => {
 //     const data: DatabaseResultForSummary = await getResultForSummary();
@@ -59,7 +60,7 @@ export const createEmbedsForGroups = async (channel: string | undefined, databas
             const huntingPlaces = data[collectionName];
             for (const huntingPlace in huntingPlaces) {
                 const embed = new EmbedBuilder();
-                let totalBookings = 0;
+                let totalDuration = 0;
                 //Title
                 embed.setTitle(`${huntingPlace}`);
 
@@ -69,7 +70,10 @@ export const createEmbedsForGroups = async (channel: string | undefined, databas
                     const bookingsList = huntingSpots[huntingspot];
                     //append bookings.startAt and booking.name with \n
                     for (const booking of bookingsList) {
-                        totalBookings++;
+
+                        const durationMinutes = dayjs(booking.end).diff(dayjs(booking.start), "minute");
+                        totalDuration += durationMinutes;
+
                         const timePart = `${dayjs(booking.start).format("HH:mm")}-${dayjs(booking.end).format("HH:mm")}`;
 
                         let namePart = createNamePart(booking.name);
@@ -84,7 +88,7 @@ export const createEmbedsForGroups = async (channel: string | undefined, databas
                     createFields(value, embed, fieldName);
 
                 }
-                createColor(embed, totalBookings);
+                createColor(embed, totalDuration);
 
                 //Thumbnail
                 const embedWithThumbnail = await addThumbnail(embed, huntingPlace);
@@ -126,12 +130,27 @@ function createNamePart(names: Name) {
 }
 
 //main();
-function createColor(embed: EmbedBuilder, totalBookings: number) {
-    embed.setColor(0x00FF00);
-    if (totalBookings > 7) {
-        embed.setColor(0xFFFF00);
+function createColor(embed: EmbedBuilder, totalDuration: number) {
+
+    const startTime = dayjs();
+    const temp = dayjs()
+    let endTime;
+
+    if (isCurrentTimeBeforeMidnight(startTime) && isCurrentTimeAfter10AM(startTime)) {
+        endTime = temp.add(2, "day").set("hour", 10).set("minute", 0).set("second", 0).set("millisecond", 0);
+    } else if (isCurrentTimeBefore10AM(startTime)) {
+        endTime = temp.add(1, "day").set("hour", 10).set("minute", 0).set("second", 0).set("millisecond", 0);
+    } else {
+        endTime = temp;
     }
-    if (totalBookings > 14) {
+    const totalAvailableTime = endTime.diff(startTime, 'minutes');
+
+    const percentageBooked = Math.round((totalDuration / totalAvailableTime) * 100);
+
+    embed.setColor(0x00FF00);
+    if (percentageBooked > 33 && percentageBooked <= 66) {
+        embed.setColor(0xFFFF00);
+    } else if (percentageBooked > 66) {
         embed.setColor(0xFF0000);
     }
 }
