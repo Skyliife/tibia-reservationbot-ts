@@ -142,7 +142,11 @@ const Gnomprona = {
             link: "https://tibia.fandom.com/wiki/Monster_Graveyard",
         },
         {
-            name: "Headpeckers",
+            name: "Headpeckers North",
+            link: "https://tibia.fandom.com/wiki/Crystal_Enigma",
+        },
+        {
+            name: "Headpeckers South",
             link: "https://tibia.fandom.com/wiki/Crystal_Enigma",
         },
         {
