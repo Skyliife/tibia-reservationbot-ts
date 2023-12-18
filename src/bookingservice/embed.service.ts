@@ -59,7 +59,7 @@ export const createEmbedsForGroups = async (channel: string | undefined, databas
             const huntingPlaces = data[collectionName];
             for (const huntingPlace in huntingPlaces) {
                 const embed = new EmbedBuilder();
-
+                let totalBookings = 0;
                 //Title
                 embed.setTitle(`${huntingPlace}`);
 
@@ -69,14 +69,13 @@ export const createEmbedsForGroups = async (channel: string | undefined, databas
                     const bookingsList = huntingSpots[huntingspot];
                     //append bookings.startAt and booking.name with \n
                     for (const booking of bookingsList) {
-
+                        totalBookings++;
                         const timePart = `${dayjs(booking.start).format("HH:mm")}-${dayjs(booking.end).format("HH:mm")}`;
 
                         let namePart = createNamePart(booking.name);
 
                         value += `${bold(timePart)} : ${namePart}\n`;
                     }
-
                     const ss = dayjs(huntingspot);
                     const ssn = dayjs(ss).add(1, "day");
 
@@ -85,10 +84,10 @@ export const createEmbedsForGroups = async (channel: string | undefined, databas
                     createFields(value, embed, fieldName);
 
                 }
+                createColor(embed, totalBookings);
 
                 //Thumbnail
                 const embedWithThumbnail = await addThumbnail(embed, huntingPlace);
-
                 //console.log("EMBEEEEEED", embedWithThumbnail);
                 embeds.push(embedWithThumbnail);
             }
@@ -127,6 +126,15 @@ function createNamePart(names: Name) {
 }
 
 //main();
+function createColor(embed: EmbedBuilder, totalBookings: number) {
+    embed.setColor(0x00FF00);
+    if (totalBookings > 7) {
+        embed.setColor(0xFFFF00);
+    }
+    if (totalBookings > 14) {
+        embed.setColor(0xFF0000);
+    }
+}
 
 const addThumbnail = async (embed: EmbedBuilder, name: string) => {
     const formatname = name.replace(/\s+/g, "").toLowerCase();
