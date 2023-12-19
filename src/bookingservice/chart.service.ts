@@ -109,6 +109,7 @@ export const createChartForSummary = async (data: DatabaseResult, data2: Databas
                                         const integerValue = Math.floor(percentage);
                                         return integerValue.toString(10) + '%';
                                     },
+                                    anchor: 'end',
                                     align: 'top',
                                 },
                                 value: {
@@ -124,6 +125,7 @@ export const createChartForSummary = async (data: DatabaseResult, data2: Databas
                                     formatter: (value) => {
                                         return value;
                                     },
+                                    anchor: 'end',
                                     align: 'bottom',
                                 },
                             }
@@ -148,21 +150,23 @@ export const createChartForSummary = async (data: DatabaseResult, data2: Databas
                                     formatter: (value, ctx) => ctx.chart.data.datasets[1].label[ctx.dataIndex],
                                     anchor: (ctx) => {
                                         //console.log(ctx.dataIndex);
-                                        if (ctx.dataIndex % 2 === 0) {
-                                            //console.log("center");
-                                            return 'center'
-                                        }
-                                        //console.log("start");
-                                        return 'start'
+                                        const positions = ['start', 'center', 'end'];
+                                        const index = ctx.dataIndex % positions.length;
+                                        return positions[index];
                                     },
-                                    align: 'top',
+                                    align: (ctx) => {
+                                        const positions = ['top', 'bottom'];
+                                        const index = ctx.dataIndex % positions.length;
+                                        return positions[index];
+                                    },
 
                                 },
                                 value: {
-                                    color: '#404040',
+                                    color: (ctx) => ctx.dataset.backgroundColor,
                                     backgroundColor: '#fff',
                                     font: {
                                         size: 15,
+                                        bold: true,
                                     },
                                     borderColor: '#fff',
                                     borderWidth: 2,
@@ -172,12 +176,15 @@ export const createChartForSummary = async (data: DatabaseResult, data2: Databas
                                         return value;
                                     },
                                     anchor: (ctx) => {
-                                        if (ctx.dataIndex % 2 === 0) {
-                                            return 'center'
-                                        }
-                                        return 'start'
+                                        const positions = ['start', 'center', 'end'];
+                                        const index = ctx.dataIndex % positions.length;
+                                        return positions[index];
                                     },
-                                    align: 'bottom',
+                                    align: (ctx) => {
+                                        const positions = ['bottom', 'top'];
+                                        const index = ctx.dataIndex % positions.length;
+                                        return positions[index];
+                                    },
                                 },
                             }
                         }
