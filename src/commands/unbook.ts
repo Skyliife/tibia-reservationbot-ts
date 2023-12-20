@@ -3,7 +3,6 @@ import {IBooking, SlashCommand} from "../types";
 import {deleteBookingsForUserId, getCurrentBookingsForUserId} from "../bookingservice/database.service";
 import logger from "../logging/logger";
 import CommandProcessor from "../bookingservice/CommandProcessor";
-import {descriptionDE, descriptionES, descriptionPL} from "../locale/locales/optionnames";
 
 let choices: { formattedString: string; reservation: IBooking | null }[] = [];
 
@@ -51,7 +50,7 @@ const command: SlashCommand = {
 
     execute: async (interaction) => {
         logger.debug("Start executing /unbook command!");
-        const commandProcessor = new CommandProcessor(interaction);
+        let commandProcessor: CommandProcessor | null = new CommandProcessor(interaction);
         const input = interaction.options.getString("reservation");
         const dataToDelete = choices.find((choice) => choice.formattedString === input);
 
@@ -71,12 +70,12 @@ const command: SlashCommand = {
 
                 await deleteBookingsForUserId(channelName, huntingSpot, interaction.user.id, start, end, member.guild.id);
                 await commandProcessor.clearMessages();
-                await commandProcessor.createImage();
+                // await commandProcessor.createImage();
                 await commandProcessor.createEmbed();
-                await commandProcessor.createSummaryChart();
+                // await commandProcessor.createSummaryChart();
                 await interaction.editReply({content: `Your reservation ${reservation.huntingSpot} has been deleted`});
                 await interaction.deleteReply();
-
+                commandProcessor = null;
 
             } else {
                 await interaction.editReply({
