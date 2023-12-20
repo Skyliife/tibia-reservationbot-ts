@@ -17,6 +17,6 @@
   "insertBooking": {
     "existingReservationsForID": "¡Has alcanzado el máximo de 4 reservas para el lugar de caza {prop}!",
     "isWithinRoleDuration": "Tu tiempo máximo de reserva de {prop} horas se ha excedido para el lugar {prop2} - usa \"/cancelar\" primero si quieres cambiar tu reserva.",
-    "isOverlapping": "Tu reserva para el lugar de caza: {prop} se solapa con otra reserva: {prop}"
+    "isOverlapping": "Tu reserva para el lugar de caza: {prop} se solapa con otra reserva"
   }
 }

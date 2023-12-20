@@ -24,7 +24,6 @@
   "dependencies": {
     "@napi-rs/canvas": "^0.1.44",
     "@types/chart.js": "^2.9.41",
-    "canvas": "^2.11.2",
     "chart.js": "^4.4.1",
     "chartjs-plugin-datalabels": "^2.2.0",
     "copyfiles": "^2.4.1",
@@ -32,7 +31,6 @@
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.1",
     "mongoose": "^8.0.1",
-    "undici": "^6.0.1",
     "winston": "^3.11.0"
   }
 }

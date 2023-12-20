@@ -17,6 +17,6 @@
   "insertBooking": {
     "existingReservationsForID": "You have reached the maximum of 4 reservations for hunting spot {prop}!",
     "isWithinRoleDuration": "Your maximum reservation time of {prop} hours is exceeded for spot {prop2} - use \"/unbook\" first if you want to change your reservation!",
-    "isOverlapping": "Your reservation for hunting spot: {prop} is overlapping with another reservation: {prop}"
+    "isOverlapping": "Your reservation for hunting spot: {prop} is overlapping with another reservation"
   }
 }

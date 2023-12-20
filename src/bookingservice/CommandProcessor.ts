@@ -76,11 +76,11 @@ export default class CommandProcessor {
     async createSummaryChart() {
         const data = await this.getDataFromDatabase(this.databaseId);
         const data2 = await getResultForSummary(this.databaseId);
-        const canvas = await createChartForSummary(data, data2);
-        const channelToSend = this.interaction.guild?.channels.cache.find((channel: any) => channel.name === "summary") as TextChannel;
+        const image = await createChartForSummary(data, data2);
+        const channelToSend = this.interaction.guild?.channels.cache.find((channel) => channel.name === "summary") as TextChannel;
         if (channelToSend !== undefined) {
             await channelToSend.bulkDelete(100, true);
-            const attachment = new AttachmentBuilder(await canvas.encode('png'), {name: 'summary.png'});
+            const attachment = new AttachmentBuilder(image, {name: 'summary.png'});
             await channelToSend.send({files: [attachment]})
         } else {
             throw new Error("Channel not found");
@@ -93,8 +93,8 @@ export default class CommandProcessor {
         if (channelForStatistics.name === "statistics") {
             const dataForStatistics = await getDataForUserStatistics(this.interaction, userId, this.databaseId);
             const username = this.interaction.client.users.cache.get(userId)?.displayName;
-            const canvas = await createChartForStatistics(dataForStatistics, username);
-            const attachment = new AttachmentBuilder(await canvas.encode('png'), {name: 'summary.png'});
+            const buffer = await createChartForStatistics(dataForStatistics, username);
+            const attachment = new AttachmentBuilder(buffer, {name: 'summary.png'});
             await this.interaction.editReply({files: [attachment]});
 
         }
@@ -115,7 +115,6 @@ export default class CommandProcessor {
 
     private async getDataFromDatabase(databaseId: string) {
         return await getAllCollectionsAndValues(databaseId);
-
     }
 
 }

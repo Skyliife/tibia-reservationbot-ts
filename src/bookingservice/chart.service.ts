@@ -248,9 +248,9 @@ export const createChartForSummary = async (data: DatabaseResult, data2: Databas
             plugins: [plugin, doughnutLabel],
         }
     );
-
-
-    return canvas;
+    const buffer = await canvas.encode('png')
+    myDoughnutChart.destroy();
+    return buffer;
 }
 
 function drawDoughnutLabel(chart: any, options: any) {
@@ -436,7 +436,9 @@ export const createChartForStatistics = async (data: {
             plugins: [plugin, doughnutLabel],
         }
     );
-    return canvas;
+    const buffer = await canvas.encode('png')
+    myDoughnutChart.destroy();
+    return buffer;
 };
 
 

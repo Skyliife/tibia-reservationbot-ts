@@ -17,6 +17,6 @@
   "insertBooking": {
     "existingReservationsForID": "Sie haben die maximale Anzahl von 4 Reservierungen für Jagdgebiet {prop} erreicht!",
     "isWithinRoleDuration": "Deine maximale Reservierungszeit von {prop} Stunden ist für Jagdgebiet {prop2} überschritten - benutze zuerst \"/stornieren\", wenn du deine Reservierung ändern willst!",
-    "isOverlapping": "Deine Reservierung für das Jagdgebiet: {prop} überschneidet sich mit einer anderen Reservierung: {prop}"
+    "isOverlapping": "Deine Reservierung für das Jagdgebiet: {prop} überschneidet sich mit einer anderen Reservierung"
   }
 }
