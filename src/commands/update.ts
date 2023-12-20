@@ -7,7 +7,7 @@ import CommandProcessor from "../bookingservice/CommandProcessor";
 const command: SlashCommand = {
     command: new SlashCommandBuilder().setName("update").setDescription("update the reservations of the channel"),
     execute: async (interaction) => {
-        const commandProcessor = new CommandProcessor(interaction);
+        let commandProcessor: CommandProcessor | null = new CommandProcessor(interaction);
         try {
             await interaction.deferReply({ephemeral: true});
             const channel = fetchChannelName(interaction.channel);
@@ -20,6 +20,7 @@ const command: SlashCommand = {
                 content: "Updated reservations!",
             });
             await interaction.deleteReply();
+            commandProcessor = null;
         } catch (error: any) {
             logger.error(error.message);
             console.log(error);

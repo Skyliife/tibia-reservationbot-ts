@@ -159,7 +159,7 @@ const command: SlashCommand = {
         logger.debug("Start executing /book command!");
         try {
             await interaction.deferReply({ephemeral: true});
-            const commandProcessor = new CommandProcessor(interaction);
+            let commandProcessor: CommandProcessor | null = new CommandProcessor(interaction);
             //Step1: Collect data
             const data = commandProcessor.collectData();
             //Step2: Verify data
@@ -173,6 +173,7 @@ const command: SlashCommand = {
             await commandProcessor.updateCommandExecutionCount();
             await interaction.editReply({content: `${verifiedData.booking.displayBookingInfo()}!`});
             await interaction.deleteReply();
+            commandProcessor = null;
         } catch (error: any) {
             logger.error(error.message);
             console.log(error);
