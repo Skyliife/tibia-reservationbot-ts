@@ -108,8 +108,7 @@ export const createEmbedsForGroups = async (channel: string | undefined, databas
     if (embeds.length > 0) {
         const lastEmbed = embeds[embeds.length - 1].embed;
         lastEmbed.setFooter({
-            text: `Made with ❤️ by Gods version 1.0.3`,
-            // iconURL: "https://static.tibia.com/images/community/default_logo.gif",
+            text: `Made with ❤️ by Gods version 1.0.3`
         });
     }
 
@@ -173,10 +172,6 @@ const addThumbnail = async (embed: EmbedBuilder, name: string) => {
         return {embed: embed, attachment: fallbackFile};
     }
 };
-
-async function main() {
-    //await createEmbedsForGroups();
-}
 
 function createFields(value: string, embed: EmbedBuilder, fieldName: string) {
     if (value.length <= 1024) {

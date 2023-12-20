@@ -167,13 +167,14 @@ const command: SlashCommand = {
             //Step3: Process data to database
             await commandProcessor.processData(verifiedData);
             await commandProcessor.clearMessages();
-            // await commandProcessor.createImage();
+            await commandProcessor.createImage();
             await commandProcessor.createEmbed();
-            // await commandProcessor.createSummaryChart();
+            await commandProcessor.createSummaryChart();
             await commandProcessor.updateCommandExecutionCount();
             await interaction.editReply({content: `${verifiedData.booking.displayBookingInfo()}!`});
             await interaction.deleteReply();
             commandProcessor = null;
+
         } catch (error: any) {
             logger.error(error.message);
             console.log(error);
