@@ -13,9 +13,9 @@ const command: SlashCommand = {
             const channel = fetchChannelName(interaction.channel);
 
             await commandProcessor.clearMessages();
-            await commandProcessor.createImage();
+            // await commandProcessor.createImage();
             await commandProcessor.createEmbed();
-            await commandProcessor.createSummaryChart();
+            // await commandProcessor.createSummaryChart();
             await interaction.editReply({
                 content: "Updated reservations!",
             });
