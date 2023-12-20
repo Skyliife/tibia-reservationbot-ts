@@ -80,7 +80,7 @@ export default class CommandProcessor {
         const channelToSend = this.interaction.guild?.channels.cache.find((channel) => channel.name === "summary") as TextChannel;
         if (channelToSend !== undefined) {
             await channelToSend.bulkDelete(100, true);
-            const attachment = new AttachmentBuilder(image, {name: 'summary.png'});
+            const attachment = new AttachmentBuilder(image, {name: 'summary.jpeg'});
             await channelToSend.send({files: [attachment]})
         } else {
             throw new Error("Channel not found");
@@ -94,7 +94,7 @@ export default class CommandProcessor {
             const dataForStatistics = await getDataForUserStatistics(this.interaction, userId, this.databaseId);
             const username = this.interaction.client.users.cache.get(userId)?.displayName;
             const buffer = await createChartForStatistics(dataForStatistics, username);
-            const attachment = new AttachmentBuilder(buffer, {name: 'summary.png'});
+            const attachment = new AttachmentBuilder(buffer, {name: 'summary.jpeg'});
             await this.interaction.editReply({files: [attachment]});
 
         }

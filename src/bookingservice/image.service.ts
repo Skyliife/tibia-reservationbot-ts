@@ -55,10 +55,10 @@ export const ImageService = async (interaction: ChatInputCommandInteraction, dat
     const currentPath = process.cwd();
     //console.log(currentPath);
 
-    const canvas = createCanvas(700, 250);
+    let canvas: Canvas | null = createCanvas(700, 250);
     const context = canvas.getContext('2d');
 
-    const background = await loadImage('./src/images/canvas.jpg');
+    const background = await loadImage('./src/images/canvas-min.jpg');
     context.drawImage(background, 0, 0, canvas.width, canvas.height);
 
     context.strokeStyle = '#0099ff';
@@ -115,8 +115,8 @@ export const ImageService = async (interaction: ChatInputCommandInteraction, dat
     const b = canvas.toBuffer('image/png')
 
     writeFileSync(join(__dirname, 'draw-emoji.png'), b)
-    const attachment = new AttachmentBuilder(await canvas.encode('png'), {name: 'botmessage.png'});
-
+    const attachment = new AttachmentBuilder(await canvas.encode('jpeg'), {name: 'botmessage.jpeg'});
+    canvas = null;
     const channelToSend = interaction.channel as TextChannel;
     if (getHuntingPlaceByChannelName(channelToSend.name) === undefined) return;
     await channelToSend.send({files: [attachment]});
