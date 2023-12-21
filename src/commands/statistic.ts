@@ -1,4 +1,4 @@
-import {ChannelType, ChatInputCommandInteraction, SlashCommandBuilder, TextChannel} from "discord.js";
+import {ChannelType, ChatInputCommandInteraction, SlashCommandBuilder} from "discord.js";
 
 import {SlashCommand} from "../types";
 import CommandProcessor from "../bookingservice/CommandProcessor";
@@ -48,7 +48,7 @@ async function executeUserCommand(interaction: ChatInputCommandInteraction, comm
     const userId = selectedUser.id;
 
     const channel = fetchChannelName(interaction.channel);
-    if(channel === 'statistics') {
+    if (channel === 'statistics') {
         await commandProcessor.createStatisticsChartForUser(userId);
         await interaction.editReply({
             content: `Successfully executed statistics for user ${interaction.options.getUser(optionNames.target)}!`,
@@ -62,9 +62,6 @@ async function executeUserCommand(interaction: ChatInputCommandInteraction, comm
     await interaction.editReply({
         content: `Successfully executed statistics for user ${interaction.options.getUser(optionNames.target)}!`,
     });
-
-
-
 }
 
 const fetchChannelName = (channel: any): string | undefined => {
