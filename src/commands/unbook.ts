@@ -1,7 +1,6 @@
 import {ChannelType, GuildMember, SlashCommandBuilder, TextChannel} from "discord.js";
 import {IBooking, SlashCommand} from "../types";
 import {deleteBookingsForUserId, getCurrentBookingsForUserId} from "../bookingservice/database.service";
-import logger from "../logging/logger";
 import CommandProcessor from "../bookingservice/CommandProcessor";
 
 let choices: { formattedString: string; reservation: IBooking | null }[] = [];
@@ -49,7 +48,7 @@ const command: SlashCommand = {
     },
 
     execute: async (interaction) => {
-        logger.debug("Start executing /unbook command!");
+        console.log("Start executing /unbook command!");
         let commandProcessor: CommandProcessor | null = new CommandProcessor(interaction);
         const input = interaction.options.getString("reservation");
         const dataToDelete = choices.find((choice) => choice.formattedString === input);
@@ -114,7 +113,7 @@ const fetchAndSetChoices = async (channelName: string | undefined, userId: strin
         choices = data;
         data = null;
     } catch (error: any) {
-        logger.error(error.message);
+        console.error(error.message);
     }
 };
 

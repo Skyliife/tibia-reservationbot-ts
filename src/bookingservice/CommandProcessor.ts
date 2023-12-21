@@ -14,7 +14,6 @@ import {ImageService} from "./image.service";
 import {getHuntingPlaceByChannelName} from "../huntingplaces/huntingplaces";
 import {DatabaseResultForGroup} from "../types";
 import {ChartService} from "./chart.service";
-import logger from "../logging/logger";
 
 //This class processes the command by collecting data, verifying it, and processing it.
 
@@ -68,7 +67,7 @@ export default class CommandProcessor {
         //Delete Image
         imageService = null;
         imageAttachment = null;
-        logger.info("freeing image memory");
+        console.log("freeing image memory");
     }
 
     async createEmbed() {
@@ -89,7 +88,7 @@ export default class CommandProcessor {
         embedsForChannel = [];
         embedsArray = [];
         embedsAttachment = [];
-        logger.info("freeing embeds memory");
+        console.log("freeing embeds memory");
     }
 
     async createSummaryChart() {
@@ -110,7 +109,7 @@ export default class CommandProcessor {
         //Delete Chart
         chartService = null;
         chartAttachment = null;
-        logger.info("freeing chart memory");
+        console.log("freeing chart memory");
     }
 
     async createStatisticsChartForUser(userId: string) {
@@ -128,7 +127,7 @@ export default class CommandProcessor {
         //Delete Chart
         chartService = null;
         chartAttachment = null;
-        logger.info("freeing chart memory");
+        console.log("freeing chart memory");
     }
 
     async updateCommandExecutionCount() {

@@ -2,7 +2,7 @@ import {ChannelType, ChatInputCommandInteraction, SlashCommandBuilder, TextChann
 
 import {SlashCommand} from "../types";
 import CommandProcessor from "../bookingservice/CommandProcessor";
-import logger from "../logging/logger";
+
 
 const optionNames = {
     target: "user",
@@ -37,7 +37,6 @@ const command: SlashCommand = {
             }
 
         } catch (error: any) {
-            logger.error(error.message);
             console.log(error);
             await interaction.editReply({content: `Something went wrong... ${error.message}`});
         }

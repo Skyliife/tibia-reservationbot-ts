@@ -1,7 +1,6 @@
 import {ChannelType, SlashCommandBuilder} from "discord.js";
 
 import {SlashCommand} from "../types";
-import logger from "../logging/logger";
 import CommandProcessor from "../bookingservice/CommandProcessor";
 
 const command: SlashCommand = {
@@ -22,7 +21,6 @@ const command: SlashCommand = {
             await interaction.deleteReply();
             commandProcessor = null;
         } catch (error: any) {
-            logger.error(error.message);
             console.log(error);
             await interaction.editReply({content: `Something went wrong... ${error.message}`});
         }

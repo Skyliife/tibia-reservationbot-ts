@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import logger from "../logging/logger";
 import * as path from "path";
 
 type TranslationMap = { [key: string]: string };
@@ -24,7 +23,7 @@ class LocaleManager {
             this.defaultTranslation[(LocaleManager.defaultLanguage)] = JSON.parse(dataDefault);
 
         } catch (error: any) {
-            logger.error(`Error loading language file for ${language}: ${error.message} using default language ${this.defaultLanguage} instead.`);
+            console.log(`Error loading language file for ${language}: ${error.message} using default language ${this.defaultLanguage} instead.`);
 
         }
     }

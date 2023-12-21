@@ -1,4 +1,3 @@
-import logger from "../logging/logger";
 import BookingSchema from "../schemas/Booking";
 import Booking from "./booking";
 
@@ -51,15 +50,15 @@ export const InsertBooking = async (reservation: Booking, databaseId: string) =>
         existingReservationsForHuntingSpot
     );
 
-    logger.info(`Reservation is overlapping: ${isOverlapping}`);
+    console.log(`Reservation is overlapping: ${isOverlapping}`);
     const dev = isWithinRoleDuration;
     //const dev = false;
     if (!dev) {
-        logger.warn(`Booking with uniqueId ${reservation.uniqueId}, name: ${reservation.name.displayName} already exists for hunting spot ${reservation.huntingSpot}. Not inserting.`);
+        console.log(`Booking with uniqueId ${reservation.uniqueId}, name: ${reservation.name.displayName} already exists for hunting spot ${reservation.huntingSpot}. Not inserting.`);
         const message = LocaleManager.translate("insertBooking.isWithinRoleDuration",{prop: `${reservation.roleDuration / 60}`,prop2:`${reservation.huntingSpot}`});
         throw new Error(message);
     } else if (isOverlapping) {
-        logger.warn(`Overlapping reservation found!`);
+        console.log(`Overlapping reservation found!`);
         const message = LocaleManager.translate("insertBooking.isOverlapping",{prop: `${reservation.huntingSpot}`});
         throw new Error(message);
     } else {
@@ -77,7 +76,7 @@ export const InsertBooking = async (reservation: Booking, databaseId: string) =>
         });
 
         await newBooking.save();
-        logger.info(`Booking inserted successfully.`);
+        console.log(`Booking inserted successfully.`);
     }
 };
 
@@ -107,7 +106,7 @@ export const getCurrentBookingsForUserId = async (collectionName: string | undef
         formattedArray.push({formattedString: formattedString, reservation: item});
     })
 
-    logger.info(`${result.length} bookings for userId: ${userId} found.`);
+    console.log(`${result.length} bookings for userId: ${userId} found.`);
     return formattedArray;
 };
 
@@ -158,7 +157,7 @@ export const deleteBookingsForUserId = async (
     //     end: end
     // });
 
-    logger.info(`Bookings for userId: ${userId} on spot: ${huntingSpot} deleted.`);
+    console.log(`Bookings for userId: ${userId} on spot: ${huntingSpot} deleted.`);
 
 };
 
@@ -184,7 +183,7 @@ export const getAllCollectionsAndValues = async (databaseId: string): Promise<Da
     const filteredCollections = collections.filter((e) => e.name !== 'statisticsForUsers');
     const names = filteredCollections.map((e) => `${e.name}`);
 
-    logger.debug(`Found ${filteredCollections.length} collections: [${names}]`);
+    console.log(`Found ${filteredCollections.length} collections: [${names}]`);
 
     // Iterate over collections
     for (const collection of filteredCollections) {
@@ -197,7 +196,7 @@ export const getAllCollectionsAndValues = async (databaseId: string): Promise<Da
         //console.log(`Collection: ${collectionName}`);
     }
     //console.log("=========================", result);
-    logger.debug("DONE! getting all collections and documents");
+    console.log("DONE! getting all collections and documents");
     return result; // Return the result object with collections and documents
 
 };
@@ -220,7 +219,7 @@ export const getResultForSummary = async (databaseId: string) => {
     const filteredCollections = collections.filter((e) => e.name !== 'statisticsForUsers');
     const names = filteredCollections.map((e) => `${e.name}`);
 
-    logger.debug(`Found ${collections.length} collections: [${names}]`);
+    console.log(`Found ${collections.length} collections: [${names}]`);
     for (const collection of filteredCollections) {
         const collectionName = collection.name;
         //console.log(collectionName);
@@ -242,7 +241,7 @@ export const getResultForSummary = async (databaseId: string) => {
         }
     }
     //console.log(JSON.stringify(result, null, 2));
-    logger.debug("DONE! Getting summary collections and values");
+    console.log("DONE! Getting summary collections and values");
     return result;
 
 
@@ -263,12 +262,12 @@ export const getResultForGroups = async (collection: string | undefined, databas
 
     const collections = await db.listCollections({name: collection}).toArray();
     if (!collections) {
-        logger.error(`Collection '${collection}' not found.`);
+        console.log(`Collection '${collection}' not found.`);
         return result;
     }
     const names = collections.map((e) => `${e.name}`);
 
-    logger.debug(`Found ${collections.length} collections: [${names}]`);
+    console.log(`Found ${collections.length} collections: [${names}]`);
     for (const collection of collections) {
         const collectionName = collection.name;
         //console.log(collectionName);
@@ -318,7 +317,7 @@ export const getResultForGroups = async (collection: string | undefined, databas
         }
     }
     //console.log(JSON.stringify(result, null, 2));
-    logger.debug("DONE! Getting grouped collections and values");
+    console.log("DONE! Getting grouped collections and values");
     return result;
 };
 
@@ -360,7 +359,7 @@ export const createOrUpdateStatistics = async (interaction: ChatInputCommandInte
             // Set 'new' option to true to return the updated document
             {new: true}
         );
-        logger.info(`Statistic updated successfully.`);
+        console.log(`Statistic updated successfully.`);
     } else {
 
         const result = await StatisticsModel.create({
@@ -373,7 +372,7 @@ export const createOrUpdateStatistics = async (interaction: ChatInputCommandInte
                 globalName: interaction.user.globalName
             }
         });
-        logger.info(`New Statistic created successfully.`);
+        console.log(`New Statistic created successfully.`);
     }
 };
 export const getDataForUserStatistics = async (interaction: ChatInputCommandInteraction, userId: string, databaseId: string): Promise<{
@@ -412,7 +411,7 @@ export const getDataForUserStatistics = async (interaction: ChatInputCommandInte
         }
     }
     //console.log(formattedArray);
-    logger.info(`CommandExecution updated successfully.`);
+    console.log(`CommandExecution updated successfully.`);
     return formattedArray;
 };
 
@@ -447,7 +446,7 @@ export const getDataForHuntingPlaceStatistics = async (interaction: ChatInputCom
         statistics.push(...allStatistics);
     }
 
-    logger.info(`CommandExecution updated successfully.`);
+    console.log(`CommandExecution updated successfully.`);
     return statistics;
 };
 // export const getDeletedBookingsForUserId = async (collectionName: string, userId: string, databaseId: string) => {

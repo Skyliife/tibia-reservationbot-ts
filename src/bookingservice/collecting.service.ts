@@ -1,7 +1,6 @@
 import {ChatInputCommandInteraction, GuildMember, TextChannel} from "discord.js";
 import dayjs, {Dayjs} from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import logger from "../logging/logger";
 import {getHuntingPlaceByChannelName} from "../huntingplaces/huntingplaces";
 import {GuildRoles} from "../enums";
 import isBetween from "dayjs/plugin/isBetween";
@@ -55,10 +54,10 @@ class CollectingService {
         const channel = this.interaction.channel as TextChannel;
         if (!channel) {
             const message = LocaleManager.translate("collectPlace");
-            logger.error(LocaleManager.printInDefaultLanguage("collectPlace"));
+            console.log(LocaleManager.printInDefaultLanguage("collectPlace"));
             throw new Error(message);
         }
-        logger.debug(`Hunting place: ${channel.name}`);
+        console.log(`Hunting place: ${channel.name}`);
         return channel.name;
     };
 
@@ -89,11 +88,11 @@ class CollectingService {
         const isValidDate = date.isValid();
         if (!isValidDate) {
             const message = LocaleManager.translate("collectDate", {prop: `${userInputDate}`});
-            logger.error(`your selected date: ${date.format()} is not valid`);
+            console.log(`your selected date: ${date.format()} is not valid`);
             throw new Error(message);
         }
 
-        logger.debug(`Selected Date: ${date.format("DD.MM.YYYY")}`);
+        console.log(`Selected Date: ${date.format("DD.MM.YYYY")}`);
         return date;
 
     };
@@ -102,7 +101,7 @@ class CollectingService {
         const userInputStart = this.options.start.toString();
         this.isTimeFormatValid(userInputStart);
         const startDate = this.parseStartTime(date, userInputStart);
-        logger.debug(`Selected Start Date: ${startDate.format("HH:MM DD.MM.YYYY")}`);
+        console.log(`Selected Start Date: ${startDate.format("HH:MM DD.MM.YYYY")}`);
         return startDate;
 
     };
@@ -117,7 +116,7 @@ class CollectingService {
             const message = LocaleManager.translate("collectEnd", {prop: `${endDate.format("HH:mm")}`});
             throw new Error(message);
         }
-        logger.debug(`Selected End Date: ${endDate.format("HH:MM DD.MM.YYYY")}`);
+        console.log(`Selected End Date: ${endDate.format("HH:MM DD.MM.YYYY")}`);
         return endDate;
     };
 
@@ -138,12 +137,12 @@ class CollectingService {
             name.globalName = this.interaction.user.globalName;
         }
 
-        logger.debug(`Usernames: ${JSON.stringify(name)}`);
+        console.log(`Usernames: ${JSON.stringify(name)}`);
         return name;
     };
 
     private collectUniqueId = (): string => {
-        logger.debug(`Selected UserID: ${this.interaction.user.id}`);
+        console.log(`Selected UserID: ${this.interaction.user.id}`);
         return this.interaction.user.id;
     };
 
@@ -159,7 +158,7 @@ class CollectingService {
         if (this.interaction.inCachedGuild() && this.member) {
             for (const roleToCheck of rolePriority) {
                 if (this.member.roles.cache.some((role: any) => role.name === roleToCheck)) {
-                    logger.debug(`Highest user role: ${roleToCheck}`);
+                    console.log(`Highest user role: ${roleToCheck}`);
                     return roleToCheck;
                 }
             }
@@ -174,7 +173,7 @@ class CollectingService {
         const durationInMilliseconds = end.diff(start);
         const isAtLeast15Minutes = durationInMilliseconds >= 900000;
         if (isAtLeast15Minutes) {
-            logger.info('The duration is at least 15 minutes.');
+            console.log('The duration is at least 15 minutes.');
         } else {
             const message = LocaleManager.translate("collectDuration");
             throw new Error(message);

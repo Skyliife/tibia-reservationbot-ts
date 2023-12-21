@@ -3,7 +3,7 @@ import {REST} from "@discordjs/rest";
 import {readdirSync} from "fs";
 import {join} from "path";
 import {SlashCommand} from "../types";
-import logger from "../logging/logger";
+
 
 module.exports = async (client: Client) => {
     const slashCommands: SlashCommandBuilder[] = [];
@@ -47,12 +47,12 @@ module.exports = async (client: Client) => {
             body: slashCommands.map((command) => command.toJSON()),
         }
     );
-    logger.info(`Successfully loaded ${slashCommands.length} slash command(s) for GODS SERVER`);
+    console.log(`Successfully loaded ${slashCommands.length} slash command(s) for GODS SERVER`);
     await rest.put(
         Routes.applicationGuildCommands(process.env.CLIENTID, process.env.GUILDSERVER_REFUGIA),
         {
             body: slashCommands.map((command) => command.toJSON()),
         }
     );
-    logger.info(`Successfully loaded ${slashCommands.length} slash command(s) for REFUGIA SERVER`);
- };
+    console.log(`Successfully loaded ${slashCommands.length} slash command(s) for REFUGIA SERVER`);
+};

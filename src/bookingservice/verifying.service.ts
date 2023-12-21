@@ -2,7 +2,6 @@ import collectingService from "./collecting.service";
 import {GuildRoles} from "../enums";
 import dayjs, {Dayjs} from "dayjs";
 import {isCurrentTimeAfter10AM, isCurrentTimeBefore10AM, isCurrentTimeBeforeMidnight} from "../utils";
-import logger from "../logging/logger";
 import {Name} from "../types";
 import Booking from "./booking";
 import LocaleManager from "../locale/LocaleManager";
@@ -18,7 +17,7 @@ class VerifyingService {
         const {place, spot, start, end, names, uniqueId, role, duration} = reservation;
         //Prepare to verify Server save times for current time and role
         const [serverSaveStart, serverSaveEnd, ruleDuration] = this.getServerSaveTimesFromGodRules(role);
-        logger.debug(`Role: ${role} Server Save Start: ${serverSaveStart.format("DD.MM.YYYY")}; Server Save End: ${serverSaveEnd.format("DD.MM.YYYY")}`);
+        console.log(`Role: ${role} Server Save Start: ${serverSaveStart.format("DD.MM.YYYY")}; Server Save End: ${serverSaveEnd.format("DD.MM.YYYY")}`);
         //Verify if the start and end time are within the server save times
         this.getServerSaveValidation(start, end, serverSaveStart, serverSaveEnd, ruleDuration);
         //if no error happened set the booking

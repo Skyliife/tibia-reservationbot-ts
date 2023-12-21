@@ -6,7 +6,6 @@ import {
     TextChannel
 } from "discord.js";
 import {SlashCommand} from "../types";
-import logger from "../logging/logger";
 import {getChoicesForDate, getChoicesForTime} from "../utils";
 import {getChoicesForSpot} from "../huntingplaces/huntingplaces";
 import CommandProcessor from "../bookingservice/CommandProcessor";
@@ -151,12 +150,12 @@ const command: SlashCommand = {
 
             await interaction.respond(filtered);
         } catch (error) {
-            logger.error(`Error: ${error}`);
+            console.error(`Error: ${error}`);
         }
     },
 
     execute: async (interaction: ChatInputCommandInteraction) => {
-        logger.debug("Start executing /book command!");
+        console.log("Start executing /book command!");
         try {
             await interaction.deferReply({ephemeral: true});
             let commandProcessor: CommandProcessor | null = new CommandProcessor(interaction);
@@ -176,7 +175,6 @@ const command: SlashCommand = {
             commandProcessor = null;
 
         } catch (error: any) {
-            logger.error(error.message);
             console.log(error);
             await interaction.editReply({content: `Something went wrong... ${error.message}`});
         }
