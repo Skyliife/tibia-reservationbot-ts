@@ -102,7 +102,7 @@ class CollectingService {
         const userInputStart = this.options.start.toString();
         this.isTimeFormatValid(userInputStart);
         const startDate = this.parseStartTime(date, userInputStart);
-        logger.debug(`Selected Start Date: ${startDate.format("DD.MM.YYYY")}`);
+        logger.debug(`Selected Start Date: ${startDate.format("HH:MM DD.MM.YYYY")}`);
         return startDate;
 
     };
@@ -117,7 +117,7 @@ class CollectingService {
             const message = LocaleManager.translate("collectEnd", {prop: `${endDate.format("HH:mm")}`});
             throw new Error(message);
         }
-        logger.debug(`Selected End Date: ${endDate.format("DD.MM.YYYY")}`);
+        logger.debug(`Selected End Date: ${endDate.format("HH:MM DD.MM.YYYY")}`);
         return endDate;
     };
 
