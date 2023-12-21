@@ -76,6 +76,7 @@ const command: SlashCommand = {
                 await interaction.editReply({content: `Your reservation ${reservation.huntingSpot} has been deleted`});
                 await interaction.deleteReply();
                 commandProcessor = null;
+                choices = [];
 
             } else {
                 await interaction.editReply({
@@ -103,10 +104,15 @@ const generateAutocompleteChoices = (choices: { formattedString: string }[]): an
 
 const fetchAndSetChoices = async (channelName: string | undefined, userId: string, databaseId: string) => {
     try {
-        choices = await getCurrentBookingsForUserId(channelName, userId, databaseId);
-        if (choices.length === 0) {
+        let data: {
+            formattedString: string;
+            reservation: IBooking
+        }[] | null = await getCurrentBookingsForUserId(channelName, userId, databaseId);
+        if (data.length === 0) {
             choices = [{formattedString: "No reservation found", reservation: null}];
         }
+        choices = data;
+        data = null;
     } catch (error: any) {
         logger.error(error.message);
     }
