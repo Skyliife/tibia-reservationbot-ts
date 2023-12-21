@@ -169,7 +169,7 @@ const command: SlashCommand = {
             await commandProcessor.clearMessages();
             await commandProcessor.createImage();
             await commandProcessor.createEmbed();
-            await commandProcessor.createSummaryChart();
+            // await commandProcessor.createSummaryChart();
             await commandProcessor.updateCommandExecutionCount();
             await interaction.editReply({content: `${verifiedData.booking.displayBookingInfo()}!`});
             await interaction.deleteReply();

@@ -72,7 +72,7 @@ const command: SlashCommand = {
                 await commandProcessor.clearMessages();
                 await commandProcessor.createImage();
                 await commandProcessor.createEmbed();
-                await commandProcessor.createSummaryChart();
+                // await commandProcessor.createSummaryChart();
                 await interaction.editReply({content: `Your reservation ${reservation.huntingSpot} has been deleted`});
                 await interaction.deleteReply();
                 commandProcessor = null;

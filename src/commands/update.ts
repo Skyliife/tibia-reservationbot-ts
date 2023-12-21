@@ -15,7 +15,7 @@ const command: SlashCommand = {
             await commandProcessor.clearMessages();
             await commandProcessor.createImage();
             await commandProcessor.createEmbed();
-            await commandProcessor.createSummaryChart();
+            // await commandProcessor.createSummaryChart();
             await interaction.editReply({
                 content: "Updated reservations!",
             });
