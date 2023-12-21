@@ -1,12 +1,19 @@
 import {AttachmentBuilder, ChannelType, ChatInputCommandInteraction, TextChannel} from "discord.js";
 import CollectingService from "./collecting.service";
 import VerifyingService from "./verifying.service";
+import {
+    createOrUpdateStatistics,
+    getAllCollectionsAndValues,
+    getDataForUserStatistics,
+    getResultForGroups,
+    getResultForSummary,
+    InsertBooking
+} from "./database.service";
 import {EmbedService} from "./embed.service";
 import {ImageService} from "./image.service";
 import {getHuntingPlaceByChannelName} from "../huntingplaces/huntingplaces";
 import {DatabaseResultForGroup} from "../types";
 import {ChartService} from "./chart.service";
-import {DatabaseService} from "./database.service";
 
 //This class processes the command by collecting data, verifying it, and processing it.
 
@@ -16,7 +23,6 @@ export default class CommandProcessor {
     private readonly channelName;
     private readonly member;
     private readonly databaseId: string;
-    private databaseService;
 
     //The constructor takes a ChatInputCommandInteraction as a parameter and assigns it to the interaction property.
     constructor(interaction: ChatInputCommandInteraction) {
@@ -27,7 +33,6 @@ export default class CommandProcessor {
             this.channelName = this.channel.name;
             this.member = interaction.member;
             this.databaseId = interaction.guild.id;
-            this.databaseService = new DatabaseService(this.databaseId);
         } else {
             throw new Error("Interaction is not in a cached guild.");
         }
@@ -42,7 +47,7 @@ export default class CommandProcessor {
     }
 
     async processData(verifiedData: VerifyingService) {
-        await this.databaseService.tryAddBooking(verifiedData.booking);
+        await InsertBooking(verifiedData.booking, this.databaseId);
         await this.interaction.editReply({content: verifiedData.booking.displayBookingInfo()});
     }
 
@@ -68,7 +73,7 @@ export default class CommandProcessor {
     async createEmbed() {
         if (getHuntingPlaceByChannelName(this.channelName) === undefined) return;
         //Get Data from Database
-        const data: DatabaseResultForGroup = await this.databaseService.getResultForGroups(this.channelName);
+        const data: DatabaseResultForGroup = await getResultForGroups(this.channelName, this.databaseId);
         //Create Embed
         let embedService: EmbedService | null = new EmbedService();
         let embedsForChannel = await embedService.createEmbedsForGroups(data);
@@ -89,7 +94,7 @@ export default class CommandProcessor {
     async createSummaryChart() {
         //Get Data from Database
         const data = await this.getDataFromDatabase(this.databaseId);
-        const data2 = await this.databaseService.getResultForSummary(this.databaseId);
+        const data2 = await getResultForSummary(this.databaseId);
         //Create Chart
         let chartService: ChartService | null = new ChartService();
         let chartAttachment: AttachmentBuilder | null = await chartService.createChartForSummary(data, data2);
@@ -109,7 +114,7 @@ export default class CommandProcessor {
 
     async createStatisticsChartForUser(userId: string) {
         //Get Data from Database
-        const dataForStatistics = await this.databaseService.getDataForUserStatistics(this.interaction, userId);
+        const dataForStatistics = await getDataForUserStatistics(this.interaction, userId, this.databaseId);
         //Create Chart
         const username = this.interaction.client.users.cache.get(userId)?.displayName;
         let chartService: ChartService | null = new ChartService();
@@ -126,20 +131,11 @@ export default class CommandProcessor {
     }
 
     async updateCommandExecutionCount() {
-        await this.databaseService.createOrUpdateStatistics(this.interaction, this.interaction.commandName);
-    }
-
-    async deleteBooking(dataToDelete: { formattedString: string, reservation: any }) {
-        const {reservation} = dataToDelete;
-
-        const huntingSpot = reservation.huntingSpot;
-        const start = reservation.start;
-        const end = reservation.end;
-        const id = this.interaction.user.id.toString()
-        await this.databaseService.tryDeleteBooking(this.channelName, huntingSpot, id, start, end);
+        await createOrUpdateStatistics(this.interaction, this.interaction.commandName, this.databaseId);
     }
 
     private async getDataFromDatabase(databaseId: string) {
-        return await this.databaseService.getAllCollectionsAndValues();
+        return await getAllCollectionsAndValues(databaseId);
     }
+
 }

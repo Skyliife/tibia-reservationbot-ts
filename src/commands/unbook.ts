@@ -1,7 +1,7 @@
-import {ChannelType, GuildMember, SlashCommandBuilder} from "discord.js";
+import {ChannelType, GuildMember, SlashCommandBuilder, TextChannel} from "discord.js";
 import {IBooking, SlashCommand} from "../types";
+import {deleteBookingsForUserId, getCurrentBookingsForUserId} from "../bookingservice/database.service";
 import CommandProcessor from "../bookingservice/CommandProcessor";
-import {getCurrentBookingsForUserId} from "../bookingservice/database.service";
 
 let choices: { formattedString: string; reservation: IBooking | null }[] = [];
 
@@ -57,12 +57,22 @@ const command: SlashCommand = {
             await interaction.deferReply({ephemeral: true});
 
             if (dataToDelete && interaction.inCachedGuild() && dataToDelete.reservation !== null) {
-                await commandProcessor.deleteBooking(dataToDelete);
+                const channel = interaction.channel as TextChannel;
+                const channelName = channel.name;
+                const {reservation} = dataToDelete;
+
+                const huntingSpot = reservation.huntingSpot;
+                const start = reservation.start;
+                const end = reservation.end;
+                const member = await interaction.guild.members.fetch(interaction.user.id);
+
+
+                await deleteBookingsForUserId(channelName, huntingSpot, interaction.user.id, start, end, member.guild.id);
                 await commandProcessor.clearMessages();
                 await commandProcessor.createImage();
                 await commandProcessor.createEmbed();
                 await commandProcessor.createSummaryChart();
-                await interaction.editReply({content: `Your reservation ${dataToDelete.reservation.huntingSpot} has been deleted`});
+                await interaction.editReply({content: `Your reservation ${reservation.huntingSpot} has been deleted`});
                 await interaction.deleteReply();
                 commandProcessor = null;
                 choices = [];
