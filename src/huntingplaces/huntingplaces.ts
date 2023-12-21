@@ -354,6 +354,10 @@ const Roshamuul = {
             
         },
         {
+            name: "Roshamuul Shocks",
+            
+        },
+        {
             name: "Prison -1",
             
         },
