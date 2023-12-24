@@ -1,5 +1,5 @@
-import {AttachmentBuilder, bold, EmbedBuilder} from "discord.js";
-import {DatabaseResultForGroup, Name} from "../types";
+import {AttachmentBuilder, bold, EmbedBuilder, strikethrough} from "discord.js";
+import {DatabaseResultForGroup, IBooking, Name} from "../types";
 import * as fs from "fs";
 import dayjs from "dayjs";
 import {isCurrentTimeAfter10AM, isCurrentTimeBefore10AM, isCurrentTimeBeforeMidnight} from "../utils";
@@ -10,47 +10,12 @@ export class EmbedService {
     }
 
     createEmbedsForGroups = async (data: DatabaseResultForGroup) => {
-
-
         const embeds: { embed: EmbedBuilder; attachment: AttachmentBuilder }[] = [];
         for (const collectionName in data) {
             if (data.hasOwnProperty(collectionName)) {
                 const huntingPlaces = data[collectionName];
                 for (const huntingPlace in huntingPlaces) {
-                    const embed = new EmbedBuilder();
-                    let totalDuration = 0;
-                    //Title
-                    embed.setTitle(`${huntingPlace}`);
-
-                    const huntingSpots = huntingPlaces[huntingPlace];
-                    for (const huntingspot in huntingSpots) {
-                        let value: string = "";
-                        const bookingsList = huntingSpots[huntingspot];
-                        //append bookings.startAt and booking.name with \n
-                        for (const booking of bookingsList) {
-
-                            const durationMinutes = dayjs(booking.end).diff(dayjs(booking.start), "minute");
-                            totalDuration += durationMinutes;
-
-                            const timePart = `${dayjs(booking.start).format("HH:mm")}-${dayjs(booking.end).format("HH:mm")}`;
-
-                            let namePart = this.createNamePart(booking.name);
-
-                            value += `${bold(timePart)} : ${namePart}\n`;
-                        }
-                        const ss = dayjs(huntingspot);
-                        const ssn = dayjs(ss).add(1, "day");
-
-                        //Fields
-                        const fieldName = `Date ${ss.format("D")}-${ssn.format("D.MM")} SS`;
-                        this.createFields(value, embed, fieldName);
-
-                    }
-                    this.createColor(embed, totalDuration);
-
-                    //Thumbnail
-                    const embedWithThumbnail = this.addThumbnail(embed, huntingPlace);
-                    //console.log("EMBEEEEEED", embedWithThumbnail);
+                    const embedWithThumbnail = this.createEmbed(huntingPlace, huntingPlaces);
                     embeds.push(embedWithThumbnail);
                 }
             }
@@ -65,12 +30,64 @@ export class EmbedService {
         //add Footer to last embed
         if (embeds.length > 0) {
             const lastEmbed = embeds[embeds.length - 1].embed;
-            lastEmbed.setFooter({
-                text: `Made with ❤️ by Gods version 1.0.3`
-            });
+            lastEmbed.setFooter({text: `Made with ❤️ by Gods version 1.0.3`});
         }
 
         return embeds;
+    }
+
+    private createEmbed(huntingPlace: string, huntingPlaces: { [p: string]: { [p: string]: IBooking[] } }) {
+        const embed = new EmbedBuilder();
+        let totalDuration = 0;
+        //Title
+        embed.setTitle(`${huntingPlace}`);
+
+        const huntingSpots = huntingPlaces[huntingPlace];
+        for (const huntingSpot in huntingSpots) {
+            const __ret = this.processBookingList(huntingSpots, huntingSpot, totalDuration);
+            let value = __ret.value;
+            let description = __ret.description;
+            totalDuration = __ret.totalDuration;
+
+            const ss = dayjs(huntingSpot);
+            const ssn = dayjs(ss).add(1, "day");
+
+            //Fields
+            const fieldName = `Date ${ss.format("D")}-${ssn.format("D.MM")} SS`;
+            this.createFields(value, embed, fieldName);
+            embed.setDescription(description);
+
+        }
+
+        this.createColor(embed, totalDuration);
+
+        //Thumbnail
+        const embedWithThumbnail = this.addThumbnail(embed, huntingPlace);
+        return embedWithThumbnail;
+    }
+
+    private processBookingList(huntingSpots: { [p: string]: IBooking[] }, huntingSpot: string, totalDuration: number) {
+        let value: string = "";
+        let description: string = "";
+        const bookingsList = huntingSpots[huntingSpot];
+        for (const booking of bookingsList) {
+
+            const durationMinutes = dayjs(booking.end).diff(dayjs(booking.start), "minute");
+            totalDuration += durationMinutes;
+
+            const timePart = `${dayjs(booking.start).format("HH:mm")}-${dayjs(booking.end).format("HH:mm")}`;
+
+            let namePart = this.createNamePart(booking.name);
+            if (booking.reclaim !== null && booking.reclaim.isReclaim) {
+                console.log(booking.reclaim);
+                const reclaimedBooking = `${bold(timePart)} : ${namePart}\n`
+                description += `${bold(timePart)} : ${namePart} by ${this.createNamePart(booking.reclaim.reclaimedBy)}\n at ${dayjs().format("HH:mm")}`;
+                value += strikethrough(reclaimedBooking);
+            } else {
+                value += `${bold(timePart)} : ${namePart}\n`;
+            }
+        }
+        return {value, description, totalDuration};
     }
 
     private createNamePart(names: Name) {

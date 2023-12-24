@@ -4,7 +4,7 @@ import VerifyingService from "./verifying.service";
 import {EmbedService} from "./embed.service";
 import {ImageService} from "./image.service";
 import {getHuntingPlaceByChannelName} from "../huntingplaces/huntingplaces";
-import {DatabaseResultForGroup} from "../types";
+import {DatabaseResultForGroup, IBooking, Reclaim} from "../types";
 import {ChartService} from "./chart.service";
 import {DatabaseService} from "./database.service";
 
@@ -129,14 +129,25 @@ export default class CommandProcessor {
         await this.databaseService.createOrUpdateStatistics(this.interaction, this.interaction.commandName);
     }
 
-    async deleteBooking(dataToDelete: { formattedString: string, reservation: any }) {
+    async deleteBooking(dataToDelete: { formattedString: string, reservation: IBooking | null }) {
         const {reservation} = dataToDelete;
+        if (reservation) {
+            const huntingSpot = reservation.huntingSpot;
+            const start = reservation.start;
+            const end = reservation.end;
+            const id = this.interaction.user.id.toString()
+            await this.databaseService.tryDeleteBooking(this.channelName, huntingSpot, id, start, end);
+        }
+    }
 
-        const huntingSpot = reservation.huntingSpot;
-        const start = reservation.start;
-        const end = reservation.end;
-        const id = this.interaction.user.id.toString()
-        await this.databaseService.tryDeleteBooking(this.channelName, huntingSpot, id, start, end);
+    async reclaimBooking(dataToReclaim: {
+        formattedString: string;
+        reservationToClaim: IBooking | null
+    }, reclaimer: Reclaim) {
+        const {reservationToClaim} = dataToReclaim;
+        if (reservationToClaim) {
+            await this.databaseService.tryReclaimBooking(this.channelName, reservationToClaim, reclaimer);
+        }
     }
 
     private async getDataFromDatabase(databaseId: string) {

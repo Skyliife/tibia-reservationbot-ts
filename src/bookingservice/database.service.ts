@@ -1,7 +1,7 @@
 import BookingSchema from "../schemas/Booking";
 import Booking from "./booking";
 
-import {DatabaseResult, DatabaseResultForGroup, DatabaseResultForSummary, IBooking, IStatistics} from "../types";
+import {DatabaseResult, DatabaseResultForGroup, DatabaseResultForSummary, IBooking, IStatistics, Name} from "../types";
 import dayjs, {Dayjs} from "dayjs";
 import {REFUGIADB} from "../database/RefugiaDatabase";
 import {GODSDB} from "../database/GodsDatabase";
@@ -55,7 +55,7 @@ export class DatabaseService {
 
     public async tryDeleteBooking(collectionName: string, huntingSpot: string, userId: string, start: Dayjs, end: Dayjs) {
 
-        const BookingModel = GODSDB.model<IBooking>(collectionName, BookingSchema);
+        const BookingModel = this.Database.model<IBooking>(collectionName, BookingSchema);
 
         const bookingToDelete = await BookingModel.findOne({
             uniqueId: userId,
@@ -71,6 +71,25 @@ export class DatabaseService {
         await BookingModel.updateOne({_id: {$in: bookingToDelete?._id}}, {$set: {deletedAt: dayjs()}});
 
         console.log(`Bookings for userId: ${userId} on spot: ${huntingSpot} deleted.`);
+    };
+
+    public async tryReclaimBooking(collectionName: string, reservationToClaim: IBooking, Reclaim: any) {
+
+        const BookingModel = this.Database.model<IBooking>(collectionName, BookingSchema);
+
+        const bookingToReclaim = await BookingModel.findOne({
+            uniqueId: reservationToClaim.uniqueId,
+            deletedAt: null,
+            huntingSpot: reservationToClaim.huntingSpot,
+            start: reservationToClaim.start,
+            end: reservationToClaim.end
+        });
+        if (!bookingToReclaim) {
+            throw new Error("No matching booking found for reclaim");
+        }
+        await BookingModel.updateOne({_id: {$in: bookingToReclaim?._id}}, {$set: {Reclaim: Reclaim}});
+
+        console.log(`Bookings reclaimed`);
     };
 
     public async getAllCollectionsAndValues(): Promise<DatabaseResult> {
@@ -197,7 +216,7 @@ export class DatabaseService {
 
 
     public async createOrUpdateStatistics(interaction: ChatInputCommandInteraction, commandName: string) {
-        const StatisticsModel = GODSDB.model<IStatistics>("statisticsForUsers", StatisticsSchema);
+        const StatisticsModel = this.Database.model<IStatistics>("statisticsForUsers", StatisticsSchema);
 
         const userId = interaction.user.id;
         const huntingSpot = interaction.channel as TextChannel
@@ -241,7 +260,7 @@ export class DatabaseService {
 
     public async getDataForUserStatistics(interaction: ChatInputCommandInteraction, userId: string) {
         const formattedArray: { spot: string; amount: number }[] = [];
-        const StatisticsModel = GODSDB.model<IStatistics>("statisticsForUsers", StatisticsSchema);
+        const StatisticsModel = this.Database.model<IStatistics>("statisticsForUsers", StatisticsSchema);
 
         const result = await StatisticsModel.findOne({
             userId,
@@ -308,7 +327,7 @@ export class DatabaseService {
         }
     };
 
-    private isCurrentReservationOverlappingWithExistingReservations(newReservation: IBooking, existingReservations: IBooking[]) {
+    private isCurrentReservationOverlappingWithExistingReservations(newReservation: Booking, existingReservations: IBooking[]) {
         const newReservationStart = dayjs(newReservation.start);
         const newReservationEnd = dayjs(newReservation.end);
 
@@ -356,4 +375,56 @@ export const getCurrentBookingsForUserId = async (collectionName: string | undef
     return formattedArray;
 };
 
+export const getBookingsToReclaim = async (collectionName: string | undefined, userId: string, databaseId: string): Promise<{
+    formattedString: string;
+    reservationToClaim: IBooking
+}[]> => {
+    const formattedArray: { formattedString: string; reservationToClaim: IBooking }[] = [];
+
+    if (collectionName === undefined) return formattedArray;
+    let BookingModel;
+    if (databaseId === process.env.GUILDSERVER_GODS) {
+        BookingModel = GODSDB.model<IBooking>(collectionName, BookingSchema);
+
+    } else if (databaseId === process.env.GUILDSERVER_REFUGIA) {
+
+        BookingModel = REFUGIADB.model<IBooking>(collectionName, BookingSchema);
+    } else {
+
+        throw new Error(`Unknown database ID: ${databaseId}`);
+    }
+    const referenceTime = dayjs().subtract(15, 'minutes');
+
+
+    const result = await BookingModel.find({
+        deletedAt: null,
+        uniqueId: {$ne: userId},
+        start: {$lt: referenceTime},
+        reclaim: null
+    }).sort({
+        start: 1,
+    });
+    result.forEach((item) => {
+        const {huntingPlace, huntingSpot, start, end, name} = item;
+        const namePart = getName(name);
+        const formattedString = `Reclaim ${dayjs(start).format("HH:mm")} - ${dayjs(end).format("HH:mm")} ${namePart}`;
+        formattedArray.push({formattedString: formattedString, reservationToClaim: item});
+    })
+
+    console.log(`${result.length} bookings to reclaim found.`);
+    return formattedArray;
+};
+
+const getName = (names: Name) => {
+
+    if (names.userInputName && names.userInputName !== "") {
+        return `${names.userInputName}`;
+
+    }
+    if (names.guildNickName && names.guildNickName !== "") {
+        return `${names.guildNickName}`
+
+    }
+    return `${names.displayName}`;
+}
 

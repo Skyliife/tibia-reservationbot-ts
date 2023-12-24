@@ -40,6 +40,15 @@ export interface IBooking {
     createdAt: Dayjs;
     deletedAt: any;
     displaySlot: Dayjs;
+    reclaim: Reclaim;
+}
+
+export type Reclaim = {
+    isReclaim: boolean;
+    reclaimId: string;
+    reclaimedBy: Name;
+    reclaimedAt: Dayjs;
+    reclaimedMessage: string;
 }
 
 export interface IStatistics {
@@ -52,8 +61,8 @@ export interface IStatistics {
 export type Name = {
     userInputName: string
     displayName: string;
-    guildNickName: string;
-    globalName: string,
+    guildNickName: string | null | undefined;
+    globalName: string | null,
     interactionName: string;
 };
 export type DatabaseResult = {

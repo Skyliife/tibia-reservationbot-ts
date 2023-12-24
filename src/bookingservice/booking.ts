@@ -1,12 +1,6 @@
 import dayjs, {Dayjs} from "dayjs";
 import {IBooking, Name} from "../types";
-import {
-    isAnyTimeAfter10AM,
-    isAnyTimeBefore10AM,
-    isCurrentTimeAfter10AM,
-    isCurrentTimeBefore10AM,
-    isCurrentTimeBeforeMidnight
-} from "../utils";
+import {isAnyTimeAfter10AM, isAnyTimeBefore10AM, isCurrentTimeBeforeMidnight} from "../utils";
 
 class Booking implements IBooking {
     public huntingPlace: string;
@@ -20,6 +14,7 @@ class Booking implements IBooking {
     public createdAt: Dayjs;
     public deletedAt: any;
     public displaySlot: Dayjs;
+    public reclaim: any;
     public roleDuration: number;
 
     constructor(

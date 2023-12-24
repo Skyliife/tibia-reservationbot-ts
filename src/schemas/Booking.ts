@@ -1,6 +1,7 @@
 import {Schema} from "mongoose";
 import {IBooking} from "../types";
 import NamesSchema from "./Names";
+import ReclaimSchema from "./Reclaim";
 
 const BookingSchema = new Schema<IBooking>({
         huntingPlace: {type: String, required: true},
@@ -13,6 +14,7 @@ const BookingSchema = new Schema<IBooking>({
         end: {type: Date, required: true},
         createdAt: {type: Date, required: true},
         deletedAt: {type: Date, default: null},
+        reclaim: {type: ReclaimSchema, default: null},
         displaySlot: {type: Date, required: true},
     },
 ).index({end: 1}, {expireAfterSeconds: 0});
