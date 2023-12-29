@@ -7,6 +7,7 @@ import {getHuntingPlaceByChannelName} from "../huntingplaces/huntingplaces";
 import {DatabaseResultForGroup, IBooking, Reclaim} from "../types";
 import {ChartService} from "./chart.service";
 import {DatabaseService} from "./database.service";
+import {GuildRoles} from "../enums";
 
 //This class processes the command by collecting data, verifying it, and processing it.
 
@@ -27,7 +28,7 @@ export default class CommandProcessor {
             this.channelName = this.channel.name;
             this.member = interaction.member;
             this.databaseId = interaction.guild.id;
-            this.databaseService = new DatabaseService(this.databaseId);
+            this.databaseService = DatabaseService.getInstance(this.databaseId);
         } else {
             throw new Error("Interaction is not in a cached guild.");
         }
@@ -42,7 +43,7 @@ export default class CommandProcessor {
     }
 
     async processData(verifiedData: VerifyingService) {
-        await this.databaseService.tryAddBooking(verifiedData.booking);
+        await this.databaseService.enqueueReservation(verifiedData.booking);
         await this.interaction.editReply({content: verifiedData.booking.displayBookingInfo()});
     }
 
@@ -62,7 +63,7 @@ export default class CommandProcessor {
         //Delete Image
         imageService = null;
         imageAttachment = null;
-        console.log("freeing image memory");
+        console.log("freeing image");
     }
 
     async createEmbed() {
@@ -83,13 +84,13 @@ export default class CommandProcessor {
         embedsForChannel = [];
         embedsArray = [];
         embedsAttachment = [];
-        console.log("freeing embeds memory");
+        console.log("freeing embeds");
     }
 
     async createSummaryChart() {
         //Get Data from Database
         const data = await this.getDataFromDatabase(this.databaseId);
-        const data2 = await this.databaseService.getResultForSummary(this.databaseId);
+        const data2 = await this.databaseService.getResultForSummary();
         //Create Chart
         let chartService: ChartService | null = new ChartService();
         let chartAttachment: AttachmentBuilder | null = await chartService.createChartForSummary(data, data2);
@@ -104,7 +105,7 @@ export default class CommandProcessor {
         //Delete Chart
         chartService = null;
         chartAttachment = null;
-        console.log("freeing chart memory");
+        console.log("freeing chart");
     }
 
     async createStatisticsChartForUser(userId: string) {
@@ -122,7 +123,7 @@ export default class CommandProcessor {
         //Delete Chart
         chartService = null;
         chartAttachment = null;
-        console.log("freeing chart memory");
+        console.log("freeing chart");
     }
 
     async updateCommandExecutionCount() {
@@ -136,7 +137,7 @@ export default class CommandProcessor {
             const start = reservation.start;
             const end = reservation.end;
             const id = this.interaction.user.id.toString()
-            await this.databaseService.tryDeleteBooking(this.channelName, huntingSpot, id, start, end);
+            await this.databaseService.tryDeleteOrUpdateBooking(this.channelName, huntingSpot, id, start, end);
         }
     }
 
@@ -145,8 +146,14 @@ export default class CommandProcessor {
         reservationToClaim: IBooking | null
     }, reclaimer: Reclaim) {
         const {reservationToClaim} = dataToReclaim;
+        let duration = 120;
         if (reservationToClaim) {
-            await this.databaseService.tryReclaimBooking(this.channelName, reservationToClaim, reclaimer);
+            const role = this.member.roles.highest.name as GuildRoles;
+
+            if (role === GuildRoles.Bazant || role === GuildRoles.GodsMember || role === GuildRoles.Gods) {
+                duration = 180;
+            }
+            await this.databaseService.tryReclaimBooking(this.channelName, reservationToClaim, reclaimer, duration);
         }
     }
 

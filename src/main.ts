@@ -4,7 +4,7 @@ import {config} from "dotenv";
 import {readdirSync} from "fs";
 import {join} from "path";
 
-const {Guilds, MessageContent, GuildMessages, GuildMembers} = GatewayIntentBits;
+const {Guilds} = GatewayIntentBits;
 
 config();
 

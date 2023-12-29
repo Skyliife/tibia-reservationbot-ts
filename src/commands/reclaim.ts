@@ -44,6 +44,23 @@ const command: SlashCommand = {
         })
         .addStringOption((option) => {
             return option
+                .setName("reason")
+                .setNameLocalizations({
+                    pl: "reason",
+                    de: "reason",
+                    'es-ES': 'reason',
+                })
+                .setDescription("provide a reason for reclaiming")
+                .setDescriptionLocalizations({
+                    pl: 'provide a reason for reclaiming',
+                    de: 'provide a reason for reclaiming',
+                    'es-ES': 'provide a reason for reclaiming',
+                })
+                .setRequired(true)
+                .setAutocomplete(true);
+        })
+        .addStringOption((option) => {
+            return option
                 .setName(optionNames.name)
                 .setNameLocalizations({
                     pl: optionNamesPL.name,
@@ -111,13 +128,13 @@ const command: SlashCommand = {
 
             } else {
                 await interaction.editReply({
-                    content: `No reclaim found, nothing has been reclaim`,
+                    content: `No reclaim found, nothing has been reclaimed`,
                 });
             }
         } catch (error: any) {
             console.log(error);
             await interaction.editReply({
-                content: `No reclaim found, nothing has been reclaimed`,
+                content: `${error.message}`,
             });
         }
     },

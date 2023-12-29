@@ -1,7 +1,15 @@
 import BookingSchema from "../schemas/Booking";
 import Booking from "./booking";
 
-import {DatabaseResult, DatabaseResultForGroup, DatabaseResultForSummary, IBooking, IStatistics, Name} from "../types";
+import {
+    DatabaseResult,
+    DatabaseResultForGroup,
+    DatabaseResultForSummary,
+    IBooking,
+    IStatistics,
+    Name,
+    Reclaim
+} from "../types";
 import dayjs, {Dayjs} from "dayjs";
 import {REFUGIADB} from "../database/RefugiaDatabase";
 import {GODSDB} from "../database/GodsDatabase";
@@ -13,8 +21,10 @@ import mongoose from "mongoose";
 //how to add a reservation to different databases?
 
 export class DatabaseService {
-
+    private static instance: DatabaseService;
     private Database;
+    private reservationQueue: Booking[] = [];
+    private isProcessingQueue: boolean = false;
 
     constructor(databaseId: string) {
 
@@ -27,33 +37,29 @@ export class DatabaseService {
         }
     }
 
-    public async tryAddBooking(reservation: Booking) {
-        //Create Model to get Data
-        const BookingModel = this.Database.model<IBooking>(reservation.huntingPlace, BookingSchema);
-        //Get Required Data
-        const existingReservationsForID = await BookingModel.find({
-            huntingSpot: reservation.huntingSpot,
-            uniqueId: reservation.uniqueId,
-            deletedAt: null,
-            displaySlot: reservation.displaySlot,
-        });
-        const existingReservationsForHuntingSpot = await BookingModel.find({
-            huntingSpot: reservation.huntingSpot,
-            deletedAt: null,
-        });
-        //Check if the user has already 4 reservations for the same hunting spot
-        this.validateReservationCount(existingReservationsForID, reservation.huntingSpot);
-        //Check if the user has already reached the time limit for booking e.g. 2 hours for Verified/Vip and 3 hours for Gods
-        this.areAllCurrentReservationsFromUserWithinRoleDuration(reservation.roleDuration, reservation, existingReservationsForID);
-        //Check if the reservation is overlapping with other reservations
-        this.validateOverlap(reservation, existingReservationsForHuntingSpot);
-        //Finally insert the reservation
-        const newBooking = new BookingModel(reservation);
-        await newBooking.save();
-        console.log(`Booking inserted successfully.`);
-    };
+    public static getInstance(databaseId: string): DatabaseService {
+        if (!DatabaseService.instance) {
+            DatabaseService.instance = new DatabaseService(databaseId);
+        }
+        return DatabaseService.instance;
+    }
 
-    public async tryDeleteBooking(collectionName: string, huntingSpot: string, userId: string, start: Dayjs, end: Dayjs) {
+    public async enqueueReservation(reservation: Booking) {
+        this.reservationQueue.push(reservation);
+        console.log("adding reservation to queue");
+
+        if (!this.isProcessingQueue) {
+            await this.processReservationQueue();
+        } else {
+            setTimeout(async () => {
+                console.log("End waiting after 3 seconds!");
+                await this.processReservationQueue();
+            }, 3000);
+        }
+    }
+
+
+    public async tryDeleteOrUpdateBooking(collectionName: string, huntingSpot: string, userId: string, start: Dayjs, end: Dayjs) {
 
         const BookingModel = this.Database.model<IBooking>(collectionName, BookingSchema);
 
@@ -64,16 +70,27 @@ export class DatabaseService {
             start: start,
             end: end
         });
+
         if (!bookingToDelete) {
             throw new Error("No matching booking found for deletion");
         }
+        if (bookingToDelete.reclaim !== null) {
+            await BookingModel.updateOne({_id: {$in: bookingToDelete?._id}}, {
+                $set: {
+                    reclaim: null,
+                    name: bookingToDelete.reclaim.reclaimedBy,
+                    uniqueId: bookingToDelete.reclaim.reclaimId
+                }
+            });
+            console.log(`Bookings for userId: ${userId} on spot: ${huntingSpot} reclaimed by ${bookingToDelete.reclaim.reclaimId}.`);
 
-        await BookingModel.updateOne({_id: {$in: bookingToDelete?._id}}, {$set: {deletedAt: dayjs()}});
-
-        console.log(`Bookings for userId: ${userId} on spot: ${huntingSpot} deleted.`);
+        } else {
+            await BookingModel.updateOne({_id: {$in: bookingToDelete?._id}}, {$set: {deletedAt: dayjs()}});
+            console.log(`Bookings for userId: ${userId} on spot: ${huntingSpot} deleted.`);
+        }
     };
 
-    public async tryReclaimBooking(collectionName: string, reservationToClaim: IBooking, Reclaim: any) {
+    public async tryReclaimBooking(collectionName: string, reservationToClaim: IBooking, reclaim: Reclaim, duration: number) {
 
         const BookingModel = this.Database.model<IBooking>(collectionName, BookingSchema);
 
@@ -84,12 +101,24 @@ export class DatabaseService {
             start: reservationToClaim.start,
             end: reservationToClaim.end
         });
+
+        const existingReservationsForID = await BookingModel.find({
+            uniqueId: reclaim.reclaimId,
+            deletedAt: null,
+        });
+
+        //Check if the user has already 4 reservations for the same hunting spot
+        this.validateReservationCount(existingReservationsForID, reservationToClaim.huntingSpot);
+        //Check if the user has already reached the time limit for booking e.g. 2 hours for Verified/Vip and 3 hours for Gods
+        this.areAllCurrentReservationsFromUserWithinRoleDuration(duration, reservationToClaim as Booking, existingReservationsForID);
+
+
         if (!bookingToReclaim) {
             throw new Error("No matching booking found for reclaim");
         }
-        await BookingModel.updateOne({_id: {$in: bookingToReclaim?._id}}, {$set: {Reclaim: Reclaim}});
+        await BookingModel.updateOne({_id: {$in: bookingToReclaim?._id}}, {$set: {reclaim: reclaim}});
 
-        console.log(`Bookings reclaimed`);
+        console.log(`Booking reclaimed`);
     };
 
     public async getAllCollectionsAndValues(): Promise<DatabaseResult> {
@@ -97,9 +126,7 @@ export class DatabaseService {
         const result: DatabaseResult = {};
 
         // List all collections in the database
-        const collections = await db.listCollections().toArray();
         const filteredCollections = await this.getFilteredCollections(db);
-
 
         // Iterate over collections
         for (const collection of filteredCollections) {
@@ -116,12 +143,11 @@ export class DatabaseService {
         return result; // Return the result object with collections and documents
     };
 
-    public async getResultForSummary(databaseId: string) {
+    public async getResultForSummary() {
         const db = this.Database.db;
         const result: DatabaseResultForSummary = {};
         // List all collections in the database
         const filteredCollections = await this.getFilteredCollections(db);
-
 
         for (const collection of filteredCollections) {
             const collectionName = collection.name;
@@ -214,7 +240,6 @@ export class DatabaseService {
         return result;
     };
 
-
     public async createOrUpdateStatistics(interaction: ChatInputCommandInteraction, commandName: string) {
         const StatisticsModel = this.Database.model<IStatistics>("statisticsForUsers", StatisticsSchema);
 
@@ -228,7 +253,7 @@ export class DatabaseService {
 
         if (existingDocument) {
 
-            const result = await StatisticsModel.findOneAndUpdate(
+            await StatisticsModel.findOneAndUpdate(
                 {
                     userId,
                 },
@@ -244,7 +269,7 @@ export class DatabaseService {
             console.log(`Statistic updated successfully.`);
         } else {
 
-            const result = await StatisticsModel.create({
+            await StatisticsModel.create({
                 userId,
                 commandsCount: {[commandName]: 1},
                 huntingPlaces: {[huntingSpot.name]: {[spot]: 1}},
@@ -281,6 +306,53 @@ export class DatabaseService {
         console.log(`CommandExecution updated successfully.`);
         return formattedArray;
     };
+
+    private async tryAddBooking(reservation: Booking) {
+        //Create Model to get Data
+        const BookingModel = this.Database.model<IBooking>(reservation.huntingPlace, BookingSchema);
+        //Get Required Data
+        const existingReservationsForID = await BookingModel.find({
+            huntingSpot: reservation.huntingSpot,
+            uniqueId: reservation.uniqueId,
+            deletedAt: null,
+            displaySlot: reservation.displaySlot,
+        });
+        const existingReservationsForHuntingSpot = await BookingModel.find({
+            huntingSpot: reservation.huntingSpot,
+            deletedAt: null,
+        });
+        //Check if the user has already 4 reservations for the same hunting spot
+        this.validateReservationCount(existingReservationsForID, reservation.huntingSpot);
+        //Check if the user has already reached the time limit for booking e.g. 2 hours for Verified/Vip and 3 hours for Gods
+        this.areAllCurrentReservationsFromUserWithinRoleDuration(reservation.roleDuration, reservation, existingReservationsForID);
+        //Check if the reservation is overlapping with other reservations
+        this.validateOverlap(reservation, existingReservationsForHuntingSpot);
+        //Finally insert the reservation
+        const newBooking = new BookingModel(reservation);
+        await newBooking.save();
+        console.log(`Booking inserted successfully.`);
+    };
+
+    private async processReservationQueue() {
+        this.isProcessingQueue = true;
+        console.log("processing queue");
+        try {
+            while (this.reservationQueue.length > 0) {
+                const nextReservation = this.reservationQueue.shift();
+                if (nextReservation) {
+                    await this.tryAddBooking(nextReservation);
+                } else {
+                    console.log("reservation in queue is undefined");
+                }
+            }
+            this.isProcessingQueue = false;
+            console.log("done processing queue");
+        } catch (error: any) {
+            throw new Error(error);
+        } finally {
+            this.isProcessingQueue = false;
+        }
+    }
 
     private async getFilteredCollections(db: mongoose.mongo.Db) {
         const collections = await db.listCollections().toArray();
@@ -320,7 +392,7 @@ export class DatabaseService {
 
             console.log(`Booking with uniqueId ${currentReservation.uniqueId}, name: ${currentReservation.name.displayName} already exists for hunting spot ${currentReservation.huntingSpot}. Not inserting.`);
             const message = LocaleManager.translate("insertBooking.isWithinRoleDuration", {
-                prop: `${currentReservation.roleDuration / 60}`,
+                prop: `${roleDuration / 60}`,
                 prop2: `${currentReservation.huntingSpot}`
             });
             throw new Error(message);
@@ -366,7 +438,7 @@ export const getCurrentBookingsForUserId = async (collectionName: string | undef
         start: 1,
     });
     result.forEach((item) => {
-        const {huntingPlace, huntingSpot, start, end} = item;
+        const {huntingSpot, start, end} = item;
         const formattedString = `Reservation ${huntingSpot} - from ${dayjs(start).format("D.M HH:mm")} to ${dayjs(end).format("D.M HH:mm")}`;
         formattedArray.push({formattedString: formattedString, reservation: item});
     })
@@ -405,7 +477,7 @@ export const getBookingsToReclaim = async (collectionName: string | undefined, u
         start: 1,
     });
     result.forEach((item) => {
-        const {huntingPlace, huntingSpot, start, end, name} = item;
+        const {start, end, name} = item;
         const namePart = getName(name);
         const formattedString = `Reclaim ${dayjs(start).format("HH:mm")} - ${dayjs(end).format("HH:mm")} ${namePart}`;
         formattedArray.push({formattedString: formattedString, reservationToClaim: item});

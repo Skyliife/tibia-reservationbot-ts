@@ -55,8 +55,7 @@ export class EmbedService {
             //Fields
             const fieldName = `Date ${ss.format("D")}-${ssn.format("D.MM")} SS`;
             this.createFields(value, embed, fieldName);
-            embed.setDescription(description);
-
+               this.createDescription(embed, description);
         }
 
         this.createColor(embed, totalDuration);
@@ -68,7 +67,7 @@ export class EmbedService {
 
     private processBookingList(huntingSpots: { [p: string]: IBooking[] }, huntingSpot: string, totalDuration: number) {
         let value: string = "";
-        let description: string = "";
+        let description: string = "---Recent Reclaims---\n";
         const bookingsList = huntingSpots[huntingSpot];
         for (const booking of bookingsList) {
 
@@ -81,7 +80,7 @@ export class EmbedService {
             if (booking.reclaim !== null && booking.reclaim.isReclaim) {
                 console.log(booking.reclaim);
                 const reclaimedBooking = `${bold(timePart)} : ${namePart}\n`
-                description += `${bold(timePart)} : ${namePart} by ${this.createNamePart(booking.reclaim.reclaimedBy)}\n at ${dayjs().format("HH:mm")}`;
+                description += `${bold(timePart)} : ${namePart} by ${this.createNamePart(booking.reclaim.reclaimedBy)} at ${dayjs().format("HH:mm")}\n`;
                 value += strikethrough(reclaimedBooking);
             } else {
                 value += `${bold(timePart)} : ${namePart}\n`;
@@ -188,6 +187,12 @@ export class EmbedService {
                     }
                 );
             }
+        }
+    }
+
+    private createDescription(embed: EmbedBuilder, description: string) {
+        if (description !== "---Recent Reclaims---\n") {
+            embed.setDescription(description);
         }
     }
 
