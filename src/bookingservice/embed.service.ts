@@ -55,7 +55,7 @@ export class EmbedService {
             //Fields
             const fieldName = `Date ${ss.format("D")}-${ssn.format("D.MM")} SS`;
             this.createFields(value, embed, fieldName);
-               this.createDescription(embed, description);
+            this.createDescription(embed, description);
         }
 
         this.createColor(embed, totalDuration);
@@ -80,7 +80,7 @@ export class EmbedService {
             if (booking.reclaim !== null && booking.reclaim.isReclaim) {
                 console.log(booking.reclaim);
                 const reclaimedBooking = `${bold(timePart)} : ${namePart}\n`
-                description += `${bold(timePart)} : ${namePart} by ${this.createNamePart(booking.reclaim.reclaimedBy)} at ${dayjs().format("HH:mm")}\n`;
+                description += `${bold(timePart)} : ${namePart} by ${this.createNamePart(booking.reclaim.reclaimedBy)}, reclaimed at ${dayjs().format("HH:mm")} with reason: ${booking.reclaim.reclaimedMessage}\n`;
                 value += strikethrough(reclaimedBooking);
             } else {
                 value += `${bold(timePart)} : ${namePart}\n`;

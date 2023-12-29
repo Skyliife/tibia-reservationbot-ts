@@ -4,6 +4,8 @@ export const optionNames = {
     start: "start",
     end: "end",
     name: "name",
+    reservation: "reservation",
+    reason:"reason",
 };
 
 export const optionNamesPL = {

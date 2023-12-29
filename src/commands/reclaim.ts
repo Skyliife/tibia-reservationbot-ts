@@ -1,7 +1,6 @@
 import {ChannelType, GuildMember, SlashCommandBuilder} from "discord.js";
 import {IBooking, Reclaim, SlashCommand} from "../types";
 import CommandProcessor from "../bookingservice/CommandProcessor";
-import {getBookingsToReclaim} from "../bookingservice/database.service";
 import dayjs from "dayjs";
 import {
     description,
@@ -13,6 +12,7 @@ import {
     optionNamesES,
     optionNamesPL
 } from "../locale/locales/optionnames";
+import {getBookingsToReclaim} from "../bookingservice/database.service";
 
 
 let choices: { formattedString: string; reservationToClaim: IBooking | null }[] = [];
@@ -57,7 +57,7 @@ const command: SlashCommand = {
                     'es-ES': 'provide a reason for reclaiming',
                 })
                 .setRequired(true)
-                .setAutocomplete(true);
+                .setMaxLength(25);
         })
         .addStringOption((option) => {
             return option
@@ -96,6 +96,7 @@ const command: SlashCommand = {
         console.log("Start executing /reclaim command!");
         let commandProcessor: CommandProcessor | null = new CommandProcessor(interaction);
         const input = interaction.options.getString("reservation");
+        const message = interaction.options.getString("reason");
         const dataToReclaim = choices.find((choice) => choice.formattedString === input);
 
         try {
@@ -114,7 +115,7 @@ const command: SlashCommand = {
                         interactionName: interaction.user.username ?? "",
                     },
                     reclaimedAt: dayjs(),
-                    reclaimedMessage: interaction.id,
+                    reclaimedMessage: message ?? "",
                 };
                 await commandProcessor.reclaimBooking(dataToReclaim, reclaimer);
                 await commandProcessor.clearMessages();
@@ -139,7 +140,7 @@ const command: SlashCommand = {
         }
     },
 };
-const fetchChannelName = (channel: any): string | undefined => {
+const fetchChannelName = (channel: any): string => {
     return channel?.name;
 };
 
@@ -151,7 +152,7 @@ const generateAutocompleteChoices = (choices: { formattedString: string }[]): an
 };
 
 
-const fetchAndSetChoices = async (channelName: string | undefined, userId: string, databaseId: string) => {
+const fetchAndSetChoices = async (channelName: string, userId: string, databaseId: string) => {
     try {
         let data: {
             formattedString: string;

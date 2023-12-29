@@ -447,7 +447,7 @@ export const getCurrentBookingsForUserId = async (collectionName: string | undef
     return formattedArray;
 };
 
-export const getBookingsToReclaim = async (collectionName: string | undefined, userId: string, databaseId: string): Promise<{
+export const getBookingsToReclaim = async (collectionName: string, userId: string, databaseId: string): Promise<{
     formattedString: string;
     reservationToClaim: IBooking
 }[]> => {
