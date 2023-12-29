@@ -77,11 +77,15 @@ export class EmbedService {
             const timePart = `${dayjs(booking.start).format("HH:mm")}-${dayjs(booking.end).format("HH:mm")}`;
 
             let namePart = this.createNamePart(booking.name);
-            if (booking.reclaim !== null && booking.reclaim.isReclaim) {
-                console.log(booking.reclaim);
-                const reclaimedBooking = `${bold(timePart)} : ${namePart}\n`
-                description += `${bold(timePart)} : ${namePart} by ${this.createNamePart(booking.reclaim.reclaimedBy)}, reclaimed at ${dayjs().format("HH:mm")} with reason: ${booking.reclaim.reclaimedMessage}\n`;
-                value += strikethrough(reclaimedBooking);
+            if (booking.reclaim !== undefined) {
+                if (booking.reclaim !== null && booking.reclaim.isReclaim) {
+                    console.log(booking.reclaim);
+                    const reclaimedBooking = `${bold(timePart)} : ${namePart}\n`
+                    description += `${bold(timePart)} : ${namePart} by ${this.createNamePart(booking.reclaim.reclaimedBy)}, reclaimed at ${dayjs().format("HH:mm")} with reason: ${booking.reclaim.reclaimedMessage}\n`;
+                    value += strikethrough(reclaimedBooking);
+                } else {
+                    value += `${bold(timePart)} : ${namePart}\n`;
+                }
             } else {
                 value += `${bold(timePart)} : ${namePart}\n`;
             }
