@@ -30,7 +30,7 @@ export class EmbedService {
         //add Footer to last embed
         if (embeds.length > 0) {
             const lastEmbed = embeds[embeds.length - 1].embed;
-            lastEmbed.setFooter({text: `Made with ❤️ by Gods version 1.0.3`});
+            lastEmbed.setFooter({text: `Made with ❤️ by Gods version 1.0.4`});
         }
 
         return embeds;
