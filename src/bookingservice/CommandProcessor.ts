@@ -28,7 +28,7 @@ export default class CommandProcessor {
             this.channelName = this.channel.name;
             this.member = interaction.member;
             this.databaseId = interaction.guild.id;
-            this.databaseService = DatabaseService.getInstance(this.databaseId);
+            this.databaseService = new DatabaseService(this.databaseId);
         } else {
             throw new Error("Interaction is not in a cached guild.");
         }

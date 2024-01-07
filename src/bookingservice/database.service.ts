@@ -21,7 +21,6 @@ import mongoose from "mongoose";
 //how to add a reservation to different databases?
 
 export class DatabaseService {
-    private static instance: DatabaseService;
     private Database;
     private reservationQueue: Booking[] = [];
     private isProcessingQueue: boolean = false;
@@ -35,13 +34,6 @@ export class DatabaseService {
         } else {
             throw new Error(`Unknown database ID: ${databaseId}`);
         }
-    }
-
-    public static getInstance(databaseId: string): DatabaseService {
-        if (!DatabaseService.instance) {
-            DatabaseService.instance = new DatabaseService(databaseId);
-        }
-        return DatabaseService.instance;
     }
 
     public async enqueueReservation(reservation: Booking) {
@@ -86,7 +78,7 @@ export class DatabaseService {
 
         } else {
             await BookingModel.updateOne({_id: {$in: bookingToDelete?._id}}, {$set: {deletedAt: dayjs()}});
-            console.log(`Bookings for userId: ${userId} on spot: ${huntingSpot} deleted.`);
+            console.log(`Bookings for userId: ${userId}, name: ${bookingToDelete.name} on spot: ${huntingSpot} deleted.`);
         }
     };
 

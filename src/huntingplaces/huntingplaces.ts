@@ -181,7 +181,11 @@ const Gnomprona = {
 
         },
         {
-            name: "Prehemoths",
+            name: "Prehemoths wagons 1-2",
+
+        },
+        {
+            name: "Prehemoths wagons 2-3",
 
         },
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
