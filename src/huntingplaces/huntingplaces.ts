@@ -419,10 +419,6 @@ const Soulwar = {
 
         },
         {
-            name: "Crater",
-
-        },
-        {
             name: "Dark Thais",
 
         },
@@ -435,6 +431,10 @@ const Soulwar2 = {
         {
             name: "Brachiodemons",
             
+        },
+        {
+            name: "Crater",
+
         },
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
