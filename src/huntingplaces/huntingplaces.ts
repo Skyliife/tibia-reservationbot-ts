@@ -433,8 +433,8 @@ const Soulwar = {
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
 
-const SoulwarBrachios = {
-    location: "Soulwar-Brachios",
+const Soulwar2 = {
+    location: "Soulwar",
     choices: [
         {
             name: "Brachiodemons",
@@ -573,7 +573,7 @@ export const getHuntingPlaceByChannelName = (locationName: string) => {
         Roshamuul,
         RottenBlood,
         Soulwar,
-        SoulwarBrachios,
+        Soulwar2,
         Spectres,
         TheDreamCourts,
         Weremonster,
@@ -606,7 +606,7 @@ export const getHuntingSpotsByHuntingPlace = (choiceName: string | undefined) =>
         Roshamuul,
         RottenBlood,
         Soulwar,
-        SoulwarBrachios,
+        Soulwar2,
         Spectres,
         TheDreamCourts,
         Weremonster,
@@ -644,7 +644,7 @@ export const getChoicesForSpot = (locationName: string | undefined): { name: str
         Roshamuul,
         RottenBlood,
         Soulwar,
-        SoulwarBrachios,
+        Soulwar2,
         Spectres,
         TheDreamCourts,
         Weremonster,
