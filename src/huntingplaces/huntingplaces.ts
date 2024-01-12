@@ -299,6 +299,10 @@ const SecretLibrary = {
             name: "Energy Section",
 
         },
+        {
+            name: "Ice Section",
+            
+        },
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
 
@@ -402,15 +406,6 @@ const RottenBlood = {
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
 
-const IceLibrary = {
-    location: "ice-library",
-    choices: [
-        {
-            name: "Ice Section",
-
-        },
-    ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
-};
 
 const Soulwar = {
     location: "Soul-war",
@@ -434,6 +429,16 @@ const Soulwar = {
         {
             name: "Dark Thais",
 
+        },
+    ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
+};
+
+const SoulwarBrachios = {
+    location: "Soulwar-Brachios",
+    choices: [
+        {
+            name: "Brachiodemons",
+            
         },
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
@@ -567,8 +572,8 @@ export const getHuntingPlaceByChannelName = (locationName: string) => {
         SecretLibrary,
         Roshamuul,
         RottenBlood,
-        IceLibrary,
         Soulwar,
+        SoulwarBrachios,
         Spectres,
         TheDreamCourts,
         Weremonster,
@@ -600,8 +605,8 @@ export const getHuntingSpotsByHuntingPlace = (choiceName: string | undefined) =>
         SecretLibrary,
         Roshamuul,
         RottenBlood,
-        IceLibrary,
         Soulwar,
+        SoulwarBrachios,
         Spectres,
         TheDreamCourts,
         Weremonster,
@@ -638,8 +643,8 @@ export const getChoicesForSpot = (locationName: string | undefined): { name: str
         SecretLibrary,
         Roshamuul,
         RottenBlood,
-        IceLibrary,
         Soulwar,
+        SoulwarBrachios,
         Spectres,
         TheDreamCourts,
         Weremonster,
