@@ -411,10 +411,6 @@ const Soulwar = {
     location: "Soul-war",
     choices: [
         {
-            name: "Brachiodemons",
-
-        },
-        {
             name: "Rottens",
 
         },
