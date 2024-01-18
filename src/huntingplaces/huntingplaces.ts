@@ -411,11 +411,11 @@ const Soulwar = {
     location: "Soul-war",
     choices: [
         {
-            name: "Rottens NorthEast + SouthWest",
+            name: "Rottens NorthEast and SouthWest",
 
         },
         {
-            name: "Rottens NorthWest + SouthEast",
+            name: "Rottens NorthWest and SouthEast",
 
         },
         {
