@@ -274,7 +274,11 @@ const Issavi = {
         },
 
         {
-            name: "The Wreckoning",
+            name: "The Wreckoning -1",
+
+        },
+        {
+            name: "The Wreckoning -2",
 
         },
         {
