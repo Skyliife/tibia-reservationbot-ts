@@ -104,6 +104,20 @@ const Dragolisks = {
         },
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
+const DrakenWalls = {
+    location: "DrakenWalls",
+    choices: [
+        {
+            name: "North Walls",
+        },
+        {
+            name: "South Walls",
+        },
+        {
+            name: "Lizard City",
+        },
+    ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
+};
 
 const Feru = {
     location: "Feru",
@@ -305,7 +319,7 @@ const SecretLibrary = {
         },
         {
             name: "Ice Section",
-            
+
         },
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
@@ -438,7 +452,7 @@ const Soulwar2 = {
     choices: [
         {
             name: "Brachiodemons",
-            
+
         },
         {
             name: "Crater",
@@ -565,6 +579,7 @@ export const getHuntingPlaceByChannelName = (locationName: string) => {
         BuriedCathedral,
         Cobras,
         Dragolisks,
+        DrakenWalls,
         Feru,
         Flimsy,
         Gnomprona,
@@ -636,6 +651,7 @@ export const getChoicesForSpot = (locationName: string | undefined): { name: str
         BuriedCathedral,
         Cobras,
         Dragolisks,
+        DrakenWalls,
         Feru,
         Flimsy,
         Gnomprona,
