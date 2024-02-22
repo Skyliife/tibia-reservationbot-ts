@@ -105,7 +105,7 @@ const Dragolisks = {
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
 const DrakenWalls = {
-    location: "DrakenWalls",
+    location: "Draken-Walls",
     choices: [
         {
             name: "North Walls",
