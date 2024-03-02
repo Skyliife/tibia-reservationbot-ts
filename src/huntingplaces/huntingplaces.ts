@@ -77,7 +77,19 @@ const Bulltaurs = {
         },
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
+const Carnivoras = {
+    location: "Carnivoras",
+    choices: [
+        {
+            name: "Rocks -1 and -2",
 
+        },
+        {
+            name: "Rocks -3",
+
+        },
+    ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
+};
 const Cobras = {
     location: "Cobras",
     choices: [
@@ -577,6 +589,7 @@ export const getHuntingPlaceByChannelName = (locationName: string) => {
         Banuta,
         Bulltaurs,
         BuriedCathedral,
+        Carnivoras,
         Cobras,
         Dragolisks,
         DrakenWalls,
@@ -611,6 +624,7 @@ export const getHuntingSpotsByHuntingPlace = (choiceName: string | undefined) =>
         Banuta,
         Bulltaurs,
         BuriedCathedral,
+        Carnivoras,
         Cobras,
         Dragolisks,
         Feru,
@@ -649,6 +663,7 @@ export const getChoicesForSpot = (locationName: string | undefined): { name: str
         Banuta,
         Bulltaurs,
         BuriedCathedral,
+        Carnivoras,
         Cobras,
         Dragolisks,
         DrakenWalls,
