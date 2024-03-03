@@ -283,8 +283,8 @@ const Issavi = {
         {name: "Exotic Cave"},
         {
             name: "Surface",
-
         },
+        {name: "Pirat Mine"},
         {
             name: "Issavi Sewers",
 
@@ -505,6 +505,15 @@ const TheDreamCourts = {
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
 
+const Various = {
+    location: "Various",
+    choices: [
+        {
+            name: "Deathlings Gray Beach",
+        },
+    ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
+};
+
 const Weremonster = {
     location: "Weremonster",
     choices: [
@@ -608,6 +617,7 @@ export const getHuntingPlaceByChannelName = (locationName: string) => {
         Soulwar2,
         Spectres,
         TheDreamCourts,
+        Various,
         Weremonster,
         Warzone6,
         Warzone7
@@ -642,6 +652,7 @@ export const getHuntingSpotsByHuntingPlace = (choiceName: string | undefined) =>
         Soulwar2,
         Spectres,
         TheDreamCourts,
+        Various,
         Weremonster,
         Warzone6,
         Warzone7
@@ -682,6 +693,7 @@ export const getChoicesForSpot = (locationName: string | undefined): { name: str
         Soulwar2,
         Spectres,
         TheDreamCourts,
+        Various,
         Weremonster,
         Warzone6,
         Warzone7
