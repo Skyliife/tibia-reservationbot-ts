@@ -150,7 +150,7 @@ export default class CommandProcessor {
         if (reservationToClaim) {
             const role = this.member.roles.highest.name as GuildRoles;
 
-            if (role === GuildRoles.Bazant || role === GuildRoles.GodsMember || role === GuildRoles.Gods) {
+            if (role === GuildRoles.GodsMember || role === GuildRoles.Gods) {
                 duration = 180;
             }
             await this.databaseService.tryReclaimBooking(this.channelName, reservationToClaim, reclaimer, duration);

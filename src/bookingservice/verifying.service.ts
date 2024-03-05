@@ -52,7 +52,10 @@ class VerifyingService {
             if (role === GuildRoles.VIP) {
                 serverSaveEnd = serverSaveStart.add(2, "day").add(0, "hour");
             }
-            if (role === GuildRoles.Bazant || role === GuildRoles.GodsMember || role === GuildRoles.Gods) {
+            if (role === GuildRoles.Bazant) {
+                serverSaveEnd = now.add(2, "day").add(3, "hour");
+            }
+            if (role === GuildRoles.GodsMember || role === GuildRoles.Gods) {
                 serverSaveEnd = now.add(2, "day").add(3, "hour");
                 duration = 180;
             }
