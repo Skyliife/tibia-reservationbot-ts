@@ -130,7 +130,17 @@ const DrakenWalls = {
         },
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
-
+const Falcons = {
+    location: "Falcons",
+    choices: [
+        {
+            name: "Falcon Bastion",
+        },
+        {
+            name: "Eagle",
+        },
+    ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
+};
 const Feru = {
     location: "Feru",
     choices: [
@@ -511,6 +521,9 @@ const Various = {
         {
             name: "Deathlings Gray Beach",
         },
+        {
+            name: "Ravenous Lava Lurker",
+        },
     ].sort((a, b) => a.name.localeCompare(b.name, "en", {sensitivity: "base"})),
 };
 
@@ -602,6 +615,7 @@ export const getHuntingPlaceByChannelName = (locationName: string) => {
         Cobras,
         Dragolisks,
         DrakenWalls,
+        Falcons,
         Feru,
         Flimsy,
         Gnomprona,
@@ -637,6 +651,7 @@ export const getHuntingSpotsByHuntingPlace = (choiceName: string | undefined) =>
         Carnivoras,
         Cobras,
         Dragolisks,
+        Falcons,
         Feru,
         Flimsy,
         Gnomprona,
@@ -678,6 +693,7 @@ export const getChoicesForSpot = (locationName: string | undefined): { name: str
         Cobras,
         Dragolisks,
         DrakenWalls,
+        Falcons,
         Feru,
         Flimsy,
         Gnomprona,
